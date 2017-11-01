@@ -25,7 +25,19 @@ func parseError(actual, expected calcgo.AST) string {
 		astToString(actual)
 }
 
-func eqNodes(n1, n2 calcgo.Node) bool {
+func eqNodes(n1, n2 *calcgo.Node) bool {
+	if n1 == nil && n2 == nil {
+		return true
+	}
+
+	if n1 == nil && n1 != nil {
+		return false
+	}
+
+	if n1 != nil && n1 == nil {
+		return false
+	}
+
 	if (n1.Type != n2.Type) {
 		return false
 	}
@@ -72,7 +84,7 @@ func TestParser(t *testing.T) {
 
 		Convey("simple numbers", func() {
 			So(parse("20"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NNumber,
 					Value: "20",
 					Childs: nil,
@@ -82,16 +94,16 @@ func TestParser(t *testing.T) {
 
 		Convey("additions", func() {
 			So(parse("1 + 2"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NAddition,
 					Value: "+",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "2",
 							Childs: nil,
@@ -100,27 +112,27 @@ func TestParser(t *testing.T) {
 				},
 			})
 			So(parse("1 + 2 + 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NAddition,
 					Value: "+",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NAddition,
 							Value: "+",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "1",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "3",
 							Childs: nil,
@@ -132,16 +144,16 @@ func TestParser(t *testing.T) {
 
 		Convey("subtractions", func() {
 			So(parse("1 - 2"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NSubtraction,
 					Value: "-",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "2",
 							Childs: nil,
@@ -150,27 +162,27 @@ func TestParser(t *testing.T) {
 				},
 			})
 			So(parse("1 - 2 - 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NSubtraction,
 					Value: "-",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NSubtraction,
 							Value: "-",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "1",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "3",
 							Childs: nil,
@@ -182,16 +194,16 @@ func TestParser(t *testing.T) {
 
 		Convey("Multiplications", func() {
 			So(parse("1 * 2"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NMultiplication,
 					Value: "*",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "2",
 							Childs: nil,
@@ -200,27 +212,27 @@ func TestParser(t *testing.T) {
 				},
 			})
 			So(parse("1 * 2 * 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NMultiplication,
 					Value: "*",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NMultiplication,
 							Value: "*",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "1",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "3",
 							Childs: nil,
@@ -232,16 +244,16 @@ func TestParser(t *testing.T) {
 
 		Convey("Divisions", func() {
 			So(parse("1 / 2"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NDivision,
 					Value: "/",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "2",
 							Childs: nil,
@@ -250,27 +262,27 @@ func TestParser(t *testing.T) {
 				},
 			})
 			So(parse("1 / 2 / 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NDivision,
 					Value: "/",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NDivision,
 							Value: "/",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "1",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "3",
 							Childs: nil,
@@ -280,27 +292,27 @@ func TestParser(t *testing.T) {
 			})
 		})
 
-		SkipConvey("dot before line", func() {
+		Convey("dot before line", func() {
 			So(parse("1 + 2 * 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NAddition,
 					Value: "+",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NMultiplication,
 							Value: "*",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "3",
 									Childs: nil,
@@ -311,25 +323,25 @@ func TestParser(t *testing.T) {
 				},
 			})
 			So(parse("1 - 2 / 3"), shouldEqualAST, calcgo.AST{
-				Node: calcgo.Node {
+				Node: &calcgo.Node {
 					Type: calcgo.NSubtraction,
-					Value: "",
-					Childs: []calcgo.Node {
-						calcgo.Node {
+					Value: "-",
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NNumber,
 							Value: "1",
 							Childs: nil,
 						},
-						calcgo.Node {
+						&calcgo.Node {
 							Type: calcgo.NDivision,
 							Value: "/",
-							Childs: []calcgo.Node {
-								calcgo.Node {
+							Childs: []*calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "2",
 									Childs: nil,
 								},
-								calcgo.Node {
+								&calcgo.Node {
 									Type: calcgo.NNumber,
 									Value: "3",
 									Childs: nil,
