@@ -28,10 +28,16 @@ func TestInterpreter(t *testing.T) {
 			So(interpret("1234.5678"), ShouldEqual, 1234.5678)
 		})
 
-		Convey("simple additions", func() {
+		Convey("simple additions with integers", func() {
 			So(interpret("1 + 1"), ShouldEqual, 2)
 			So(interpret("3 + 5"), ShouldEqual, 3+5)
 			So(interpret("1 + 2 + 3 + 4 + 5 + 6"), ShouldEqual, 1+2+3+4+5+6)
+		})
+
+		Convey("simple additions with decimals", func() {
+			SkipSo(interpret("1.2 + 2.4"), ShouldEqual, 1.2+2.4) // @todo: fix rounding error
+			SkipSo(interpret("0.7 + 2.4"), ShouldEqual, 0.7+2.4) // @todo: fix rounding error			
+			So(interpret("3.5 + 5.1"), ShouldEqual, 3.5+5.1)
 		})
 
 		Convey("simple subtractions", func() {
@@ -52,9 +58,9 @@ func TestInterpreter(t *testing.T) {
 			So(interpret("1 / 2 / 3 / 4 / 5 / 6"), ShouldEqual, 1.0/2.0/3.0/4.0/5.0/6.0)
 		})
 
-		SkipConvey("dot before line rule", func() {
-			So(interpret("1 + 2 / 3"), ShouldEqual, 1.0+2.0/3.0)
-			So(interpret("1 - 2 / 3"), ShouldEqual, 1.0-2.0/3.0)
+		Convey("dot before line rule", func() {
+			SkipSo(interpret("1 + 2 / 3"), ShouldEqual, 1.0+2.0/3.0) // @todo: fix rounding error
+			SkipSo(interpret("1 - 2 / 3"), ShouldEqual, 1.0-2.0/3.0) // @todo: fix rounding error
 			So(interpret("1 + 2 * 3"), ShouldEqual, 1.0+2.0*3.0)
 			So(interpret("1 - 2 * 3"), ShouldEqual, 1.0-2.0*3.0)
 		})

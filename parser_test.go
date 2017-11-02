@@ -149,6 +149,27 @@ func TestParser(t *testing.T) {
 			})
 		})
 
+		Convey("addition with decimals", func() {
+			So(parse("1.2 + 2.4"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node {
+					Type: calcgo.NAddition,
+					Value: "+",
+					Childs: []*calcgo.Node {
+						&calcgo.Node {
+							Type: calcgo.NDecimal,
+							Value: "1.2",
+							Childs: nil,
+						},
+						&calcgo.Node {
+							Type: calcgo.NDecimal,
+							Value: "2.4",
+							Childs: nil,
+						},	
+					},
+				},
+			})
+		})
+
 		Convey("subtractions", func() {
 			So(parse("1 - 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node {

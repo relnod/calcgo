@@ -71,7 +71,7 @@ func getNummberToken(str string, i int) (Token, int) {
 	var token Token
 
 	var number string
-	var isDecimal bool = false
+	isDecimal := false
 	for i < len(str) {
 		switch str[i] {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':

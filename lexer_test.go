@@ -149,6 +149,9 @@ func TestLexer(t *testing.T) {
 			So(calcgo.Lex("12.3456"), shouldEqualToken, []calcgo.Token{
 				calcgo.Token{Value: "12.3456", Type: calcgo.TDecimal},
 			})
+			So(calcgo.Lex("0.3456"), shouldEqualToken, []calcgo.Token{
+				calcgo.Token{Value: "0.3456", Type: calcgo.TDecimal},
+			})
 		})
 
 		Convey("wrong number", func() {
@@ -247,6 +250,14 @@ func TestLexer(t *testing.T) {
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},			
 			calcgo.Token{Value: "/", Type: calcgo.TOperatorDiv},
 			calcgo.Token{Value: "2", Type: calcgo.TInteger},			
+		})
+	})
+
+	Convey("works with decimals and plus", t, func() {
+		So(calcgo.Lex("1.2 + 2.4"), shouldEqualToken, []calcgo.Token{
+			calcgo.Token{Value: "1.2", Type: calcgo.TDecimal},
+			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
+			calcgo.Token{Value: "2.4", Type: calcgo.TDecimal},
 		})
 	})
 }

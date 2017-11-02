@@ -67,7 +67,7 @@ func numberOrLeftBracket(ast AST, tokens []Token, i int, current *Node) AST {
 		current.Childs = append(current.Childs, node)
 	case TDecimal:
 		node := &Node{NDecimal, tokens[i].Value, nil}
-		ast.Node = node
+		current.Childs = append(current.Childs, node)
 	}
 
 	i++
