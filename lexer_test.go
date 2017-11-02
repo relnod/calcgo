@@ -11,7 +11,7 @@ type Tokens []calcgo.Token
 
 func tokenTypeToString(tokenType calcgo.TokenType) string {
 	switch calcgo.TokenType(tokenType) {
-	case calcgo.TNumber: 
+	case calcgo.TInteger: 
 		return "Number"
 	case calcgo.TOperatorPlus: 
 		return "Plus"
@@ -99,43 +99,55 @@ func TestLexer(t *testing.T) {
 	Convey("works with numbers", t, func() {
 		Convey("single digit", func() {
 			So(calcgo.Lex("0"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "0", Type: calcgo.TNumber},
+				calcgo.Token{Value: "0", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("1"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "1", Type: calcgo.TNumber},
+				calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("2"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "2", Type: calcgo.TNumber},
+				calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("3"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "3", Type: calcgo.TNumber},
+				calcgo.Token{Value: "3", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("4"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "4", Type: calcgo.TNumber},
+				calcgo.Token{Value: "4", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("5"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "5", Type: calcgo.TNumber},
+				calcgo.Token{Value: "5", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("6"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "6", Type: calcgo.TNumber},
+				calcgo.Token{Value: "6", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("7"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "7", Type: calcgo.TNumber},
+				calcgo.Token{Value: "7", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("8"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "8", Type: calcgo.TNumber},
+				calcgo.Token{Value: "8", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("9"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "9", Type: calcgo.TNumber},
+				calcgo.Token{Value: "9", Type: calcgo.TInteger},
 			})
 		})
 
 		Convey("multiple digits", func() {
 			So(calcgo.Lex("10"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "10", Type: calcgo.TNumber},
+				calcgo.Token{Value: "10", Type: calcgo.TInteger},
 			})
 			So(calcgo.Lex("10123"), shouldEqualToken, []calcgo.Token{
-				calcgo.Token{Value: "10123", Type: calcgo.TNumber},
+				calcgo.Token{Value: "10123", Type: calcgo.TInteger},
+			})
+		})
+
+		Convey("decimals", func() {
+			So(calcgo.Lex("1.0"), shouldEqualToken, []calcgo.Token{
+				calcgo.Token{Value: "1.0", Type: calcgo.TDecimal},
+			})
+			So(calcgo.Lex("10.1"), shouldEqualToken, []calcgo.Token{
+				calcgo.Token{Value: "10.1", Type: calcgo.TDecimal},
+			})
+			So(calcgo.Lex("12.3456"), shouldEqualToken, []calcgo.Token{
+				calcgo.Token{Value: "12.3456", Type: calcgo.TDecimal},
 			})
 		})
 
@@ -193,7 +205,7 @@ func TestLexer(t *testing.T) {
 			calcgo.Token{Value: "%", Type: calcgo.TInvalidCharacter},			
 		})
 		So(calcgo.Lex("1 + a"), shouldEqualToken, []calcgo.Token{
-			calcgo.Token{Value: "1", Type: calcgo.TNumber},
+			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},			
 			calcgo.Token{Value: "a", Type: calcgo.TInvalidCharacter},						
 		})
@@ -201,40 +213,40 @@ func TestLexer(t *testing.T) {
 
 	Convey("works with mixed types", t, func() {
 		So(calcgo.Lex("1 + 2"), shouldEqualToken, []calcgo.Token{
-			calcgo.Token{Value: "1", Type: calcgo.TNumber},
+			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},		
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},		
 		})
 		So(calcgo.Lex("1 + 2 + 3 + 4"), shouldEqualToken, []calcgo.Token{
-			calcgo.Token{Value: "1", Type: calcgo.TNumber},
+			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "3", Type: calcgo.TNumber},
+			calcgo.Token{Value: "3", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "4", Type: calcgo.TNumber},
+			calcgo.Token{Value: "4", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("(1 + 2) * 2"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "(", Type: calcgo.TLeftBracket},
-			calcgo.Token{Value: "1", Type: calcgo.TNumber},
+			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},
 			calcgo.Token{Value: "*", Type: calcgo.TOperatorMult},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},			
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},			
 		})
 		So(calcgo.Lex("(2 * (1 + 2)) / 2"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "(", Type: calcgo.TLeftBracket},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: "*", Type: calcgo.TOperatorMult},
 			calcgo.Token{Value: "(", Type: calcgo.TLeftBracket},
-			calcgo.Token{Value: "1", Type: calcgo.TNumber},
+			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},			
 			calcgo.Token{Value: "/", Type: calcgo.TOperatorDiv},
-			calcgo.Token{Value: "2", Type: calcgo.TNumber},			
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},			
 		})
 	})
 }

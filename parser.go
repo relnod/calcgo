@@ -13,16 +13,18 @@ type Node struct {
 type NodeType uint
 
 const (
-	NNumber NodeType = iota
-	NAddition NodeType = iota
-	NSubtraction NodeType = iota
+	NInteger        NodeType = iota
+	NDecimal        NodeType = iota	
+	NAddition       NodeType = iota
+	NSubtraction    NodeType = iota
 	NMultiplication NodeType = iota
-	NDivision NodeType = iota
+	NDivision       NodeType = iota
 )
 
 func isOperator(op NodeType) bool {
-	return op > NNumber
+	return op > NDecimal
 }
+
 func isHigherOperator(op1 NodeType, op2 NodeType) bool {
 	return op1 < op2
 }
@@ -42,9 +44,12 @@ func numberOrLeftBracketEntry(ast AST, tokens []Token, i int, current *Node) AST
 	}
 
 	switch tokens[i].Type {
-	case TNumber:
-		node := &Node{NNumber, tokens[i].Value, nil}
-		ast.Node = node	
+	case TInteger:
+		node := &Node{NInteger, tokens[i].Value, nil}
+		ast.Node = node
+	case TDecimal:
+		node := &Node{NDecimal, tokens[i].Value, nil}
+		ast.Node = node
 	}
 
 	i++
@@ -57,9 +62,12 @@ func numberOrLeftBracket(ast AST, tokens []Token, i int, current *Node) AST {
 	}
 
 	switch tokens[i].Type {
-	case TNumber:
-		node := &Node{NNumber, tokens[i].Value, nil}
+	case TInteger:
+		node := &Node{NInteger, tokens[i].Value, nil}
 		current.Childs = append(current.Childs, node)
+	case TDecimal:
+		node := &Node{NDecimal, tokens[i].Value, nil}
+		ast.Node = node
 	}
 
 	i++

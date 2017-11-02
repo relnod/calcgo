@@ -77,7 +77,7 @@ func parse(str string) calcgo.AST {
 }
 
 func TestParser(t *testing.T) {
-	Convey("works with", t, func() {
+	Convey("Parser works with", t, func() {
 		Convey("nothing", func() {
 			So(parse(""), shouldEqualAST, calcgo.AST{})
 		})
@@ -85,8 +85,15 @@ func TestParser(t *testing.T) {
 		Convey("simple numbers", func() {
 			So(parse("20"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node {
-					Type: calcgo.NNumber,
+					Type: calcgo.NInteger,
 					Value: "20",
+					Childs: nil,
+				},
+			})
+			So(parse("20.23"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node {
+					Type: calcgo.NDecimal,
+					Value: "20.23",
 					Childs: nil,
 				},
 			})
@@ -99,12 +106,12 @@ func TestParser(t *testing.T) {
 					Value: "+",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "2",
 							Childs: nil,
 						},	
@@ -121,19 +128,19 @@ func TestParser(t *testing.T) {
 							Value: "+",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "1",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "3",
 							Childs: nil,
 						},	
@@ -149,12 +156,12 @@ func TestParser(t *testing.T) {
 					Value: "-",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "2",
 							Childs: nil,
 						},	
@@ -171,19 +178,19 @@ func TestParser(t *testing.T) {
 							Value: "-",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "1",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "3",
 							Childs: nil,
 						},	
@@ -199,12 +206,12 @@ func TestParser(t *testing.T) {
 					Value: "*",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "2",
 							Childs: nil,
 						},	
@@ -221,19 +228,19 @@ func TestParser(t *testing.T) {
 							Value: "*",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "1",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "3",
 							Childs: nil,
 						},	
@@ -249,12 +256,12 @@ func TestParser(t *testing.T) {
 					Value: "/",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "2",
 							Childs: nil,
 						},	
@@ -271,19 +278,19 @@ func TestParser(t *testing.T) {
 							Value: "/",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "1",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},	
 							},
 						},
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "3",
 							Childs: nil,
 						},	
@@ -299,7 +306,7 @@ func TestParser(t *testing.T) {
 					Value: "+",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
@@ -308,12 +315,12 @@ func TestParser(t *testing.T) {
 							Value: "*",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "3",
 									Childs: nil,
 								},	
@@ -328,7 +335,7 @@ func TestParser(t *testing.T) {
 					Value: "-",
 					Childs: []*calcgo.Node {
 						&calcgo.Node {
-							Type: calcgo.NNumber,
+							Type: calcgo.NInteger,
 							Value: "1",
 							Childs: nil,
 						},
@@ -337,12 +344,12 @@ func TestParser(t *testing.T) {
 							Value: "/",
 							Childs: []*calcgo.Node {
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "2",
 									Childs: nil,
 								},
 								&calcgo.Node {
-									Type: calcgo.NNumber,
+									Type: calcgo.NInteger,
 									Value: "3",
 									Childs: nil,
 								},	

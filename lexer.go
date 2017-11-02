@@ -4,7 +4,8 @@ package calcgo
 type TokenType uint
 
 const (
-	TNumber                   TokenType = iota
+	TInteger                  TokenType = iota
+	TDecimal                  TokenType = iota	
 	TOperatorPlus             TokenType = iota
 	TOperatorMinus            TokenType = iota
 	TOperatorMult             TokenType = iota
@@ -70,10 +71,14 @@ func getNummberToken(str string, i int) (Token, int) {
 	var token Token
 
 	var number string
+	var isDecimal bool = false
 	for i < len(str) {
 		switch str[i] {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			number += string(str[i])
+		case '.':
+			number += string(str[i])
+			isDecimal = true
 		case ' ':
 			goto endNumberToken
 		case ')':
@@ -86,7 +91,14 @@ func getNummberToken(str string, i int) (Token, int) {
 	}
 
 endNumberToken:
-	token = Token{TNumber, number}
+	var tokenType TokenType
+	if isDecimal {
+		tokenType = TDecimal
+	} else {
+		tokenType = TInteger
+	}
+
+	token = Token{tokenType, number}
 
 	return token, i
 }

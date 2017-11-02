@@ -23,6 +23,11 @@ func TestInterpreter(t *testing.T) {
 			So(interpret("12345"), ShouldEqual, 12345)
 		})
 
+		Convey("simple decimals", func() {
+			So(interpret("1.0"), ShouldEqual, 1.0)
+			So(interpret("1234.5678"), ShouldEqual, 1234.5678)
+		})
+
 		Convey("simple additions", func() {
 			So(interpret("1 + 1"), ShouldEqual, 2)
 			So(interpret("3 + 5"), ShouldEqual, 3+5)
