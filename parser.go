@@ -5,20 +5,21 @@ type AST struct {
 }
 
 type Node struct {
-	Type NodeType `json:"type"`
-	Value string `json:"value"`
-	Childs []*Node `json:"childs"`
+	Type   NodeType `json:"type"`
+	Value  string   `json:"value"`
+	Childs []*Node  `json:"childs"`
 }
 
 type NodeType uint
 
 const (
 	NInteger        NodeType = iota
-	NDecimal        NodeType = iota	
+	NDecimal        NodeType = iota
 	NAddition       NodeType = iota
 	NSubtraction    NodeType = iota
 	NMultiplication NodeType = iota
 	NDivision       NodeType = iota
+	NError          NodeType = iota
 )
 
 func isOperator(op NodeType) bool {
@@ -29,79 +30,136 @@ func isHigherOperator(op1 NodeType, op2 NodeType) bool {
 	return op1 < op2
 }
 
-func Parse(tokens []Token) AST {
-	var ast AST
-	var current *Node
+func getNumberNodeType(token TokenType) NodeType {
+	switch token {
+	case TInteger:
+		return NInteger
+	case TDecimal:
+		return NDecimal
+	}
 
-	ast = numberOrLeftBracketEntry(ast, tokens, 0, current)
+	return NError
+}
+
+func getOperatorNodeType(token TokenType) NodeType {
+	switch token {
+	case TOperatorPlus:
+		return NAddition
+	case TOperatorMinus:
+		return NSubtraction
+	case TOperatorMult:
+		return NMultiplication
+	case TOperatorDiv:
+		return NDivision
+	}
+
+	return NError
+}
+
+func Parse(tokens []Token) AST {
+	var topNode *Node
+	var current *Node
+	var i int
+
+	topNode, i = numberOrLeftBracketEntry(topNode, tokens, -1, current)
+	if i > 0 {
+		// @todo
+	}
+
+	ast := AST{topNode}
 
 	return ast
 }
 
-func numberOrLeftBracketEntry(ast AST, tokens []Token, i int, current *Node) AST {
-	if i == len(tokens) {
-		return ast
-	}
-
-	switch tokens[i].Type {
-	case TInteger:
-		node := &Node{NInteger, tokens[i].Value, nil}
-		ast.Node = node
-	case TDecimal:
-		node := &Node{NDecimal, tokens[i].Value, nil}
-		ast.Node = node
-	}
-
+func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
 	i++
-	return operator(ast, tokens, i, current)
-}
-
-func numberOrLeftBracket(ast AST, tokens []Token, i int, current *Node) AST {
 	if i == len(tokens) {
-		return ast
+		return topNode, i
+	}
+	
+	if tokens[i].Type == TLeftBracket {
+		topNode, i := numberOrLeftBracketEntry(topNode, tokens, i, current)
+
+		return operatorAfterRightBracket(topNode, tokens, i, current)
 	}
 
-	switch tokens[i].Type {
-	case TInteger:
-		node := &Node{NInteger, tokens[i].Value, nil}
-		current.Childs = append(current.Childs, node)
-	case TDecimal:
-		node := &Node{NDecimal, tokens[i].Value, nil}
-		current.Childs = append(current.Childs, node)
-	}
+	nodeType := getNumberNodeType(tokens[i].Type)
 
-	i++
-	return operator(ast, tokens, i, current)
-}
-
-func operator(ast AST, tokens []Token, i int, current *Node) AST {
-	if i == len(tokens) {
-		return ast
-	}
-
-	var nodeType NodeType
-
-	switch tokens[i].Type {
-	case TOperatorPlus:
-		nodeType = NAddition
-	case TOperatorMinus:
-		nodeType = NSubtraction
-	case TOperatorMult:
-		nodeType = NMultiplication
-	case TOperatorDiv:
-		nodeType = NDivision
-	}
+	//@todo: handle wrong node type		
 
 	node := &Node{nodeType, tokens[i].Value, nil}
-	if isOperator(ast.Node.Type) && isHigherOperator(ast.Node.Type, nodeType) {
-		node.Childs = []*Node{ast.Node.Childs[1]}
-		ast.Node.Childs[1] = node
-	} else {
-		node.Childs = []*Node{ast.Node}
-		ast.Node = node
+	topNode = node
+
+	return operator(topNode, tokens, i, current)
+}
+
+func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
+	i++
+	if i == len(tokens) {
+		return topNode, i
 	}
 
-	current = node
+	if tokens[i].Type == TLeftBracket {
+		topNodeNested := topNode
+		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
+		topNode.Childs = append(topNode.Childs, rightNode)
+
+		return operatorAfterRightBracket(topNode, tokens, i, current)
+	}
+	
+	nodeType := getNumberNodeType(tokens[i].Type)
+
+	//@todo: handle wrong node type		
+
+	node := &Node{nodeType, tokens[i].Value, nil}
+	current.Childs = append(current.Childs, node)
+
+	return operator(topNode, tokens, i, current)
+}
+
+func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
 	i++
-	return numberOrLeftBracket(ast, tokens, i, current)
+	if i == len(tokens) {
+		return topNode, i
+	}
+
+	if tokens[i].Type == TRightBracket {
+		return topNode, i
+	}
+
+	nodeType := getOperatorNodeType(tokens[i].Type)
+
+	// @todo: handle wrong node type
+
+	node := &Node{nodeType, tokens[i].Value, nil}
+	if isOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
+		node.Childs = []*Node{topNode.Childs[1]}
+		topNode.Childs[1] = node
+	} else {
+		node.Childs = []*Node{topNode}
+		topNode = node
+	}
+
+	return numberOrLeftBracket(topNode, tokens, i, node)
+}
+
+func operatorAfterRightBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
+	i++
+	if i == len(tokens) {
+		return topNode, i
+	}
+
+	if tokens[i].Type == TRightBracket {
+		return topNode, i
+	}
+
+	nodeType := getOperatorNodeType(tokens[i].Type)
+
+	// @todo: hanndle wrong node type
+
+	node := &Node{nodeType, tokens[i].Value, nil}
+	node.Childs = []*Node{topNode}
+	topNode = node
+
+	return numberOrLeftBracket(topNode, tokens, i, node)
 }

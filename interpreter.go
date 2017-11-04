@@ -27,7 +27,6 @@ func calculateNode(node *Node) float64 {
 	c2 := calculateNode(node.Childs[1])
 
 	switch(node.Type) {
-	case NInteger:
 	case NAddition:
 		return c1 + c2
 	case NSubtraction:
