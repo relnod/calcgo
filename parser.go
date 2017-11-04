@@ -27,7 +27,15 @@ func isOperator(op NodeType) bool {
 }
 
 func isHigherOperator(op1 NodeType, op2 NodeType) bool {
-	return op1 < op2
+	if op1 <= NSubtraction && op2 <= NSubtraction {
+		return false
+	}
+
+	if op1 > NSubtraction && op2 > NSubtraction {
+		return false
+	}
+
+	return true
 }
 
 func getNumberNodeType(token TokenType) NodeType {
@@ -104,7 +112,7 @@ func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*
 		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
 		topNode.Childs = append(topNode.Childs, rightNode)
 
-		return operatorAfterRightBracket(topNode, tokens, i, current)
+		return operator(topNode, tokens, i, current)
 	}
 	
 	nodeType := getNumberNodeType(tokens[i].Type)
