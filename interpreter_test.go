@@ -64,5 +64,26 @@ func TestInterpreter(t *testing.T) {
 			So(interpret("1 + 2 * 3"), ShouldEqual, 1.0+2.0*3.0)
 			So(interpret("1 - 2 * 3"), ShouldEqual, 1.0-2.0*3.0)
 		})
+
+		Convey("brackets", func() {
+			So(interpret("(1 + 2) / 3"), ShouldEqual, (1.0+2.0)/3.0)
+			So(interpret("(1 - 2) / 3"), ShouldEqual, (1.0-2.0)/3.0)
+			So(interpret("(1 + 2) * 3"), ShouldEqual, (1.0+2.0)*3.0)
+			So(interpret("(1 - 2) * 3"), ShouldEqual, (1.0-2.0)*3.0)
+			So(interpret("2 + (1 - 2) / 3"), ShouldEqual, 2.0 + (1.0-2.0)/3.0)			
+		})
+
+		Convey("nested brackets", func() {
+			So(interpret("((1 + 2) / 3) + 1"), ShouldEqual, ((1.0+2.0)/3.0) + 1)
+			So(interpret("((2 + 3) / (1 + 2)) * 3"), ShouldEqual, ((2.0+3.0) / (1.0+2.0))*3.0)
+			So(interpret("(1 - 2) * (3 - 2) / (1 + 4)"), ShouldEqual, (1.0-2.0)*(3.0-2.0)/(1.0+4.0))
+		})
+
+		Convey("brackets and dot before line rule", func() {
+			So(interpret("1 + (1 + 2) * 3"), ShouldEqual, 1.0+(1.0+2.0)*3.0)
+			So(interpret("1 + (1 + 2) / 3"), ShouldEqual, 1.0+(1.0+2.0)/3.0)
+			So(interpret("1 - (1 + 2) * 3"), ShouldEqual, 1.0-(1.0+2.0)*3.0)
+			So(interpret("1 - (1 + 2) / 3"), ShouldEqual, 1.0-(1.0+2.0)/3.0)			
+		})
 	})
 }
