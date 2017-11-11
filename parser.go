@@ -92,7 +92,7 @@ func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Nod
 	}
 
 	if tokens[i].Type == TLeftBracket {
-		topNode, i := numberOrLeftBracketEntry(topNode, tokens, i, current)
+		topNode, i = numberOrLeftBracketEntry(topNode, tokens, i, current)
 
 		return operatorAfterRightBracket(topNode, tokens, i, current)
 	}
@@ -116,7 +116,7 @@ func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*
 	if tokens[i].Type == TLeftBracket {
 		topNodeNested := topNode
 		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
-		topNode.RightChild = rightNode
+		current.RightChild = rightNode
 
 		return operator(topNode, tokens, i, current)
 	}
@@ -149,6 +149,7 @@ func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) 
 	if isOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
 		node.LeftChild = topNode.RightChild
 		topNode.RightChild = node
+		current = node
 	} else {
 		node.LeftChild = topNode
 		topNode = node

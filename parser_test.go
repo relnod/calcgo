@@ -697,7 +697,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			SkipSo(calcgo.Parse("4 - 6 / (5 + 2)"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("4 - 6 / (5 + 2)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -736,7 +736,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			SkipSo(calcgo.Parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",

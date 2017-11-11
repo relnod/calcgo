@@ -65,11 +65,10 @@ func TestInterpreter(t *testing.T) {
 			So(calcgo.Interpret("2 + (1 - 2) / 3"), ShouldEqual, 2.0+(1.0-2.0)/3.0)
 		})
 
-		SkipConvey("nested brackets", func() {
+		Convey("nested brackets", func() {
 			So(calcgo.Interpret("((1 + 2) / 3) + 1"), ShouldEqual, ((1.0+2.0)/3.0)+1)
 			So(calcgo.Interpret("((2 + 3) / (1 + 2)) * 3"), ShouldEqual, ((2.0+3.0)/(1.0+2.0))*3.0)
 			So(calcgo.Interpret("(1 - 2) * (3 - 2) / (1 + 4)"), ShouldEqual, (1.0-2.0)*(3.0-2.0)/(1.0+4.0))
-			SkipSo(calcgo.Interpret("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), ShouldEqual, (1+2)*3+(4-6/(5+2)))
 		})
 
 		Convey("brackets and dot before line rule", func() {
@@ -77,7 +76,7 @@ func TestInterpreter(t *testing.T) {
 			So(calcgo.Interpret("1 + (1 + 2) / 3"), ShouldEqual, 1.0+(1.0+2.0)/3.0)
 			So(calcgo.Interpret("1 - (1 + 2) * 3"), ShouldEqual, 1.0-(1.0+2.0)*3.0)
 			So(calcgo.Interpret("1 - (1 + 2) / 3"), ShouldEqual, 1.0-(1.0+2.0)/3.0)
+			So(calcgo.Interpret("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), ShouldEqual, (1.0+2.0)*3.0+(4.0-6.0/(5.0+2.0)))
 		})
-
 	})
 }
