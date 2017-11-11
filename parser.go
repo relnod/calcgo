@@ -5,9 +5,10 @@ type AST struct {
 }
 
 type Node struct {
-	Type   NodeType `json:"type"`
-	Value  string   `json:"value"`
-	Childs []*Node  `json:"childs"`
+	Type       NodeType `json:"type"`
+	Value      string   `json:"value"`
+	LeftChild  *Node    `json:"left"`
+	RightChild *Node    `json:"right"`
 }
 
 type NodeType uint
@@ -95,7 +96,7 @@ func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Nod
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil}
+	node := &Node{nodeType, tokens[i].Value, nil, nil}
 	topNode = node
 
 	return operator(topNode, tokens, i, current)
@@ -110,7 +111,7 @@ func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*
 	if tokens[i].Type == TLeftBracket {
 		topNodeNested := topNode
 		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
-		topNode.Childs = append(topNode.Childs, rightNode)
+		topNode.RightChild = rightNode
 
 		return operator(topNode, tokens, i, current)
 	}
@@ -119,8 +120,8 @@ func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil}
-	current.Childs = append(current.Childs, node)
+	node := &Node{nodeType, tokens[i].Value, nil, nil}
+	current.RightChild = node
 
 	return operator(topNode, tokens, i, current)
 }
@@ -139,12 +140,12 @@ func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) 
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil}
+	node := &Node{nodeType, tokens[i].Value, nil, nil}
 	if isOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
-		node.Childs = []*Node{topNode.Childs[1]}
-		topNode.Childs[1] = node
+		node.LeftChild = topNode.RightChild
+		topNode.RightChild = node
 	} else {
-		node.Childs = []*Node{topNode}
+		node.LeftChild = topNode
 		topNode = node
 	}
 
@@ -165,8 +166,8 @@ func operatorAfterRightBracket(topNode *Node, tokens []Token, i int, current *No
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil}
-	node.Childs = []*Node{topNode}
+	node := &Node{nodeType, tokens[i].Value, nil, nil}
+	node.LeftChild = topNode
 	topNode = node
 
 	return numberOrLeftBracket(topNode, tokens, i, node)

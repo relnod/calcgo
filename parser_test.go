@@ -47,14 +47,12 @@ func eqNodes(n1, n2 *calcgo.Node) bool {
 		return false
 	}
 
-	if len(n1.Childs) != len(n2.Childs) {
+	if !eqNodes(n1.LeftChild, n2.LeftChild) {
 		return false
 	}
 
-	for i := 0; i < len(n1.Childs); i++ {
-		if !eqNodes(n1.Childs[i], n2.Childs[i]) {
-			return false
-		}
+	if !eqNodes(n1.RightChild, n2.RightChild) {
+		return false
 	}
 
 	return true
@@ -86,16 +84,18 @@ func TestParser(t *testing.T) {
 		Convey("simple numbers", func() {
 			So(parse("20"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
-					Type:   calcgo.NInteger,
-					Value:  "20",
-					Childs: nil,
+					Type:       calcgo.NInteger,
+					Value:      "20",
+					LeftChild:  nil,
+					RightChild: nil,
 				},
 			})
 			So(parse("20.23"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
-					Type:   calcgo.NDecimal,
-					Value:  "20.23",
-					Childs: nil,
+					Type:       calcgo.NDecimal,
+					Value:      "20.23",
+					LeftChild:  nil,
+					RightChild: nil,
 				},
 			})
 		})
@@ -105,17 +105,17 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -123,28 +123,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NAddition,
-							Value: "+",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NAddition,
+						Value: "+",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -155,17 +154,17 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NDecimal,
-							Value:  "1.2",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NDecimal,
-							Value:  "2.4",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NDecimal,
+						Value:      "1.2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NDecimal,
+						Value:      "2.4",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -176,17 +175,17 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -194,28 +193,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NSubtraction,
-							Value: "-",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NSubtraction,
+						Value: "-",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -226,17 +224,17 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -244,28 +242,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -276,17 +273,17 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -294,28 +291,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NDivision,
-							Value: "/",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NDivision,
+						Value: "/",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -326,27 +322,26 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "3",
-									Childs: nil,
-								},
-							},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "3",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -355,27 +350,26 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NDivision,
+						Value: "/",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:  calcgo.NDivision,
-							Value: "/",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "3",
-									Childs: nil,
-								},
-							},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "3",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -385,28 +379,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "3",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "3",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -415,26 +408,27 @@ func TestParser(t *testing.T) {
 		Convey("brackets", func() {
 			So(parse("(1)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
-					Type:   calcgo.NInteger,
-					Value:  "1",
-					Childs: nil,
+					Type:       calcgo.NInteger,
+					Value:      "1",
+					LeftChild:  nil,
+					RightChild: nil,
 				},
 			})
 			So(parse("(1 - 2)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -442,28 +436,27 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NSubtraction,
-							Value: "-",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NSubtraction,
+						Value: "-",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -471,27 +464,26 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NSubtraction,
+						Value: "-",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:  calcgo.NSubtraction,
-							Value: "-",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -500,39 +492,37 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "3",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:  calcgo.NSubtraction,
-									Value: "-",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "1",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "3",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:  calcgo.NSubtraction,
+							Value: "-",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "4",
-							Childs: nil,
-						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "4",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -541,26 +531,27 @@ func TestParser(t *testing.T) {
 		Convey("nested brackets", func() {
 			So(parse("((1))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
-					Type:   calcgo.NInteger,
-					Value:  "1",
-					Childs: nil,
+					Type:       calcgo.NInteger,
+					Value:      "1",
+					LeftChild:  nil,
+					RightChild: nil,
 				},
 			})
 			So(parse("((1 - 2))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "2",
-							Childs: nil,
-						},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -568,27 +559,26 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NSubtraction,
+						Value: "-",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:  calcgo.NSubtraction,
-							Value: "-",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "1",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "2",
-									Childs: nil,
-								},
-							},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -600,38 +590,36 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:  calcgo.NDivision,
-							Value: "/",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:  calcgo.NSubtraction,
-									Value: "-",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "1",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "4",
-									Childs: nil,
-								},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NDivision,
+						Value: "/",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NSubtraction,
+							Value: "-",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "4",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -641,38 +629,36 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "3",
-							Childs: nil,
-						},
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:  calcgo.NAddition,
-									Value: "+",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "1",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "4",
-									Childs: nil,
-								},
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NAddition,
+							Value: "+",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "4",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
 					},
 				},
@@ -682,39 +668,37 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:  calcgo.NAddition,
-									Value: "+",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "1",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "4",
-									Childs: nil,
-								},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NAddition,
+							Value: "+",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
 						},
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "1",
-							Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "4",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
 					},
 				},
 			})
@@ -723,37 +707,35 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:   calcgo.NInteger,
-							Value:  "4",
-							Childs: nil,
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "4",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NDivision,
+						Value: "/",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "6",
+							LeftChild:  nil,
+							RightChild: nil,
 						},
-						&calcgo.Node{
-							Type:  calcgo.NDivision,
-							Value: "/",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "6",
-									Childs: nil,
-								},
-								&calcgo.Node{
-									Type:  calcgo.NAddition,
-									Value: "+",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "5",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
+						RightChild: &calcgo.Node{
+							Type:  calcgo.NAddition,
+							Value: "+",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "5",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
 						},
 					},
@@ -764,69 +746,64 @@ func TestParser(t *testing.T) {
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
-					Childs: []*calcgo.Node{
-						&calcgo.Node{
-							Type:  calcgo.NMultiplication,
-							Value: "*",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:  calcgo.NAddition,
-									Value: "+",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "1",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "2",
-											Childs: nil,
-										},
-									},
-								},
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "3",
-									Childs: nil,
-								},
+					LeftChild: &calcgo.Node{
+						Type:  calcgo.NMultiplication,
+						Value: "*",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NAddition,
+							Value: "+",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "2",
+								LeftChild:  nil,
+								RightChild: nil,
 							},
 						},
-						&calcgo.Node{
-							Type:  calcgo.NSubtraction,
-							Value: "-",
-							Childs: []*calcgo.Node{
-								&calcgo.Node{
-									Type:   calcgo.NInteger,
-									Value:  "4",
-									Childs: nil,
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "3",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+					RightChild: &calcgo.Node{
+						Type:  calcgo.NSubtraction,
+						Value: "-",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "4",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:  calcgo.NDivision,
+							Value: "/",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "6",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:  calcgo.NAddition,
+								Value: "+",
+								LeftChild: &calcgo.Node{
+									Type:       calcgo.NInteger,
+									Value:      "5",
+									LeftChild:  nil,
+									RightChild: nil,
 								},
-								&calcgo.Node{
-									Type:  calcgo.NDivision,
-									Value: "/",
-									Childs: []*calcgo.Node{
-										&calcgo.Node{
-											Type:   calcgo.NInteger,
-											Value:  "6",
-											Childs: nil,
-										},
-										&calcgo.Node{
-											Type:  calcgo.NAddition,
-											Value: "+",
-											Childs: []*calcgo.Node{
-												&calcgo.Node{
-													Type:   calcgo.NInteger,
-													Value:  "5",
-													Childs: nil,
-												},
-												&calcgo.Node{
-													Type:   calcgo.NInteger,
-													Value:  "2",
-													Childs: nil,
-												},
-											},
-										},
-									},
+								RightChild: &calcgo.Node{
+									Type:       calcgo.NInteger,
+									Value:      "2",
+									LeftChild:  nil,
+									RightChild: nil,
 								},
 							},
 						},

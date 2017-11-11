@@ -31,8 +31,12 @@ func calculateNode(node *Node) float64 {
 		return decimal
 	}
 
-	c1 := calculateNode(node.Childs[0])
-	c2 := calculateNode(node.Childs[1])
+	if node.LeftChild == nil || node.RightChild == nil {
+		return -1 // @todo correct error handling
+	}
+
+	c1 := calculateNode(node.LeftChild)
+	c2 := calculateNode(node.RightChild)
 
 	switch node.Type {
 	case NAddition:
