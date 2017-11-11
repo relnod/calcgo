@@ -13,13 +13,13 @@ type Node struct {
 type NodeType uint
 
 const (
-	NInteger        NodeType = iota
-	NDecimal        NodeType = iota
-	NAddition       NodeType = iota
-	NSubtraction    NodeType = iota
-	NMultiplication NodeType = iota
-	NDivision       NodeType = iota
-	NError          NodeType = iota
+	NError NodeType = iota
+	NInteger
+	NDecimal
+	NAddition
+	NSubtraction
+	NMultiplication
+	NDivision
 )
 
 func isOperator(op NodeType) bool {
@@ -35,7 +35,7 @@ func isHigherOperator(op1 NodeType, op2 NodeType) bool {
 		return false
 	}
 
-	return true
+	return op1 < op2
 }
 
 func getNumberNodeType(token TokenType) NodeType {
@@ -84,7 +84,7 @@ func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Nod
 	if i == len(tokens) {
 		return topNode, i
 	}
-	
+
 	if tokens[i].Type == TLeftBracket {
 		topNode, i := numberOrLeftBracketEntry(topNode, tokens, i, current)
 
@@ -93,7 +93,7 @@ func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Nod
 
 	nodeType := getNumberNodeType(tokens[i].Type)
 
-	//@todo: handle wrong node type		
+	//@todo: handle wrong node type
 
 	node := &Node{nodeType, tokens[i].Value, nil}
 	topNode = node
@@ -114,10 +114,10 @@ func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*
 
 		return operator(topNode, tokens, i, current)
 	}
-	
+
 	nodeType := getNumberNodeType(tokens[i].Type)
 
-	//@todo: handle wrong node type		
+	//@todo: handle wrong node type
 
 	node := &Node{nodeType, tokens[i].Value, nil}
 	current.Childs = append(current.Childs, node)
@@ -163,7 +163,7 @@ func operatorAfterRightBracket(topNode *Node, tokens []Token, i int, current *No
 
 	nodeType := getOperatorNodeType(tokens[i].Type)
 
-	// @todo: hanndle wrong node type
+	// @todo: handle wrong node type
 
 	node := &Node{nodeType, tokens[i].Value, nil}
 	node.Childs = []*Node{topNode}

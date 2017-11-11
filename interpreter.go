@@ -2,12 +2,20 @@ package calcgo
 
 import "strconv"
 
-func Interpret(ast AST) float64 {
+func Interpret(str string) float64 {
+	tokens := Lex(str)
+	ast := Parse(tokens)
+	number := InterpretAST(ast)
+
+	return number
+}
+
+func InterpretAST(ast AST) float64 {
 	return calculateNode(ast.Node)
 }
 
 func calculateNode(node *Node) float64 {
-	switch(node.Type) {
+	switch node.Type {
 	case NInteger:
 		integer, err := strconv.Atoi(node.Value)
 		if err != nil {
@@ -26,7 +34,7 @@ func calculateNode(node *Node) float64 {
 	c1 := calculateNode(node.Childs[0])
 	c2 := calculateNode(node.Childs[1])
 
-	switch(node.Type) {
+	switch node.Type {
 	case NAddition:
 		return c1 + c2
 	case NSubtraction:
@@ -36,6 +44,6 @@ func calculateNode(node *Node) float64 {
 	case NDivision:
 		return c1 / c2
 	}
-	
+
 	return 0
 }

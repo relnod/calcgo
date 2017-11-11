@@ -4,16 +4,16 @@ package calcgo
 type TokenType uint
 
 const (
-	TInteger                  TokenType = iota
-	TDecimal                  TokenType = iota	
-	TOperatorPlus             TokenType = iota
-	TOperatorMinus            TokenType = iota
-	TOperatorMult             TokenType = iota
-	TOperatorDiv              TokenType = iota
-	TLeftBracket              TokenType = iota
-	TRightBracket             TokenType = iota
-	TInvalidCharacter         TokenType = iota
-	TInvalidCharacterInNumber TokenType = iota
+	TInteger TokenType = iota
+	TDecimal
+	TOperatorPlus
+	TOperatorMinus
+	TOperatorMult
+	TOperatorDiv
+	TLeftBracket
+	TRightBracket
+	TInvalidCharacter
+	TInvalidCharacterInNumber
 )
 
 type Token struct {

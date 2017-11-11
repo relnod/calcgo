@@ -381,6 +381,35 @@ func TestParser(t *testing.T) {
 				},
 			})
 
+			So(parse("2 * 3 + 1"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "+",
+					Childs: []*calcgo.Node{
+						&calcgo.Node{
+							Type:  calcgo.NMultiplication,
+							Value: "*",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "2",
+									Childs: nil,
+								},
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "3",
+									Childs: nil,
+								},
+							},
+						},
+						&calcgo.Node{
+							Type:   calcgo.NInteger,
+							Value:  "1",
+							Childs: nil,
+						},
+					},
+				},
+			})
 		})
 
 		Convey("brackets", func() {
@@ -566,7 +595,7 @@ func TestParser(t *testing.T) {
 			})
 		})
 
-		Convey("Brackets wir dot before line rule", func() {
+		Convey("Brackets with dot before line rule", func() {
 			So(parse("3 + (1 - 2) / 4"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
@@ -601,6 +630,203 @@ func TestParser(t *testing.T) {
 									Type:   calcgo.NInteger,
 									Value:  "4",
 									Childs: nil,
+								},
+							},
+						},
+					},
+				},
+			})
+
+			So(parse("3 + (1 + 2) * 4"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "+",
+					Childs: []*calcgo.Node{
+						&calcgo.Node{
+							Type:   calcgo.NInteger,
+							Value:  "3",
+							Childs: nil,
+						},
+						&calcgo.Node{
+							Type:  calcgo.NMultiplication,
+							Value: "*",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:  calcgo.NAddition,
+									Value: "+",
+									Childs: []*calcgo.Node{
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "1",
+											Childs: nil,
+										},
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "2",
+											Childs: nil,
+										},
+									},
+								},
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "4",
+									Childs: nil,
+								},
+							},
+						},
+					},
+				},
+			})
+
+			So(parse("(1 + 2) * 4 + 1"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "+",
+					Childs: []*calcgo.Node{
+						&calcgo.Node{
+							Type:  calcgo.NMultiplication,
+							Value: "*",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:  calcgo.NAddition,
+									Value: "+",
+									Childs: []*calcgo.Node{
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "1",
+											Childs: nil,
+										},
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "2",
+											Childs: nil,
+										},
+									},
+								},
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "4",
+									Childs: nil,
+								},
+							},
+						},
+						&calcgo.Node{
+							Type:   calcgo.NInteger,
+							Value:  "1",
+							Childs: nil,
+						},
+					},
+				},
+			})
+
+			SkipSo(parse("4 - 6 / (5 + 2)"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NSubtraction,
+					Value: "-",
+					Childs: []*calcgo.Node{
+						&calcgo.Node{
+							Type:   calcgo.NInteger,
+							Value:  "4",
+							Childs: nil,
+						},
+						&calcgo.Node{
+							Type:  calcgo.NDivision,
+							Value: "/",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "6",
+									Childs: nil,
+								},
+								&calcgo.Node{
+									Type:  calcgo.NAddition,
+									Value: "+",
+									Childs: []*calcgo.Node{
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "5",
+											Childs: nil,
+										},
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "2",
+											Childs: nil,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			})
+
+			SkipSo(parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "+",
+					Childs: []*calcgo.Node{
+						&calcgo.Node{
+							Type:  calcgo.NMultiplication,
+							Value: "*",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:  calcgo.NAddition,
+									Value: "+",
+									Childs: []*calcgo.Node{
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "1",
+											Childs: nil,
+										},
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "2",
+											Childs: nil,
+										},
+									},
+								},
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "3",
+									Childs: nil,
+								},
+							},
+						},
+						&calcgo.Node{
+							Type:  calcgo.NSubtraction,
+							Value: "-",
+							Childs: []*calcgo.Node{
+								&calcgo.Node{
+									Type:   calcgo.NInteger,
+									Value:  "4",
+									Childs: nil,
+								},
+								&calcgo.Node{
+									Type:  calcgo.NDivision,
+									Value: "/",
+									Childs: []*calcgo.Node{
+										&calcgo.Node{
+											Type:   calcgo.NInteger,
+											Value:  "6",
+											Childs: nil,
+										},
+										&calcgo.Node{
+											Type:  calcgo.NAddition,
+											Value: "+",
+											Childs: []*calcgo.Node{
+												&calcgo.Node{
+													Type:   calcgo.NInteger,
+													Value:  "5",
+													Childs: nil,
+												},
+												&calcgo.Node{
+													Type:   calcgo.NInteger,
+													Value:  "2",
+													Childs: nil,
+												},
+											},
+										},
+									},
 								},
 							},
 						},
