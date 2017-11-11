@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - 1.x
+
+install:
+  - go get github.com/relnod/calcgo
+  - go get -t -v ./...
+
+script:
+  - go test -v -race ./...
