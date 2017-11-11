@@ -69,20 +69,14 @@ func shouldEqualAST(actual interface{}, expected ...interface{}) string {
 	return parseError(actualAST, expectedAST) + "(Should be Equal)"
 }
 
-func parse(str string) calcgo.AST {
-	tokens := calcgo.Lex(str)
-	ast := calcgo.Parse(tokens)
-	return ast
-}
-
 func TestParser(t *testing.T) {
 	Convey("Parser works with", t, func() {
 		Convey("nothing", func() {
-			So(parse(""), shouldEqualAST, calcgo.AST{})
+			So(calcgo.Parse(""), shouldEqualAST, calcgo.AST{})
 		})
 
 		Convey("simple numbers", func() {
-			So(parse("20"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("20"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInteger,
 					Value:      "20",
@@ -90,7 +84,7 @@ func TestParser(t *testing.T) {
 					RightChild: nil,
 				},
 			})
-			So(parse("20.23"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("20.23"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NDecimal,
 					Value:      "20.23",
@@ -101,7 +95,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("additions", func() {
-			So(parse("1 + 2"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 + 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -119,7 +113,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("1 + 2 + 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 + 2 + 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -150,7 +144,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("addition with decimals", func() {
-			So(parse("1.2 + 2.4"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1.2 + 2.4"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -171,7 +165,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("subtractions", func() {
-			So(parse("1 - 2"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 - 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -189,7 +183,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("1 - 2 - 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 - 2 - 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -220,7 +214,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("Multiplications", func() {
-			So(parse("1 * 2"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 * 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
@@ -238,7 +232,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("1 * 2 * 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 * 2 * 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
@@ -269,7 +263,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("Divisions", func() {
-			So(parse("1 / 2"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 / 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
@@ -287,7 +281,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("1 / 2 / 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 / 2 / 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
@@ -318,7 +312,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("dot before line", func() {
-			So(parse("1 + 2 * 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 + 2 * 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -346,7 +340,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("1 - 2 / 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("1 - 2 / 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -375,7 +369,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			So(parse("2 * 3 + 1"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("2 * 3 + 1"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -406,7 +400,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("brackets", func() {
-			So(parse("(1)"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(1)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInteger,
 					Value:      "1",
@@ -414,7 +408,7 @@ func TestParser(t *testing.T) {
 					RightChild: nil,
 				},
 			})
-			So(parse("(1 - 2)"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(1 - 2)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -432,7 +426,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("(1 - 2) * 3"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(1 - 2) * 3"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
@@ -460,7 +454,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("3 * (1 - 2)"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("3 * (1 - 2)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
@@ -488,7 +482,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("3 * (1 - 2) / 4"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("3 * (1 - 2) / 4"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NDivision,
 					Value: "/",
@@ -529,7 +523,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("nested brackets", func() {
-			So(parse("((1))"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("((1))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInteger,
 					Value:      "1",
@@ -537,7 +531,7 @@ func TestParser(t *testing.T) {
 					RightChild: nil,
 				},
 			})
-			So(parse("((1 - 2))"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("((1 - 2))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -555,7 +549,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
-			So(parse("(3 * (1 - 2))"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(3 * (1 - 2))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NMultiplication,
 					Value: "*",
@@ -586,7 +580,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("Brackets with dot before line rule", func() {
-			So(parse("3 + (1 - 2) / 4"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("3 + (1 - 2) / 4"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -625,7 +619,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			So(parse("3 + (1 + 2) * 4"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("3 + (1 + 2) * 4"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -664,7 +658,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			So(parse("(1 + 2) * 4 + 1"), shouldEqualAST, calcgo.AST{
+			So(calcgo.Parse("(1 + 2) * 4 + 1"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",
@@ -703,7 +697,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			SkipSo(parse("4 - 6 / (5 + 2)"), shouldEqualAST, calcgo.AST{
+			SkipSo(calcgo.Parse("4 - 6 / (5 + 2)"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NSubtraction,
 					Value: "-",
@@ -742,7 +736,7 @@ func TestParser(t *testing.T) {
 				},
 			})
 
-			SkipSo(parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), shouldEqualAST, calcgo.AST{
+			SkipSo(calcgo.Parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "+",

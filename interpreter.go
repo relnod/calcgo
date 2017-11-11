@@ -3,8 +3,7 @@ package calcgo
 import "strconv"
 
 func Interpret(str string) float64 {
-	tokens := Lex(str)
-	ast := Parse(tokens)
+	ast := Parse(str)
 	number := InterpretAST(ast)
 
 	return number
@@ -49,5 +48,5 @@ func calculateNode(node *Node) float64 {
 		return c1 / c2
 	}
 
-	return 0
+	return 0 // @todo correct error handling
 }

@@ -23,6 +23,26 @@ const (
 	NDivision
 )
 
+func Parse(str string) AST {
+	tokens := Lex(str)
+	return ParseTokens(tokens)
+}
+
+func ParseTokens(tokens []Token) AST {
+	var topNode *Node
+	var current *Node
+	var i int
+
+	topNode, i = numberOrLeftBracketEntry(topNode, tokens, -1, current)
+	if i > 0 {
+		// @todo
+	}
+
+	ast := AST{topNode}
+
+	return ast
+}
+
 func isOperator(op NodeType) bool {
 	return op > NDecimal
 }
@@ -63,21 +83,6 @@ func getOperatorNodeType(token TokenType) NodeType {
 	}
 
 	return NError
-}
-
-func Parse(tokens []Token) AST {
-	var topNode *Node
-	var current *Node
-	var i int
-
-	topNode, i = numberOrLeftBracketEntry(topNode, tokens, -1, current)
-	if i > 0 {
-		// @todo
-	}
-
-	ast := AST{topNode}
-
-	return ast
 }
 
 func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
