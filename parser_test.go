@@ -7,7 +7,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"gitlab.com/relnod/calcgo"
+	"github.com/relnod/calcgo"
 )
 
 func astToString(ast calcgo.AST) string {

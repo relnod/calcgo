@@ -3,7 +3,7 @@ package calcgo_test
 import (
 	"testing"
 
-	"gitlab.com/relnod/calcgo"
+	"github.com/relnod/calcgo"
 )
 
 func BenchmarkInterpreter(b *testing.B) {

@@ -2,28 +2,29 @@ package calcgo_test
 
 import (
 	"testing"
+
 	. "github.com/smartystreets/goconvey/convey"
-	
-	"gitlab.com/relnod/calcgo"
+
+	"github.com/relnod/calcgo"
 )
 
 type Tokens []calcgo.Token
 
 func tokenTypeToString(tokenType calcgo.TokenType) string {
 	switch calcgo.TokenType(tokenType) {
-	case calcgo.TInteger: 
+	case calcgo.TInteger:
 		return "Number"
-	case calcgo.TOperatorPlus: 
+	case calcgo.TOperatorPlus:
 		return "Plus"
-	case calcgo.TOperatorMinus: 
+	case calcgo.TOperatorMinus:
 		return "Minus"
-	case calcgo.TOperatorMult: 
+	case calcgo.TOperatorMult:
 		return "Mult"
-	case calcgo.TOperatorDiv: 
+	case calcgo.TOperatorDiv:
 		return "Div"
-	case calcgo.TLeftBracket: 
+	case calcgo.TLeftBracket:
 		return "Left Bracket"
-	case calcgo.TRightBracket: 
+	case calcgo.TRightBracket:
 		return "RightBracket"
 	case calcgo.TInvalidCharacterInNumber:
 		return "Invalid Character in Number"
@@ -205,12 +206,12 @@ func TestLexer(t *testing.T) {
 
 	Convey("works with invalid characters", t, func() {
 		So(calcgo.Lex("%"), shouldEqualToken, []calcgo.Token{
-			calcgo.Token{Value: "%", Type: calcgo.TInvalidCharacter},			
+			calcgo.Token{Value: "%", Type: calcgo.TInvalidCharacter},
 		})
 		So(calcgo.Lex("1 + a"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "1", Type: calcgo.TInteger},
-			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},			
-			calcgo.Token{Value: "a", Type: calcgo.TInvalidCharacter},						
+			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
+			calcgo.Token{Value: "a", Type: calcgo.TInvalidCharacter},
 		})
 	})
 
@@ -218,7 +219,7 @@ func TestLexer(t *testing.T) {
 		So(calcgo.Lex("1 + 2"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "1", Type: calcgo.TInteger},
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
-			calcgo.Token{Value: "2", Type: calcgo.TInteger},		
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("1 + 2 + 3 + 4"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "1", Type: calcgo.TInteger},
@@ -236,7 +237,7 @@ func TestLexer(t *testing.T) {
 			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},
 			calcgo.Token{Value: "*", Type: calcgo.TOperatorMult},
-			calcgo.Token{Value: "2", Type: calcgo.TInteger},			
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("(2 * (1 + 2)) / 2"), shouldEqualToken, []calcgo.Token{
 			calcgo.Token{Value: "(", Type: calcgo.TLeftBracket},
@@ -247,9 +248,9 @@ func TestLexer(t *testing.T) {
 			calcgo.Token{Value: "+", Type: calcgo.TOperatorPlus},
 			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},
-			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},			
+			calcgo.Token{Value: ")", Type: calcgo.TRightBracket},
 			calcgo.Token{Value: "/", Type: calcgo.TOperatorDiv},
-			calcgo.Token{Value: "2", Type: calcgo.TInteger},			
+			calcgo.Token{Value: "2", Type: calcgo.TInteger},
 		})
 	})
 

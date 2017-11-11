@@ -5,7 +5,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"gitlab.com/relnod/calcgo"
+	"github.com/relnod/calcgo"
 )
 
 func interpret(str string) float64 {
