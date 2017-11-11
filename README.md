@@ -1,6 +1,7 @@
 # Calcgo
 
 [![Build Status](https://travis-ci.org/relnod/calcgo.svg?branch=master)](https://travis-ci.org/relnod/calcgo)
+[![Coverage Status](https://coveralls.io/repos/github/relnod/calcgo/badge.svg?branch=master)](https://coveralls.io/github/relnod/calcgo?branch=master)
 [![Godoc](https://godoc.org/github.com/relnod/calcgo?status.svg)](https://godoc.org/github.com/relnod/calcgo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/relnod/calcgo)](https://goreportcard.com/report/github.com/relnod/calcgo)
 
