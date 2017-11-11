@@ -1,5 +1,8 @@
 # Calcgo
 
+[![Godoc](https://godoc.org/github.com/relnod/calcgo?status.svg)](https://godoc.org/github.com/relnod/calcgo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/relnod/calcgo)](https://goreportcard.com/report/github.com/relnod/calcgo)
+
 This is an experimental learning project, to try and better understand how a lexer and parser works.
 
 ## Syntax
