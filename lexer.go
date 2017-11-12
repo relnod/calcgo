@@ -24,6 +24,21 @@ type Token struct {
 }
 
 // Lex takes a string as input and returns a list of tokens
+//
+// Example:
+//  calcgo.Lex("(1 + 2) * 3")
+//
+// Result:
+//
+//  []calcgo.Token{
+//    {Value: "(", Type: calcgo.TLeftBracket},
+//    {Value: "1", Type: calcgo.TInteger},
+//    {Value: "+", Type: calcgo.TOperatorPlus},
+//    {Value: "2", Type: calcgo.TInteger},
+//    {Value: ")", Type: calcgo.TRightBracket},
+//    {Value: "*", Type: calcgo.TOperatorMult},
+//    {Value: "2", Type: calcgo.TInteger},
+//  })
 func Lex(str string) []Token {
 	var tokens []Token
 

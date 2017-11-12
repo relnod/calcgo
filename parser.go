@@ -29,6 +29,38 @@ const (
 )
 
 // Parse parses a string to an ast
+//
+// Example:
+//  calcgo.Parse("(1 + 2) * 3")
+//
+// Result:
+//  calcgo.AST{
+//    Node: &calcgo.Node{
+//    Type:  calcgo.NMultiplication,
+//    Value: "*",
+//    LeftChild: &calcgo.Node{
+//      Type:  calcgo.NSubtraction,
+//      Value: "-",
+//      LeftChild: &calcgo.Node{
+//        Type: calcgo.NInteger,
+//        Value:      "1",
+//        LeftChild:  nil,
+//        RightChild: nil,
+//      },
+//      RightChild: &calcgo.Node{
+//        Type: calcgo.NInteger,
+//        Value:      "2",
+//        LeftChild:  nil,
+//        RightChild: nil,
+//      },
+//    },
+//    RightChild: &calcgo.Node{
+//      Type:       calcgo.NInteger,
+//      Value:      "3",
+//      LeftChild:  nil,
+//      RightChild: nil,
+//    },
+//  },
 func Parse(str string) AST {
 	tokens := Lex(str)
 	return ParseTokens(tokens)

@@ -3,6 +3,10 @@ package calcgo
 import "strconv"
 
 // Interpret interprets a given string
+//
+// Examples:
+//  caclgo.Interpret("(1 + 2) * 3") // Result: 9
+//  caclgo.Interpret("1 + 2 * 3")   // Result: 7
 func Interpret(str string) float64 {
 	ast := Parse(str)
 	number := InterpretAST(ast)
