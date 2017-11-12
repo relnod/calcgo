@@ -3,6 +3,7 @@ package calcgo
 // TokenType describes the type of a token
 type TokenType uint
 
+// Token types
 const (
 	TInteger TokenType = iota
 	TDecimal
@@ -16,11 +17,13 @@ const (
 	TInvalidCharacterInNumber
 )
 
+// Token represents a token returned by the lexer
 type Token struct {
 	Type  TokenType
 	Value string
 }
 
+// Lex takes a string as input and returns a list of tokens
 func Lex(str string) []Token {
 	var tokens []Token
 

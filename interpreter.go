@@ -2,6 +2,7 @@ package calcgo
 
 import "strconv"
 
+// Interpret interprets a given string
 func Interpret(str string) float64 {
 	ast := Parse(str)
 	number := InterpretAST(ast)
@@ -9,6 +10,7 @@ func Interpret(str string) float64 {
 	return number
 }
 
+// InterpretAST interprets a given ast
 func InterpretAST(ast AST) float64 {
 	return calculateNode(ast.Node)
 }

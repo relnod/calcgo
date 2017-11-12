@@ -1,9 +1,12 @@
 package calcgo
 
+// AST stores the data of the abstract syntax tree.
+// The ast is in the form of a binary tree.
 type AST struct {
 	Node *Node
 }
 
+// Node represents a node
 type Node struct {
 	Type       NodeType `json:"type"`
 	Value      string   `json:"value"`
@@ -11,8 +14,10 @@ type Node struct {
 	RightChild *Node    `json:"right"`
 }
 
+// NodeType defines the type of a node
 type NodeType uint
 
+// Node types
 const (
 	NError NodeType = iota
 	NInteger
@@ -23,11 +28,13 @@ const (
 	NDivision
 )
 
+// Parse parses a string to an ast
 func Parse(str string) AST {
 	tokens := Lex(str)
 	return ParseTokens(tokens)
 }
 
+// ParseTokens parses a list of tokens to an ast
 func ParseTokens(tokens []Token) AST {
 	var topNode *Node
 	var current *Node
@@ -149,7 +156,6 @@ func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) 
 	if isOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
 		node.LeftChild = topNode.RightChild
 		topNode.RightChild = node
-		current = node
 	} else {
 		node.LeftChild = topNode
 		topNode = node
