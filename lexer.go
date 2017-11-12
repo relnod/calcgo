@@ -29,14 +29,13 @@ type Token struct {
 //  calcgo.Lex("(1 + 2) * 3")
 //
 // Result:
-//
 //  []calcgo.Token{
-//    {Value: "(", Type: calcgo.TLeftBracket},
+//    {Value: "",  Type: calcgo.TLeftBracket},
 //    {Value: "1", Type: calcgo.TInteger},
-//    {Value: "+", Type: calcgo.TOperatorPlus},
+//    {Value: "",  Type: calcgo.TOperatorPlus},
 //    {Value: "2", Type: calcgo.TInteger},
-//    {Value: ")", Type: calcgo.TRightBracket},
-//    {Value: "*", Type: calcgo.TOperatorMult},
+//    {Value: "",  Type: calcgo.TRightBracket},
+//    {Value: "",  Type: calcgo.TOperatorMult},
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
 func Lex(str string) []Token {
@@ -61,17 +60,17 @@ func getNextToken(str string, i int) (Token, int) {
 	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
 		token, i = getNummberToken(str, i)
 	case "+":
-		token = Token{TOperatorPlus, "+"}
+		token = Token{TOperatorPlus, ""}
 	case "-":
-		token = Token{TOperatorMinus, "-"}
+		token = Token{TOperatorMinus, ""}
 	case "*":
-		token = Token{TOperatorMult, "*"}
+		token = Token{TOperatorMult, ""}
 	case "/":
-		token = Token{TOperatorDiv, "/"}
+		token = Token{TOperatorDiv, ""}
 	case "(":
-		token = Token{TLeftBracket, "("}
+		token = Token{TLeftBracket, ""}
 	case ")":
-		token = Token{TRightBracket, ")"}
+		token = Token{TRightBracket, ""}
 	case " ":
 		i++
 		if i == len(str) {

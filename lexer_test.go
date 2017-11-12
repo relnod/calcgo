@@ -171,22 +171,22 @@ func TestLexer(t *testing.T) {
 	Convey("works with operators", t, func() {
 		Convey("plus", func() {
 			So(calcgo.Lex("+"), shouldEqualToken, []calcgo.Token{
-				{Value: "+", Type: calcgo.TOperatorPlus},
+				{Value: "", Type: calcgo.TOperatorPlus},
 			})
 		})
 		Convey("minus", func() {
 			So(calcgo.Lex("-"), shouldEqualToken, []calcgo.Token{
-				{Value: "-", Type: calcgo.TOperatorMinus},
+				{Value: "", Type: calcgo.TOperatorMinus},
 			})
 		})
 		Convey("mult", func() {
 			So(calcgo.Lex("*"), shouldEqualToken, []calcgo.Token{
-				{Value: "*", Type: calcgo.TOperatorMult},
+				{Value: "", Type: calcgo.TOperatorMult},
 			})
 		})
 		Convey("div", func() {
 			So(calcgo.Lex("/"), shouldEqualToken, []calcgo.Token{
-				{Value: "/", Type: calcgo.TOperatorDiv},
+				{Value: "", Type: calcgo.TOperatorDiv},
 			})
 		})
 	})
@@ -194,12 +194,12 @@ func TestLexer(t *testing.T) {
 	Convey("works with brackets", t, func() {
 		Convey("left bracket", func() {
 			So(calcgo.Lex("("), shouldEqualToken, []calcgo.Token{
-				{Value: "(", Type: calcgo.TLeftBracket},
+				{Value: "", Type: calcgo.TLeftBracket},
 			})
 		})
 		Convey("right bracket", func() {
 			So(calcgo.Lex(")"), shouldEqualToken, []calcgo.Token{
-				{Value: ")", Type: calcgo.TRightBracket},
+				{Value: "", Type: calcgo.TRightBracket},
 			})
 		})
 	})
@@ -210,7 +210,7 @@ func TestLexer(t *testing.T) {
 		})
 		So(calcgo.Lex("1 + a"), shouldEqualToken, []calcgo.Token{
 			{Value: "1", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "a", Type: calcgo.TInvalidCharacter},
 		})
 	})
@@ -218,38 +218,38 @@ func TestLexer(t *testing.T) {
 	Convey("works with mixed types", t, func() {
 		So(calcgo.Lex("1 + 2"), shouldEqualToken, []calcgo.Token{
 			{Value: "1", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "2", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("1 + 2 + 3 + 4"), shouldEqualToken, []calcgo.Token{
 			{Value: "1", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "2", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "3", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "4", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("(1 + 2) * 2"), shouldEqualToken, []calcgo.Token{
-			{Value: "(", Type: calcgo.TLeftBracket},
+			{Value: "", Type: calcgo.TLeftBracket},
 			{Value: "1", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "2", Type: calcgo.TInteger},
-			{Value: ")", Type: calcgo.TRightBracket},
-			{Value: "*", Type: calcgo.TOperatorMult},
+			{Value: "", Type: calcgo.TRightBracket},
+			{Value: "", Type: calcgo.TOperatorMult},
 			{Value: "2", Type: calcgo.TInteger},
 		})
 		So(calcgo.Lex("(2 * (1 + 2)) / 2"), shouldEqualToken, []calcgo.Token{
-			{Value: "(", Type: calcgo.TLeftBracket},
+			{Value: "", Type: calcgo.TLeftBracket},
 			{Value: "2", Type: calcgo.TInteger},
-			{Value: "*", Type: calcgo.TOperatorMult},
-			{Value: "(", Type: calcgo.TLeftBracket},
+			{Value: "", Type: calcgo.TOperatorMult},
+			{Value: "", Type: calcgo.TLeftBracket},
 			{Value: "1", Type: calcgo.TInteger},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "2", Type: calcgo.TInteger},
-			{Value: ")", Type: calcgo.TRightBracket},
-			{Value: ")", Type: calcgo.TRightBracket},
-			{Value: "/", Type: calcgo.TOperatorDiv},
+			{Value: "", Type: calcgo.TRightBracket},
+			{Value: "", Type: calcgo.TRightBracket},
+			{Value: "", Type: calcgo.TOperatorDiv},
 			{Value: "2", Type: calcgo.TInteger},
 		})
 	})
@@ -257,7 +257,7 @@ func TestLexer(t *testing.T) {
 	Convey("works with decimals and plus", t, func() {
 		So(calcgo.Lex("1.2 + 2.4"), shouldEqualToken, []calcgo.Token{
 			{Value: "1.2", Type: calcgo.TDecimal},
-			{Value: "+", Type: calcgo.TOperatorPlus},
+			{Value: "", Type: calcgo.TOperatorPlus},
 			{Value: "2.4", Type: calcgo.TDecimal},
 		})
 	})

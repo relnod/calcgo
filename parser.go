@@ -37,10 +37,10 @@ const (
 //  calcgo.AST{
 //    Node: &calcgo.Node{
 //    Type:  calcgo.NMultiplication,
-//    Value: "*",
+//    Value: "",
 //    LeftChild: &calcgo.Node{
 //      Type:  calcgo.NSubtraction,
-//      Value: "-",
+//      Value: "",
 //      LeftChild: &calcgo.Node{
 //        Type: calcgo.NInteger,
 //        Value:      "1",
