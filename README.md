@@ -5,44 +5,60 @@
 [![Godoc](https://godoc.org/github.com/relnod/calcgo?status.svg)](https://godoc.org/github.com/relnod/calcgo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/relnod/calcgo)](https://goreportcard.com/report/github.com/relnod/calcgo)
 
-This is an experimental learning project, to try and better understand how a lexer and parser works.
+This is an experimental learning project, to better understand the process of
+lexing and parsing.
 
-## Syntax
+## Description
+Calcgo exposes a lexer, parser and interpreter to get tokens, an ast and the
+result of a basic mathematical calculation. All three functions accept a
+language L(G) defined [here](#grammar).
 
+The calculations follow basic math rules, like "point before line" rule. To
+break this rule it is possible to use brackets.
+All whitespace character get ignored by the lexer.
+
+#### Lexer:
+``` go
+calcgo.Lex("(1 + 2) * 3")
 ```
-a operator b
+#### Parser:
+``` go
+calcgo.Parse("(1 + 2) * 3")
+```
+#### Interpreter:
+``` go
+calcgo.Interpret("1 + 2 * 3")   // Result: 7
+calcgo.Interpret("(1 + 2) * 3") // Result: 9
 ```
 
-where a and b are either a number or another expression.
+## Grammar
 
-Valid operators are '```+```', '```-```', '```*```' and '```/```'.
+The lexer, parser and interpreter accept the language L(G), where G is the following deterministic
+contextfree grammar:
 
-Numbers can be either in the form of an integer (e.g '```12345```') or a floating point number (e.g. '```12.34```').
+G = (N,T,P,S)
 
-All calculations follow the "point before line rule". To break this rule brackets can be used.
-```
-1 + 2 * 3 = 7
-```
-but
-```
-(1 + 2) * 3 = 9
-```
+N = {S}
 
-### Grammar
+T = {n, o, l, r}
 
-This gives the following grammar:
+P contains 3 rules:
 
-S -> SoS
+S → SoS
 
-S -> lSr
+S → lSr
 
-S -> n
+S →  n
 
 #### Terminals
-```n``` => ``n``umber ∈ { integer, float }
+n ∈ { integer, float }
 
-```o``` => ``o``perator ∈ { +, -, *, / }
+o ∈ { +, -, *, / }
 
-```l``` => ``l``eft bracket ∈ { ( }
+l ∈ { ( }
 
-```r``` => ``r``ight bracket ∈ { ) }
+r ∈ { ) }
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../master/LICENSE) file for details
