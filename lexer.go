@@ -98,7 +98,7 @@ func getNummberToken(str string, i int) (Token, int) {
 			isDecimal = true
 		case ' ':
 			goto endNumberToken
-		case ')':
+		case '+', '-', '*', '/', ')':
 			i--
 			goto endNumberToken
 		default:
