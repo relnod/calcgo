@@ -1,58 +1,83 @@
 package calcgo
 
-import "strconv"
+import (
+	"errors"
+	"strconv"
+)
 
-// Interpret interprets a given string
+// Errors, that can be returned by the interpreter
+var (
+	ErrorMissingLeftChild  error = errors.New("Error: Missing left child of node")
+	ErrorMissingRightChild error = errors.New("Error: Missing right child of node")
+	ErrorInvalidNodeType   error = errors.New("Error: Invalid node type")
+	ErrorInvalidInteger    error = errors.New("Error: Invalid Integer")
+	ErrorInvalidDecimal    error = errors.New("Error: Invalid Decimal")
+	ErrorParserError       error = errors.New("Error: Parser error")
+)
+
+// Interpret interprets a given string.
+// Can return an error if parsing failed
 //
 // Examples:
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
 //  caclgo.Interpret("1 + 2 * 3")   // Result: 7
-func Interpret(str string) float64 {
+func Interpret(str string) (float64, error) {
 	ast := Parse(str)
-	number := InterpretAST(ast)
-
-	return number
+	return InterpretAST(ast)
 }
 
-// InterpretAST interprets a given ast
-func InterpretAST(ast AST) float64 {
+// InterpretAST interprets a given ast.
+// Can return an error if the ast is invalid.
+func InterpretAST(ast AST) (float64, error) {
 	return calculateNode(ast.Node)
 }
 
-func calculateNode(node *Node) float64 {
+func calculateNode(node *Node) (float64, error) {
 	switch node.Type {
 	case NInteger:
 		integer, err := strconv.Atoi(node.Value)
 		if err != nil {
-			// @todo
+			return 0, ErrorInvalidInteger
 		}
-
-		return float64(integer)
+		return float64(integer), nil
 	case NDecimal:
 		decimal, err := strconv.ParseFloat(node.Value, 64)
 		if err != nil {
-			// @todo
+			return 0, ErrorInvalidDecimal
 		}
-		return decimal
+		return decimal, nil
 	}
 
-	if node.LeftChild == nil || node.RightChild == nil {
-		return -1 // @todo correct error handling
+	if !IsOperator(node.Type) {
+		return 0, ErrorInvalidNodeType
 	}
 
-	c1 := calculateNode(node.LeftChild)
-	c2 := calculateNode(node.RightChild)
+	if node.LeftChild == nil {
+		return 0, ErrorMissingLeftChild
+	}
+	if node.RightChild == nil {
+		return 0, ErrorMissingRightChild
+	}
+
+	left, err := calculateNode(node.LeftChild)
+	if err != nil {
+		return 0, err
+	}
+	right, err := calculateNode(node.RightChild)
+	if err != nil {
+		return 0, err
+	}
 
 	switch node.Type {
 	case NAddition:
-		return c1 + c2
+		return left + right, nil
 	case NSubtraction:
-		return c1 - c2
+		return left - right, nil
 	case NMultiplication:
-		return c1 * c2
+		return left * right, nil
 	case NDivision:
-		return c1 / c2
+		return left / right, nil
 	}
 
-	return 0 // @todo correct error handling
+	return 0, ErrorParserError
 }

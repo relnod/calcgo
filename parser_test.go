@@ -70,6 +70,16 @@ func shouldEqualAST(actual interface{}, expected ...interface{}) string {
 }
 
 func TestParser(t *testing.T) {
+	Convey("IsOperator works", t, func() {
+		So(calcgo.IsOperator(calcgo.NDecimal), ShouldEqual, false)
+		So(calcgo.IsOperator(calcgo.NInteger), ShouldEqual, false)
+		So(calcgo.IsOperator(calcgo.NError), ShouldEqual, false)
+		So(calcgo.IsOperator(calcgo.NAddition), ShouldEqual, true)
+		So(calcgo.IsOperator(calcgo.NSubtraction), ShouldEqual, true)
+		So(calcgo.IsOperator(calcgo.NMultiplication), ShouldEqual, true)
+		So(calcgo.IsOperator(calcgo.NDivision), ShouldEqual, true)
+	})
+
 	Convey("Parser works with", t, func() {
 		Convey("nothing", func() {
 			So(calcgo.Parse(""), shouldEqualAST, calcgo.AST{})

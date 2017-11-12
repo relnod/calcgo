@@ -82,8 +82,9 @@ func ParseTokens(tokens []Token) AST {
 	return ast
 }
 
-func isOperator(op NodeType) bool {
-	return op > NDecimal
+// IsOperator returns true if the given nodeType is an operator.
+func IsOperator(op NodeType) bool {
+	return op > NDecimal && op <= NDivision
 }
 
 func isHigherOperator(op1 NodeType, op2 NodeType) bool {
@@ -185,7 +186,7 @@ func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) 
 	// @todo: handle wrong node type
 
 	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	if isOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
+	if IsOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
 		node.LeftChild = topNode.RightChild
 		topNode.RightChild = node
 	} else {

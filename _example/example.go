@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	number := calcgo.Interpret("1 + 1")
+	number, _ := calcgo.Interpret("1 + 1")
 
 	fmt.Println(number)
 
