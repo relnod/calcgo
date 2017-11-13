@@ -31,6 +31,23 @@ calcgo.Interpret("1 + 2 * 3")   // Result: 7
 calcgo.Interpret("(1 + 2) * 3") // Result: 9
 ```
 
+## Example
+``` go
+package main
+
+import (
+	"fmt"
+
+	"gitlab.com/relnod/calcgo"
+)
+
+func main() {
+	number, _ := calcgo.Interpret("1 + 1")
+
+	fmt.Println(number)
+}
+```
+
 ## Grammar
 
 The lexer, parser and interpreter accept the language L(G), where G is the following deterministic
