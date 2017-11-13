@@ -1,19 +1,27 @@
 language: go
 
-go:
-  - 1.7
-  - 1.8
-  - 1.9
+jobs:
+  include:
+    - stage: test
+      go_import_path: github.com/relnod/calcgo
+      go: 1.x
 
-install:
-  - go get github.com/relnod/calcgo
-  - go get github.com/mattn/goveralls
-  - go get -v github.com/golang/lint/golint
-  - go get -t -v ./...
+      install:
+        - go get github.com/relnod/calcgo
+        - go get github.com/mattn/goveralls
+        - go get -t -v ./...
 
-script:
-  - diff <(gofmt -d .) <(echo -n)
-  - go vet -x ./...
-  - golint ./...
-  - go test -v -race ./...
-  - $GOPATH/bin/goveralls -service=travis-ci
+      script:
+        - go test -v -race ./...
+      after_sucess:
+        - $GOPATH/bin/goveralls -service=travis-ci
+    - stage: lint
+      go_import_path: github.com/relnod/calcgo
+      go: 1.x
+      install: 
+        - GO_FILES=$(find . -iname '*.go' -type f)
+        - go get github.com/golang/lint/golint
+      script:
+        - test -z $(gofmt -s -l $GO_FILES)
+        - go vet ./...  
+        - golint -set_exit_status $(go list ./...)
