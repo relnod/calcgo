@@ -7,12 +7,12 @@ import (
 
 // Errors, that can be returned by the interpreter
 var (
-	ErrorMissingLeftChild  error = errors.New("Error: Missing left child of node")
-	ErrorMissingRightChild error = errors.New("Error: Missing right child of node")
-	ErrorInvalidNodeType   error = errors.New("Error: Invalid node type")
-	ErrorInvalidInteger    error = errors.New("Error: Invalid Integer")
-	ErrorInvalidDecimal    error = errors.New("Error: Invalid Decimal")
-	ErrorParserError       error = errors.New("Error: Parser error")
+	ErrorMissingLeftChild  = errors.New("Error: Missing left child of node")
+	ErrorMissingRightChild = errors.New("Error: Missing right child of node")
+	ErrorInvalidNodeType   = errors.New("Error: Invalid node type")
+	ErrorInvalidInteger    = errors.New("Error: Invalid Integer")
+	ErrorInvalidDecimal    = errors.New("Error: Invalid Decimal")
+	ErrorParserError       = errors.New("Error: Parser error")
 )
 
 // Interpret interprets a given string.
