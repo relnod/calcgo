@@ -56,22 +56,22 @@ func Lex(str string) []Token {
 func getNextToken(str string, i int) (Token, int) {
 	var token Token
 
-	switch string(str[i]) {
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
-		token, i = getNummberToken(str, i)
-	case "+":
+	switch str[i] {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		token, i = getNumberToken(str, i)
+	case '+':
 		token = Token{TOperatorPlus, ""}
-	case "-":
+	case '-':
 		token = Token{TOperatorMinus, ""}
-	case "*":
+	case '*':
 		token = Token{TOperatorMult, ""}
-	case "/":
+	case '/':
 		token = Token{TOperatorDiv, ""}
-	case "(":
+	case '(':
 		token = Token{TLeftBracket, ""}
-	case ")":
+	case ')':
 		token = Token{TRightBracket, ""}
-	case " ":
+	case ' ':
 		i++
 		if i == len(str) {
 			return token, -1
@@ -84,10 +84,11 @@ func getNextToken(str string, i int) (Token, int) {
 	return token, i
 }
 
-func getNummberToken(str string, i int) (Token, int) {
+func getNumberToken(str string, i int) (Token, int) {
 	var token Token
 
-	var number string
+	number := string(str[i])
+	i++
 	isDecimal := false
 	for i < len(str) {
 		switch str[i] {
