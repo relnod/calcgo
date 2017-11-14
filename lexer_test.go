@@ -155,6 +155,25 @@ func TestLexer(t *testing.T) {
 			})
 		})
 
+		SkipConvey("negative numbers", func() {
+			So(calcgo.Lex("-1"), shouldEqualToken, []calcgo.Token{
+				{Value: "-1", Type: calcgo.TInteger},
+			})
+
+			So(calcgo.Lex("-10"), shouldEqualToken, []calcgo.Token{
+				{Value: "-10", Type: calcgo.TInteger},
+			})
+
+			So(calcgo.Lex("-10.12"), shouldEqualToken, []calcgo.Token{
+				{Value: "-10.12", Type: calcgo.TDecimal},
+			})
+
+			So(calcgo.Lex("-1--1"), shouldEqualToken, []calcgo.Token{
+				{Value: "-1", Type: calcgo.TInteger},
+				{Value: "", Type: calcgo.TOperatorMinus},
+				{Value: "-1", Type: calcgo.TInteger},
+			})
+		})
 	})
 
 	Convey("works with operators", t, func() {
