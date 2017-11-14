@@ -96,6 +96,9 @@ func TestInterpreter(t *testing.T) {
 	})
 
 	Convey("interpreter returns error when", t, func() {
+		Convey("dividing by 0", func() {
+			So(getInterpretError("1 / 0"), ShouldEqual, calcgo.ErrorDivisionByZero)
+		})
 		Convey("a node child is missing", func() {
 			So(getInterpretASTError(calcgo.AST{
 				Node: &calcgo.Node{

@@ -13,6 +13,7 @@ var (
 	ErrorInvalidInteger    = errors.New("Error: Invalid Integer")
 	ErrorInvalidDecimal    = errors.New("Error: Invalid Decimal")
 	ErrorParserError       = errors.New("Error: Parser error")
+	ErrorDivisionByZero    = errors.New("Error: Division by zero")
 )
 
 // Interpret interprets a given string.
@@ -76,6 +77,9 @@ func calculateNode(node *Node) (float64, error) {
 	case NMultiplication:
 		return left * right, nil
 	case NDivision:
+		if right == 0 {
+			return 0, ErrorDivisionByZero
+		}
 		return left / right, nil
 	}
 
