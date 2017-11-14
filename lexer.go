@@ -5,7 +5,8 @@ type TokenType uint
 
 // Token types
 const (
-	TInteger TokenType = iota
+	TEOF TokenType = iota
+	TInteger
 	TDecimal
 	TOperatorPlus
 	TOperatorMinus
@@ -21,6 +22,13 @@ const (
 type Token struct {
 	Type  TokenType
 	Value string
+}
+
+// Lexer
+type Lexer struct {
+	token chan Token
+	str   string
+	index int
 }
 
 // Lex takes a string as input and returns a list of tokens
@@ -41,10 +49,12 @@ type Token struct {
 func Lex(str string) []Token {
 	var tokens []Token
 
-	for i := 0; i < len(str); i++ {
-		var token Token
-		token, i = getNextToken(str, i)
-		if i == -1 {
+	lexer := NewLexer(str)
+	lexer.Start()
+
+	for {
+		token := lexer.NextToken()
+		if token.Type == TEOF {
 			break
 		}
 		tokens = append(tokens, token)
@@ -53,12 +63,39 @@ func Lex(str string) []Token {
 	return tokens
 }
 
-func getNextToken(str string, i int) (Token, int) {
+// NewLexer returns a new lexer object
+func NewLexer(str string) *Lexer {
+	return &Lexer{str: str, token: make(chan Token)}
+}
+
+// Start runs the lexer in a go routine
+func (l *Lexer) Start() {
+	go l.run()
+}
+
+func (l *Lexer) NextToken() Token {
+	return <-l.token
+}
+
+func (l *Lexer) run() {
+	for l.index = 0; l.index < len(l.str); l.index++ {
+		var token Token
+		token = l.getNextToken()
+		l.token <- token
+	}
+	close(l.token)
+}
+
+func (l *Lexer) current() string {
+	return string(l.str[l.index])
+}
+
+func (l *Lexer) getNextToken() Token {
 	var token Token
 
-	switch str[i] {
+	switch l.str[l.index] {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		token, i = getNumberToken(str, i)
+		token = l.getNumberToken()
 	case '+':
 		token = Token{TOperatorPlus, ""}
 	case '-':
@@ -72,40 +109,40 @@ func getNextToken(str string, i int) (Token, int) {
 	case ')':
 		token = Token{TRightBracket, ""}
 	case ' ':
-		i++
-		if i == len(str) {
-			return token, -1
+		l.index++
+		if l.index == len(l.str) {
+			return Token{TEOF, ""}
 		}
-		token, i = getNextToken(str, i)
+		token = l.getNextToken()
 	default:
-		token = Token{TInvalidCharacter, string(str[i])}
+		token = Token{TInvalidCharacter, l.current()}
 	}
 
-	return token, i
+	return token
 }
 
-func getNumberToken(str string, i int) (Token, int) {
+func (l *Lexer) getNumberToken() Token {
 	var token Token
 
-	number := string(str[i])
-	i++
+	number := l.current()
+	l.index++
 	isDecimal := false
-	for i < len(str) {
-		switch str[i] {
+	for l.index < len(l.str) {
+		switch l.str[l.index] {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			number += string(str[i])
+			number += l.current()
 		case '.':
-			number += string(str[i])
+			number += l.current()
 			isDecimal = true
 		case ' ':
 			goto endNumberToken
 		case '+', '-', '*', '/', ')':
-			i--
+			l.index--
 			goto endNumberToken
 		default:
-			return Token{TInvalidCharacterInNumber, string(str[i])}, i
+			return Token{TInvalidCharacterInNumber, l.current()}
 		}
-		i++
+		l.index++
 	}
 
 endNumberToken:
@@ -118,5 +155,5 @@ endNumberToken:
 
 	token = Token{tokenType, number}
 
-	return token, i
+	return token
 }
