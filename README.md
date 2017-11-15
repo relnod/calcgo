@@ -38,7 +38,7 @@ package main
 import (
 	"fmt"
 
-	"gitlab.com/relnod/calcgo"
+	"github.com/relnod/calcgo"
 )
 
 func main() {
