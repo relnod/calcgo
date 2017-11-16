@@ -15,7 +15,8 @@ language L(G) defined [here](#grammar).
 
 The calculations follow basic math rules, like "point before line" rule. To
 break this rule it is possible to use brackets.
-All whitespace character get ignored by the lexer.
+There needs to be at least one whitespace character between an operator an a
+number. All other whitespace character get ignored by the lexer.
 
 #### Lexer:
 ``` go

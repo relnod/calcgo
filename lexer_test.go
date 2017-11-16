@@ -284,6 +284,19 @@ func TestLexer(t *testing.T) {
 	})
 
 	Convey("works whitespace", t, func() {
+		Convey("whitespace at the beginning", func() {
+			So(calcgo.Lex(" 1 + 2"), shouldEqualToken, []calcgo.Token{
+				{Value: "1", Type: calcgo.TInteger},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "2", Type: calcgo.TInteger},
+			})
+			So(calcgo.Lex("   1 + 2"), shouldEqualToken, []calcgo.Token{
+				{Value: "1", Type: calcgo.TInteger},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "2", Type: calcgo.TInteger},
+			})
+		})
+
 		Convey("whitespace at the end", func() {
 			So(calcgo.Lex("1 + 2 "), shouldEqualToken, []calcgo.Token{
 				{Value: "1", Type: calcgo.TInteger},
@@ -296,44 +309,6 @@ func TestLexer(t *testing.T) {
 				{Value: "2", Type: calcgo.TInteger},
 			})
 		})
-		Convey("no whitespace", func() {
-			So(calcgo.Lex("1+2"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorPlus},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-			So(calcgo.Lex("1-2"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorMinus},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-			So(calcgo.Lex("1*2"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorMult},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-			So(calcgo.Lex("1/2"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorDiv},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-		})
-		Convey("whitespace and no whitespace", func() {
-			So(calcgo.Lex("1+ 2"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorPlus},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-			So(calcgo.Lex("(1 + 2) * 2"), shouldEqualToken, []calcgo.Token{
-				{Value: "", Type: calcgo.TLeftBracket},
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorPlus},
-				{Value: "2", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TRightBracket},
-				{Value: "", Type: calcgo.TOperatorMult},
-				{Value: "2", Type: calcgo.TInteger},
-			})
-		})
 
 		Convey("multiple whitespace characters", func() {
 			So(calcgo.Lex("1  +  2"), shouldEqualToken, []calcgo.Token{
@@ -341,7 +316,7 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: calcgo.TOperatorPlus},
 				{Value: "2", Type: calcgo.TInteger},
 			})
-			So(calcgo.Lex("  (  1 +   2 )  *2 "), shouldEqualToken, []calcgo.Token{
+			So(calcgo.Lex("  (  1 +   2 )  * 2 "), shouldEqualToken, []calcgo.Token{
 				{Value: "", Type: calcgo.TLeftBracket},
 				{Value: "1", Type: calcgo.TInteger},
 				{Value: "", Type: calcgo.TOperatorPlus},
