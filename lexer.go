@@ -76,37 +76,41 @@ func (l *Lexer) Start() {
 	go l.run()
 }
 
+// NextToken returns the next token from the token chanel
 func (l *Lexer) NextToken() Token {
 	return <-l.token
-}
-
-func (l *Lexer) hasNext() bool {
-	return l.pos+1 < len(l.str)
 }
 
 func (l *Lexer) current() byte {
 	return l.str[l.pos]
 }
 
-func (l *Lexer) next() byte {
+func (l *Lexer) next() (byte, bool) {
+	if l.pos+1 >= len(l.str) {
+		return 0, false
+	}
 	l.pos++
 
-	return l.current()
+	return l.current(), true
 }
 
 func (l *Lexer) backup() {
 	l.pos--
 }
 
-func (l *Lexer) peek() byte {
-	s := l.next()
+func (l *Lexer) peek() (byte, bool) {
+	s, ok := l.next()
+
+	if !ok {
+		return 0, false
+	}
 
 	l.backup()
-	return s
+	return s, true
 }
 
 func (l *Lexer) emit(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: l.str[l.lastPos : l.pos+1]}
+	l.token <- Token{Type: tokenType, Value: l.str[l.lastPos+1 : l.pos+1]}
 }
 
 func (l *Lexer) emitEmpty(tokenType TokenType) {
@@ -120,25 +124,36 @@ func (l *Lexer) run() {
 	close(l.token)
 }
 
+func isWhiteSpace(b byte) bool {
+	return b == ' '
+}
+
+func isDigit(b byte) bool {
+	return b >= '0' && b <= '9'
+}
+
 func lexAll(l *Lexer) stateFn {
 	var tokenType TokenType
-	if !l.hasNext() {
+
+	l.lastPos = l.pos
+
+	b, ok := l.next()
+	if !ok {
 		return nil
 	}
-
-	l.lastPos = l.pos + 1
-
-	switch l.next() {
-	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+	if isDigit(b) {
 		return lexNumber
+	}
+	if isWhiteSpace(b) {
+		return lexAll
+	}
+
+	switch b {
 	case '+':
 		tokenType = TOperatorPlus
 	case '-':
-		if l.hasNext() {
-			switch l.peek() {
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-				return lexNumber
-			}
+		if b, ok := l.peek(); ok && isDigit(b) {
+			return lexNumber
 		}
 		tokenType = TOperatorMinus
 	case '*':
@@ -149,8 +164,6 @@ func lexAll(l *Lexer) stateFn {
 		tokenType = TLeftBracket
 	case ')':
 		tokenType = TRightBracket
-	case ' ':
-		return lexAll
 	default:
 		l.emit(TInvalidCharacter)
 		return lexAll
@@ -163,17 +176,21 @@ func lexAll(l *Lexer) stateFn {
 func lexNumber(l *Lexer) stateFn {
 	tokenType := TInteger
 
-loop:
-	for l.hasNext() {
-		switch l.next() {
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		case '.':
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		} else if b == '.' {
 			tokenType = TDecimal
-		case ' ', ')':
+		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
-			break loop
-		default:
-			l.lastPos = l.pos
+			break
+		} else {
+			l.lastPos = l.pos - 1
 			l.emit(TInvalidCharacterInNumber)
 			return lexAll
 		}
