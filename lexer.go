@@ -134,6 +134,12 @@ func lexAll(l *Lexer) stateFn {
 	case '+':
 		tokenType = TOperatorPlus
 	case '-':
+		if l.hasNext() {
+			switch l.peek() {
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+				return lexNumber
+			}
+		}
 		tokenType = TOperatorMinus
 	case '*':
 		tokenType = TOperatorMult

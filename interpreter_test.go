@@ -28,14 +28,19 @@ func TestInterpreter(t *testing.T) {
 		Convey("nothing", func() {
 			So(getInterpretNumber(""), ShouldEqual, 0)
 		})
-		Convey("simple integers", func() {
+		Convey("positive integers", func() {
 			So(getInterpretNumber("1"), ShouldEqual, 1)
 			So(getInterpretNumber("12345"), ShouldEqual, 12345)
 		})
 
-		Convey("simple decimals", func() {
+		Convey("positive decimals", func() {
 			So(getInterpretNumber("1.0"), ShouldEqual, 1.0)
 			So(getInterpretNumber("1234.5678"), ShouldEqual, 1234.5678)
+		})
+
+		Convey("negativ numbers", func() {
+			So(getInterpretNumber("-1"), ShouldEqual, -1)
+			So(getInterpretNumber("-1.1"), ShouldEqual, -1.1)
 		})
 
 		Convey("simple additions with integers", func() {
@@ -66,6 +71,18 @@ func TestInterpreter(t *testing.T) {
 			So(getInterpretNumber("1 / 1"), ShouldEqual, 1/1)
 			So(getInterpretNumber("3 / 5"), ShouldEqual, 3.0/5.0)
 			So(getInterpretNumber("1 / 2 / 3 / 4 / 5 / 6"), ShouldEqual, 1.0/2.0/3.0/4.0/5.0/6.0)
+		})
+
+		Convey("basic operations with negative numbers", func() {
+			So(getInterpretNumber("-1 + 2"), ShouldEqual, -1+2)
+			So(getInterpretNumber("-1 - 2"), ShouldEqual, -1-2)
+			So(getInterpretNumber("-1 * 2"), ShouldEqual, -1*2)
+			So(getInterpretNumber("-1 / 2"), ShouldEqual, -1.0/2.0)
+
+			So(getInterpretNumber("-1 + -2"), ShouldEqual, -1+-2)
+			So(getInterpretNumber("-1 - -2"), ShouldEqual, -1 - -2)
+			So(getInterpretNumber("-1 * -2"), ShouldEqual, -1*-2)
+			So(getInterpretNumber("-1 / -2"), ShouldEqual, -1.0/-2.0)
 		})
 
 		Convey("dot before line rule", func() {
