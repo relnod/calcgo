@@ -3,7 +3,7 @@ package calcgo
 type stateFn func(*Lexer) stateFn
 
 // TokenType describes the type of a token
-type TokenType uint
+type TokenType byte
 
 // Token types
 const (
@@ -50,7 +50,11 @@ type Lexer struct {
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
 func Lex(str string) []Token {
-	var tokens []Token
+	if len(str) == 0 {
+		return nil
+	}
+
+	tokens := make([]Token, 0, len(str)/2)
 
 	lexer := NewLexer(str)
 	lexer.Start()
@@ -68,7 +72,7 @@ func Lex(str string) []Token {
 
 // NewLexer returns a new lexer object
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, token: make(chan Token), pos: -1}
+	return &Lexer{str: str, token: make(chan Token, len(str)/3), pos: -1}
 }
 
 // Start runs the lexer in a go routine
