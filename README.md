@@ -76,6 +76,17 @@ l ∈ { ( }
 
 r ∈ { ) }
 
+## Tests and Benchmarks
+
+### Running Tests
+
+Run tests with ```go test -v -race``` or with ```goconvey``` to see live test
+result in a browser.
+
+### Running Benchmarks
+
+Benchmarks can be tun with ```go test -run=^$ -bench=.```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](../master/LICENSE) file for details
