@@ -9,11 +9,9 @@ jobs:
     - stage: test
       go_import_path: github.com/relnod/calcgo
       go: 1.x
-
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
-
       script:
         - go test -v -race ./... -coverprofile=profile.out
         - mv profile.out coverage.txt
@@ -29,3 +27,12 @@ jobs:
         - test -z $(gofmt -s -l $GO_FILES)
         - go vet ./...  
         - golint -set_exit_status $(go list ./...)
+
+    - stage: bench
+      go_import_path: github.com/relnod/calcgo
+      go: 1.x
+      install:
+          - go get golang.org/x/perf/cmd/benchstat
+          - go get -t -v ./...
+      script:
+          - ./scripts/benchcmp.sh -v -n 20

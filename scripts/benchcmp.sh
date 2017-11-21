@@ -13,12 +13,14 @@ usage() {
 main() {
     local current=$(git branch | grep "*" | cut -d ' ' -f2)
 
+    bench current
+    git checkout master > /dev/null 2>&1
+
     bench master
+    git checkout - > /dev/null 2>&1
 
-    bench $current
-
-    benchstat master.txt $current.txt
-    rm master.txt $current.txt
+    benchstat master.txt current.txt
+    rm master.txt current.txt
 }
 
 bench() {
@@ -28,7 +30,6 @@ bench() {
     if [[ $v = true ]]; then
         echo -n "Benchmarking $branch"
     fi
-    git checkout $branch > /dev/null 2>&1
     bench_command > $file
     if [[ $v = true ]]; then
     echo -n "."
@@ -55,13 +56,10 @@ n=5
 v=false
 b="."
 
-while getopts "lhnb:v" opt; do
+while getopts "lhn:v" opt; do
     case ${opt} in
         v)
             v=true
-            ;;
-        b)
-            b="${OPTARG}"
             ;;
         n)
             n="${OPTARG}"
