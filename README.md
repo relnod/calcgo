@@ -87,6 +87,7 @@ result in a browser.
 ### Running Benchmarks
 
 Benchmarks can be tun with ```go test -run=^$ -bench=.```
+To see the differences between two branches/commits run ```./scrpts/benchcmp.sh -n 5```
 
 ## License
 
