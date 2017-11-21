@@ -25,6 +25,9 @@ func getInterpretASTError(ast calcgo.AST) error {
 
 func TestInterpreter(t *testing.T) {
 	Convey("interpreter works with", t, func() {
+		Convey("nothing", func() {
+			So(getInterpretNumber(""), ShouldEqual, 0)
+		})
 		Convey("simple integers", func() {
 			So(getInterpretNumber("1"), ShouldEqual, 1)
 			So(getInterpretNumber("12345"), ShouldEqual, 12345)

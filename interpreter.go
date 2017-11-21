@@ -23,6 +23,10 @@ var (
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
 //  caclgo.Interpret("1 + 2 * 3")   // Result: 7
 func Interpret(str string) (float64, error) {
+	if len(str) == 0 {
+		return 0, nil
+	}
+
 	ast := Parse(str)
 	return InterpretAST(ast)
 }
