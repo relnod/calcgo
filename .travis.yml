@@ -1,5 +1,9 @@
 language: go
 
+branches:
+  only:
+    - master
+
 jobs:
   include:
     - stage: test
@@ -8,13 +12,13 @@ jobs:
 
       install:
         - go get github.com/relnod/calcgo
-        - go get github.com/mattn/goveralls
         - go get -t -v ./...
 
       script:
-        - go test -v -race ./...
-      after_sucess:
-        - $GOPATH/bin/goveralls -service=travis-ci
+        - go test -v -race ./... -coverprofile=profile.out
+        - mv profile.out coverage.txt
+        - bash <(curl -s https://codecov.io/bash)
+
     - stage: lint
       go_import_path: github.com/relnod/calcgo
       go: 1.x
