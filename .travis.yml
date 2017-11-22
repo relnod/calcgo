@@ -4,21 +4,35 @@ branches:
   only:
     - master
 
+go_import_path: github.com/relnod/calcgo
+
 jobs:
   include:
     - stage: test
-      go_import_path: github.com/relnod/calcgo
-      go: 1.x
+      go: 1.8
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
       script:
+        - go test -v -race ./...
+    - go: 1.9
+      install:
+        - go get github.com/relnod/calcgo
+        - go get -t -v ./...
+      script:
+        - go test -v -race ./...
+      after_success:
         - go test -v -race ./... -coverprofile=profile.out
         - mv profile.out coverage.txt
         - bash <(curl -s https://codecov.io/bash)
+    - go: tip
+      install:
+        - go get github.com/relnod/calcgo
+        - go get -t -v ./...
+      script:
+        - go test -v -race ./...
 
     - stage: lint
-      go_import_path: github.com/relnod/calcgo
       go: 1.x
       install: 
         - GO_FILES=$(find . -iname '*.go' -type f)
@@ -29,10 +43,11 @@ jobs:
         - golint -set_exit_status $(go list ./...)
 
     - stage: bench
-      go_import_path: github.com/relnod/calcgo
       go: 1.x
       install:
           - go get golang.org/x/perf/cmd/benchstat
           - go get -t -v ./...
       script:
-          - ./scripts/benchcmp.sh -v -n 20
+          - ./scripts/benchcmp.sh -v -n 10
+  allow_failures:
+    - go: tip
