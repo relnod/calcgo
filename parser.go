@@ -1,5 +1,7 @@
 package calcgo
 
+type parseState func(*Parser) parseState
+
 // AST stores the data of the abstract syntax tree.
 // The ast is in the form of a binary tree.
 type AST struct {
@@ -79,9 +81,10 @@ func ParseTokens(tokens []Token) AST {
 	if tokens == nil {
 		return AST{}
 	}
+
 	p := &Parser{tokens, &Node{}, -1, &Node{}}
 
-	topNode, index := numberOrLeftBracketEntry(p)
+	topNode, index := p.run()
 	if index > 0 {
 		// @todo
 	}
@@ -134,17 +137,25 @@ func getOperatorNodeType(token TokenType) NodeType {
 	return NError
 }
 
-func numberOrLeftBracketEntry(p *Parser) (*Node, int) {
-	p.index++
-	if p.index >= len(p.tokens) {
-		return p.topNode, p.index
+func (p *Parser) run() (*Node, int) {
+	for state := parseStart; state != nil; {
+		p.index++
+		if p.index >= len(p.tokens) {
+			break
+		}
+
+		state = state(p)
 	}
 
+	return p.topNode, p.index
+}
+
+func parseStart(p *Parser) parseState {
 	if p.tokens[p.index].Type == TLeftBracket {
 		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
-		p.topNode, p.index = numberOrLeftBracketEntry(p2)
+		p.topNode, p.index = p2.run()
 
-		return operatorAfterRightBracket(p)
+		return parseOperatorAfterRightBracket
 	}
 
 	nodeType := getNumberNodeType(p.tokens[p.index].Type)
@@ -154,22 +165,17 @@ func numberOrLeftBracketEntry(p *Parser) (*Node, int) {
 	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
 	p.topNode = node
 
-	return operator(p)
+	return parseOperator
 }
 
-func numberOrLeftBracket(p *Parser) (*Node, int) {
-	p.index++
-	if p.index >= len(p.tokens) {
-		return p.topNode, p.index
-	}
-
+func parseNumberOrLeftBracket(p *Parser) parseState {
 	if p.tokens[p.index].Type == TLeftBracket {
 		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
-		rightNode, index := numberOrLeftBracketEntry(p2)
+		rightNode, index := p2.run()
 		p.index = index
 		p.current.RightChild = rightNode
 
-		return operator(p)
+		return parseOperator
 	}
 
 	nodeType := getNumberNodeType(p.tokens[p.index].Type)
@@ -179,17 +185,12 @@ func numberOrLeftBracket(p *Parser) (*Node, int) {
 	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
 	p.current.RightChild = node
 
-	return operator(p)
+	return parseOperator
 }
 
-func operator(p *Parser) (*Node, int) {
-	p.index++
-	if p.index >= len(p.tokens) {
-		return p.topNode, p.index
-	}
-
+func parseOperator(p *Parser) parseState {
 	if p.tokens[p.index].Type == TRightBracket {
-		return p.topNode, p.index
+		return nil
 	}
 
 	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
@@ -206,17 +207,12 @@ func operator(p *Parser) (*Node, int) {
 	}
 	p.current = node
 
-	return numberOrLeftBracket(p)
+	return parseNumberOrLeftBracket
 }
 
-func operatorAfterRightBracket(p *Parser) (*Node, int) {
-	p.index++
-	if p.index >= len(p.tokens) {
-		return p.topNode, p.index
-	}
-
+func parseOperatorAfterRightBracket(p *Parser) parseState {
 	if p.tokens[p.index].Type == TRightBracket {
-		return p.topNode, p.index
+		return nil
 	}
 
 	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
@@ -228,5 +224,5 @@ func operatorAfterRightBracket(p *Parser) (*Node, int) {
 	p.topNode = node
 	p.current = node
 
-	return numberOrLeftBracket(p)
+	return parseNumberOrLeftBracket
 }
