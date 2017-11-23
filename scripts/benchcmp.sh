@@ -13,6 +13,13 @@ usage() {
 main() {
     local current=$(git branch | grep "*" | cut -d ' ' -f2)
 
+    if [[ $current == "master" ]]; then
+        bench master
+        benchstat master.txt
+        rm master.txt
+        exit
+    fi
+
     bench current
     git checkout master > /dev/null 2>&1
 
