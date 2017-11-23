@@ -15,7 +15,8 @@ language L(G) defined [here](#grammar).
 
 The calculations follow basic math rules, like "point before line" rule. To
 break this rule it is possible to use brackets.
-All whitespace character get ignored by the lexer.
+There needs to be at least one whitespace character between an operator an a
+number. All other whitespace character get ignored by the lexer.
 
 #### Lexer:
 ``` go
@@ -86,6 +87,7 @@ result in a browser.
 ### Running Benchmarks
 
 Benchmarks can be tun with ```go test -run=^$ -bench=.```
+To see the differences between two branches/commits run ```./scrpts/benchcmp.sh -n 5```
 
 ## License
 

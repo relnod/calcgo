@@ -104,6 +104,26 @@ func TestParser(t *testing.T) {
 			})
 		})
 
+		Convey("negativ numbers", func() {
+			So(calcgo.Parse("-1"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NInteger,
+					Value:      "-1",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+
+			So(calcgo.Parse("-123.45"), shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NDecimal,
+					Value:      "-123.45",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+		})
+
 		Convey("additions", func() {
 			So(calcgo.Parse("1 + 2"), shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
