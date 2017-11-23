@@ -257,7 +257,7 @@ func TestLexer(t *testing.T) {
 	})
 
 	Convey("gives an error with", t, func() {
-		Convey("invalid charcter in number", func() {
+		Convey("invalid character in number", func() {
 			So(calcgo.Lex("1%"), shouldEqualToken, []calcgo.Token{
 				{Value: "%", Type: calcgo.TInvalidCharacterInNumber},
 			})
@@ -268,6 +268,7 @@ func TestLexer(t *testing.T) {
 				{Value: "?", Type: calcgo.TInvalidCharacterInNumber},
 			})
 		})
+
 		Convey("invalid characters", func() {
 			So(calcgo.Lex("%"), shouldEqualToken, []calcgo.Token{
 				{Value: "%", Type: calcgo.TInvalidCharacter},
@@ -276,6 +277,26 @@ func TestLexer(t *testing.T) {
 				{Value: "1", Type: calcgo.TInteger},
 				{Value: "", Type: calcgo.TOperatorPlus},
 				{Value: "a", Type: calcgo.TInvalidCharacter},
+			})
+		})
+
+		Convey("doesn't abort after error", func() {
+			So(calcgo.Lex("a + 1"), shouldEqualToken, []calcgo.Token{
+				{Value: "a", Type: calcgo.TInvalidCharacter},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "1", Type: calcgo.TInteger},
+			})
+		})
+
+		Convey("handles multiple errors", func() {
+			So(calcgo.Lex("a b"), shouldEqualToken, []calcgo.Token{
+				{Value: "a", Type: calcgo.TInvalidCharacter},
+				{Value: "b", Type: calcgo.TInvalidCharacter},
+			})
+			So(calcgo.Lex("a + b"), shouldEqualToken, []calcgo.Token{
+				{Value: "a", Type: calcgo.TInvalidCharacter},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "b", Type: calcgo.TInvalidCharacter},
 			})
 		})
 	})
