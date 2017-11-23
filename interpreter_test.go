@@ -8,14 +8,58 @@ import (
 	"github.com/relnod/calcgo"
 )
 
+func errorsToString(errors []error) string {
+	var str string
+
+	str += "(\n"
+	for _, err := range errors {
+		str += err.Error() + "\n"
+	}
+	str += ")\n"
+
+	return str
+}
+
+func errorsError(actual []error, expected []error) string {
+	return "Expected: \n" +
+		errorsToString(expected) +
+		"Actual: \n" +
+		errorsToString(actual)
+}
+
+func eqErrors(e1 []error, e2 []error) bool {
+	if len(e1) != len(e2) {
+		return false
+	}
+
+	for i := 0; i < len(e1); i++ {
+		if e1[i] != e2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func shouldEqualErrors(actual interface{}, expected ...interface{}) string {
+	e1 := actual.([]error)
+	e2 := expected[0].([]error)
+
+	if eqErrors(e1, e2) {
+		return ""
+	}
+
+	return errorsError(e1, e2) + "(Should be Equal)"
+}
+
 func getInterpretNumber(str string) float64 {
 	number, _ := calcgo.Interpret(str)
 	return number
 }
 
-func getInterpretError(str string) error {
-	_, err := calcgo.Interpret(str)
-	return err
+func getInterpretError(str string) []error {
+	_, errors := calcgo.Interpret(str)
+	return errors
 }
 
 func getInterpretASTError(ast calcgo.AST) error {
@@ -117,7 +161,9 @@ func TestInterpreter(t *testing.T) {
 
 	Convey("interpreter returns error when", t, func() {
 		Convey("dividing by 0", func() {
-			So(getInterpretError("1 / 0"), ShouldEqual, calcgo.ErrorDivisionByZero)
+			result, errors := calcgo.Interpret("1 / 0")
+			So(errors, shouldEqualErrors, []error{calcgo.ErrorDivisionByZero})
+			So(result, ShouldEqual, 0)
 		})
 		Convey("a node child is missing", func() {
 			So(getInterpretASTError(calcgo.AST{

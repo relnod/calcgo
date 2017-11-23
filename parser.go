@@ -71,15 +71,15 @@ const (
 //      RightChild: nil,
 //    },
 //  },
-func Parse(str string) AST {
+func Parse(str string) (AST, []error) {
 	tokens := Lex(str)
 	return ParseTokens(tokens)
 }
 
 // ParseTokens parses a list of tokens to an ast
-func ParseTokens(tokens []Token) AST {
+func ParseTokens(tokens []Token) (AST, []error) {
 	if tokens == nil {
-		return AST{}
+		return AST{}, nil
 	}
 
 	p := &Parser{tokens, &Node{}, -1, &Node{}}
@@ -91,7 +91,7 @@ func ParseTokens(tokens []Token) AST {
 
 	ast := AST{topNode}
 
-	return ast
+	return ast, nil
 }
 
 // IsOperator returns true if the given nodeType is an operator.
@@ -172,7 +172,9 @@ func parseStart(p *Parser) parseState {
 
 	nodeType := p.getNumberNodeType()
 
-	//@todo: handle wrong node type
+	if nodeType == NError {
+		return nil
+	}
 
 	p.topNode = p.newNode(nodeType)
 
@@ -189,7 +191,9 @@ func parseNumberOrLeftBracket(p *Parser) parseState {
 
 	nodeType := p.getNumberNodeType()
 
-	//@todo: handle wrong node type
+	if nodeType == NError {
+		return nil
+	}
 
 	p.current.RightChild = p.newNode(nodeType)
 	return parseOperator
@@ -202,7 +206,9 @@ func parseOperator(p *Parser) parseState {
 
 	nodeType := p.getOperatorNodeType()
 
-	// @todo: handle wrong node type
+	if nodeType == NError {
+		return nil
+	}
 
 	node := p.newNode(nodeType)
 	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, nodeType) {
@@ -224,7 +230,9 @@ func parseOperatorAfterRightBracket(p *Parser) parseState {
 
 	nodeType := p.getOperatorNodeType()
 
-	// @todo: handle wrong node type
+	if nodeType == NError {
+		return nil
+	}
 
 	node := p.newNode(nodeType)
 	node.LeftChild = p.topNode

@@ -22,13 +22,22 @@ var (
 // Examples:
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
 //  caclgo.Interpret("1 + 2 * 3")   // Result: 7
-func Interpret(str string) (float64, error) {
+func Interpret(str string) (float64, []error) {
 	if len(str) == 0 {
 		return 0, nil
 	}
 
-	ast := Parse(str)
-	return InterpretAST(ast)
+	ast, errors := Parse(str)
+	if errors != nil {
+		return 0, errors
+	}
+
+	result, err := InterpretAST(ast)
+	if err != nil {
+		return 0, []error{err}
+	}
+
+	return result, nil
 }
 
 // InterpretAST interprets a given ast.
