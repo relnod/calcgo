@@ -17,6 +17,14 @@ type Node struct {
 // NodeType defines the type of a node
 type NodeType uint
 
+// Parser holds state of parser
+type Parser struct {
+	tokens  []Token
+	topNode *Node
+	index   int
+	current *Node
+}
+
 // Node types
 const (
 	NError NodeType = iota
@@ -68,12 +76,13 @@ func Parse(str string) AST {
 
 // ParseTokens parses a list of tokens to an ast
 func ParseTokens(tokens []Token) AST {
-	var topNode *Node
-	var current *Node
-	var i int
+	if tokens == nil {
+		return AST{}
+	}
+	p := &Parser{tokens, &Node{}, -1, &Node{}}
 
-	topNode, i = numberOrLeftBracketEntry(topNode, tokens, -1, current)
-	if i > 0 {
+	topNode, index := numberOrLeftBracketEntry(p)
+	if index > 0 {
 		// @todo
 	}
 
@@ -125,95 +134,99 @@ func getOperatorNodeType(token TokenType) NodeType {
 	return NError
 }
 
-func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func numberOrLeftBracketEntry(p *Parser) (*Node, int) {
+	p.index++
+	if p.index >= len(p.tokens) {
+		return p.topNode, p.index
 	}
 
-	if tokens[i].Type == TLeftBracket {
-		topNode, i = numberOrLeftBracketEntry(topNode, tokens, i, current)
+	if p.tokens[p.index].Type == TLeftBracket {
+		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
+		p.topNode, p.index = numberOrLeftBracketEntry(p2)
 
-		return operatorAfterRightBracket(topNode, tokens, i, current)
+		return operatorAfterRightBracket(p)
 	}
 
-	nodeType := getNumberNodeType(tokens[i].Type)
+	nodeType := getNumberNodeType(p.tokens[p.index].Type)
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	topNode = node
+	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	p.topNode = node
 
-	return operator(topNode, tokens, i, current)
+	return operator(p)
 }
 
-func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func numberOrLeftBracket(p *Parser) (*Node, int) {
+	p.index++
+	if p.index >= len(p.tokens) {
+		return p.topNode, p.index
 	}
 
-	if tokens[i].Type == TLeftBracket {
-		topNodeNested := topNode
-		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
-		current.RightChild = rightNode
+	if p.tokens[p.index].Type == TLeftBracket {
+		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
+		rightNode, index := numberOrLeftBracketEntry(p2)
+		p.index = index
+		p.current.RightChild = rightNode
 
-		return operator(topNode, tokens, i, current)
+		return operator(p)
 	}
 
-	nodeType := getNumberNodeType(tokens[i].Type)
+	nodeType := getNumberNodeType(p.tokens[p.index].Type)
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	current.RightChild = node
+	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	p.current.RightChild = node
 
-	return operator(topNode, tokens, i, current)
+	return operator(p)
 }
 
-func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func operator(p *Parser) (*Node, int) {
+	p.index++
+	if p.index >= len(p.tokens) {
+		return p.topNode, p.index
 	}
 
-	if tokens[i].Type == TRightBracket {
-		return topNode, i
+	if p.tokens[p.index].Type == TRightBracket {
+		return p.topNode, p.index
 	}
 
-	nodeType := getOperatorNodeType(tokens[i].Type)
+	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	if IsOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
-		node.LeftChild = topNode.RightChild
-		topNode.RightChild = node
+	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, nodeType) {
+		node.LeftChild = p.topNode.RightChild
+		p.topNode.RightChild = node
 	} else {
-		node.LeftChild = topNode
-		topNode = node
+		node.LeftChild = p.topNode
+		p.topNode = node
 	}
+	p.current = node
 
-	return numberOrLeftBracket(topNode, tokens, i, node)
+	return numberOrLeftBracket(p)
 }
 
-func operatorAfterRightBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func operatorAfterRightBracket(p *Parser) (*Node, int) {
+	p.index++
+	if p.index >= len(p.tokens) {
+		return p.topNode, p.index
 	}
 
-	if tokens[i].Type == TRightBracket {
-		return topNode, i
+	if p.tokens[p.index].Type == TRightBracket {
+		return p.topNode, p.index
 	}
 
-	nodeType := getOperatorNodeType(tokens[i].Type)
+	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	node.LeftChild = topNode
-	topNode = node
+	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	node.LeftChild = p.topNode
+	p.topNode = node
+	p.current = node
 
-	return numberOrLeftBracket(topNode, tokens, i, node)
+	return numberOrLeftBracket(p)
 }

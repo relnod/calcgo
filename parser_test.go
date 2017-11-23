@@ -31,11 +31,11 @@ func eqNodes(n1, n2 *calcgo.Node) bool {
 		return true
 	}
 
-	if n1 == nil && n1 != nil {
+	if n1 == nil && n2 != nil {
 		return false
 	}
 
-	if n1 != nil && n1 == nil {
+	if n1 != nil && n2 == nil {
 		return false
 	}
 
