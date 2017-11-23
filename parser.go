@@ -111,32 +111,6 @@ func isHigherOperator(op1 NodeType, op2 NodeType) bool {
 	return op1 < op2
 }
 
-func getNumberNodeType(token TokenType) NodeType {
-	switch token {
-	case TInteger:
-		return NInteger
-	case TDecimal:
-		return NDecimal
-	}
-
-	return NError
-}
-
-func getOperatorNodeType(token TokenType) NodeType {
-	switch token {
-	case TOperatorPlus:
-		return NAddition
-	case TOperatorMinus:
-		return NSubtraction
-	case TOperatorMult:
-		return NMultiplication
-	case TOperatorDiv:
-		return NDivision
-	}
-
-	return NError
-}
-
 func (p *Parser) run() (*Node, int) {
 	for state := parseStart; state != nil; {
 		p.index++
@@ -150,41 +124,74 @@ func (p *Parser) run() (*Node, int) {
 	return p.topNode, p.index
 }
 
+func (p *Parser) currentType() TokenType {
+	return p.tokens[p.index].Type
+}
+
+func (p *Parser) currentValue() string {
+	return p.tokens[p.index].Value
+}
+
+func (p *Parser) newNode(nodeType NodeType) *Node {
+	return &Node{nodeType, p.currentValue(), nil, nil}
+}
+
+func (p *Parser) getNumberNodeType() NodeType {
+	switch p.currentType() {
+	case TInteger:
+		return NInteger
+	case TDecimal:
+		return NDecimal
+	}
+
+	return NError
+}
+
+func (p *Parser) getOperatorNodeType() NodeType {
+	switch p.currentType() {
+	case TOperatorPlus:
+		return NAddition
+	case TOperatorMinus:
+		return NSubtraction
+	case TOperatorMult:
+		return NMultiplication
+	case TOperatorDiv:
+		return NDivision
+	}
+
+	return NError
+}
+
 func parseStart(p *Parser) parseState {
-	if p.tokens[p.index].Type == TLeftBracket {
+	if p.currentType() == TLeftBracket {
 		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
 		p.topNode, p.index = p2.run()
 
 		return parseOperatorAfterRightBracket
 	}
 
-	nodeType := getNumberNodeType(p.tokens[p.index].Type)
+	nodeType := p.getNumberNodeType()
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
-	p.topNode = node
+	p.topNode = p.newNode(nodeType)
 
 	return parseOperator
 }
 
 func parseNumberOrLeftBracket(p *Parser) parseState {
-	if p.tokens[p.index].Type == TLeftBracket {
+	if p.currentType() == TLeftBracket {
 		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
-		rightNode, index := p2.run()
-		p.index = index
-		p.current.RightChild = rightNode
+		p.current.RightChild, p.index = p2.run()
 
 		return parseOperator
 	}
 
-	nodeType := getNumberNodeType(p.tokens[p.index].Type)
+	nodeType := p.getNumberNodeType()
 
 	//@todo: handle wrong node type
 
-	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
-	p.current.RightChild = node
-
+	p.current.RightChild = p.newNode(nodeType)
 	return parseOperator
 }
 
@@ -193,11 +200,11 @@ func parseOperator(p *Parser) parseState {
 		return nil
 	}
 
-	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
+	nodeType := p.getOperatorNodeType()
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	node := p.newNode(nodeType)
 	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, nodeType) {
 		node.LeftChild = p.topNode.RightChild
 		p.topNode.RightChild = node
@@ -215,11 +222,11 @@ func parseOperatorAfterRightBracket(p *Parser) parseState {
 		return nil
 	}
 
-	nodeType := getOperatorNodeType(p.tokens[p.index].Type)
+	nodeType := p.getOperatorNodeType()
 
 	// @todo: handle wrong node type
 
-	node := &Node{nodeType, p.tokens[p.index].Value, nil, nil}
+	node := p.newNode(nodeType)
 	node.LeftChild = p.topNode
 	p.topNode = node
 	p.current = node
