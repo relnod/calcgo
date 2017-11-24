@@ -1,5 +1,7 @@
 package calcgo
 
+import "errors"
+
 type parseState func(*Parser) parseState
 
 // AST stores the data of the abstract syntax tree.
@@ -23,19 +25,31 @@ type NodeType uint
 type Parser struct {
 	tokens  []Token
 	topNode *Node
-	index   int
 	current *Node
+	index   int
+	errors  []error
+	nested  bool
 }
 
 // Node types
 const (
 	NError NodeType = iota
+	NInvalidNumber
+	NInvalidOperator
 	NInteger
 	NDecimal
 	NAddition
 	NSubtraction
 	NMultiplication
 	NDivision
+)
+
+// Errors retured by the parser
+var (
+	ErrorExpectedNumber           = errors.New("Error: Expected number got something else")
+	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
+	ErrorMissingClosingBracket    = errors.New("Error: Missing closing bracket")
+	ErrorUnexpectedClosingBracket = errors.New("Error: Unexpected closing bracket")
 )
 
 // Parse parses a string to an ast
@@ -82,16 +96,13 @@ func ParseTokens(tokens []Token) (AST, []error) {
 		return AST{}, nil
 	}
 
-	p := &Parser{tokens, &Node{}, -1, &Node{}}
+	p := &Parser{tokens, nil, nil, -1, nil, false}
 
-	topNode, index := p.run()
-	if index > 0 {
-		// @todo
-	}
+	topNode, _ := p.run()
 
 	ast := AST{topNode}
 
-	return ast, nil
+	return ast, p.errors
 }
 
 // IsOperator returns true if the given nodeType is an operator.
@@ -115,6 +126,9 @@ func (p *Parser) run() (*Node, int) {
 	for state := parseStart; state != nil; {
 		p.index++
 		if p.index >= len(p.tokens) {
+			if p.nested {
+				p.pushError(ErrorMissingClosingBracket)
+			}
 			break
 		}
 
@@ -136,6 +150,16 @@ func (p *Parser) newNode(nodeType NodeType) *Node {
 	return &Node{nodeType, p.currentValue(), nil, nil}
 }
 
+func (p *Parser) pushError(err error) {
+	p.errors = append(p.errors, err)
+}
+
+func (p *Parser) pushErrors(errors []error) {
+	for _, err := range errors {
+		p.pushError(err)
+	}
+}
+
 func (p *Parser) getNumberNodeType() NodeType {
 	switch p.currentType() {
 	case TInteger:
@@ -144,7 +168,8 @@ func (p *Parser) getNumberNodeType() NodeType {
 		return NDecimal
 	}
 
-	return NError
+	p.pushError(ErrorExpectedNumber)
+	return NInvalidNumber
 }
 
 func (p *Parser) getOperatorNodeType() NodeType {
@@ -159,22 +184,20 @@ func (p *Parser) getOperatorNodeType() NodeType {
 		return NDivision
 	}
 
-	return NError
+	p.pushError(ErrorExpectedOperator)
+	return NInvalidOperator
 }
 
 func parseStart(p *Parser) parseState {
 	if p.currentType() == TLeftBracket {
-		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
+		p2 := &Parser{p.tokens, p.topNode, p.current, p.index, nil, true}
 		p.topNode, p.index = p2.run()
+		p.pushErrors(p2.errors)
 
 		return parseOperatorAfterRightBracket
 	}
 
 	nodeType := p.getNumberNodeType()
-
-	if nodeType == NError {
-		return nil
-	}
 
 	p.topNode = p.newNode(nodeType)
 
@@ -183,32 +206,28 @@ func parseStart(p *Parser) parseState {
 
 func parseNumberOrLeftBracket(p *Parser) parseState {
 	if p.currentType() == TLeftBracket {
-		p2 := &Parser{p.tokens, p.topNode, p.index, p.current}
+		p2 := &Parser{p.tokens, p.topNode, p.current, p.index, nil, true}
 		p.current.RightChild, p.index = p2.run()
+		p.pushErrors(p2.errors)
 
 		return parseOperator
 	}
 
 	nodeType := p.getNumberNodeType()
 
-	if nodeType == NError {
-		return nil
-	}
-
 	p.current.RightChild = p.newNode(nodeType)
 	return parseOperator
 }
 
 func parseOperator(p *Parser) parseState {
-	if p.tokens[p.index].Type == TRightBracket {
+	if p.currentType() == TRightBracket {
+		if !p.nested {
+			p.pushError(ErrorUnexpectedClosingBracket)
+		}
 		return nil
 	}
 
 	nodeType := p.getOperatorNodeType()
-
-	if nodeType == NError {
-		return nil
-	}
 
 	node := p.newNode(nodeType)
 	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, nodeType) {
@@ -224,15 +243,14 @@ func parseOperator(p *Parser) parseState {
 }
 
 func parseOperatorAfterRightBracket(p *Parser) parseState {
-	if p.tokens[p.index].Type == TRightBracket {
+	if p.currentType() == TRightBracket {
+		if !p.nested {
+			p.pushError(ErrorUnexpectedClosingBracket)
+		}
 		return nil
 	}
 
 	nodeType := p.getOperatorNodeType()
-
-	if nodeType == NError {
-		return nil
-	}
 
 	node := p.newNode(nodeType)
 	node.LeftChild = p.topNode

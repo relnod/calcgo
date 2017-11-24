@@ -910,4 +910,231 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 	})
+
+	Convey("Parser works with errors", t, func() {
+		Convey("handles invalid number", func() {
+			ast, errors := calcgo.Parse("a")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NInvalidNumber,
+					Value:      "a",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedNumber,
+			})
+
+			ast, errors = calcgo.Parse("1 + a")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInvalidNumber,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedNumber,
+			})
+
+			Convey("handles multiple invalid number errors", func() {
+				ast, errors := calcgo.Parse("a + a")
+				So(ast, shouldEqualAST, calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NAddition,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInvalidNumber,
+							Value:      "a",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInvalidNumber,
+							Value:      "a",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldEqualErrors, []error{
+					calcgo.ErrorExpectedNumber,
+					calcgo.ErrorExpectedNumber,
+				})
+			})
+		})
+
+		Convey("handles invalid operator", func() {
+			ast, errors := calcgo.Parse("1 $ 1")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NInvalidOperator,
+					Value: "$",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedOperator,
+			})
+
+			Convey("handles multiple invalid operator errors", func() {
+				ast, errors := calcgo.Parse("1 $ 1 $ 1")
+				So(ast, shouldEqualAST, calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NInvalidOperator,
+						Value: "$",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NInvalidOperator,
+							Value: "$",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldEqualErrors, []error{
+					calcgo.ErrorExpectedOperator,
+					calcgo.ErrorExpectedOperator,
+				})
+			})
+		})
+
+		Convey("handles multiple mixed errors", func() {
+			ast, errors := calcgo.Parse("a $ a")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NInvalidOperator,
+					Value: "$",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInvalidNumber,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInvalidNumber,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedNumber,
+				calcgo.ErrorExpectedOperator,
+				calcgo.ErrorExpectedNumber,
+			})
+		})
+
+		Convey("handles missing closing bracket", func() {
+			ast, errors := calcgo.Parse("(1 + 1")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorMissingClosingBracket,
+			})
+		})
+
+		Convey("handles unexpected closing bracket", func() {
+			ast, errors := calcgo.Parse("1 + 1)")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorUnexpectedClosingBracket,
+			})
+
+			ast, errors = calcgo.Parse("(1 + 1))")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorUnexpectedClosingBracket,
+			})
+		})
+	})
 }

@@ -41,7 +41,7 @@ func eqErrors(e1 []error, e2 []error) bool {
 	return true
 }
 
-func shouldEqualErrors(actual interface{}, expected ...interface{}) string {
+func ShouldEqualErrors(actual interface{}, expected ...interface{}) string {
 	e1 := actual.([]error)
 	e2 := expected[0].([]error)
 
@@ -162,7 +162,7 @@ func TestInterpreter(t *testing.T) {
 	Convey("interpreter returns error when", t, func() {
 		Convey("dividing by 0", func() {
 			result, errors := calcgo.Interpret("1 / 0")
-			So(errors, shouldEqualErrors, []error{calcgo.ErrorDivisionByZero})
+			So(errors, ShouldEqualErrors, []error{calcgo.ErrorDivisionByZero})
 			So(result, ShouldEqual, 0)
 		})
 		Convey("a node child is missing", func() {
