@@ -82,19 +82,20 @@ func calculateNode(node *Node) (float64, error) {
 		return 0, err
 	}
 
+	var result float64
 	switch node.Type {
 	case NAddition:
-		return left + right, nil
+		result = left + right
 	case NSubtraction:
-		return left - right, nil
+		result = left - right
 	case NMultiplication:
-		return left * right, nil
+		result = left * right
 	case NDivision:
 		if right == 0 {
 			return 0, ErrorDivisionByZero
 		}
-		return left / right, nil
+		result = left / right
 	}
 
-	return 0, ErrorParserError
+	return result, nil
 }
