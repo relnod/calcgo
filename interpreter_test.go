@@ -270,6 +270,21 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
+	Convey("interpreter returns errors, when parser returned errors", t, func() {
+		result, errors := calcgo.Interpret("a")
+		So(result, ShouldEqual, 0)
+		So(errors, ShouldEqualErrors, []error{
+			calcgo.ErrorExpectedNumber,
+		})
+
+		result, errors = calcgo.Interpret("1 + a)")
+		So(result, ShouldEqual, 0)
+		So(errors, ShouldEqualErrors, []error{
+			calcgo.ErrorExpectedNumber,
+			calcgo.ErrorUnexpectedClosingBracket,
+		})
+	})
+
 	Convey("interpreter returns error when", t, func() {
 		Convey("dividing by 0", func() {
 			result, errors := calcgo.Interpret("1 / 0")
