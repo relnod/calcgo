@@ -97,6 +97,10 @@ func shouldNotEqualToken(actual interface{}, expected ...interface{}) string {
 }
 
 func TestLexer(t *testing.T) {
+	Convey("Lexer works with empty string", t, func() {
+		So(calcgo.Lex(""), ShouldBeNil)
+	})
+
 	Convey("Lexer works with numbers", t, func() {
 		Convey("single digit", func() {
 			So(calcgo.Lex("0"), shouldEqualToken, []calcgo.Token{

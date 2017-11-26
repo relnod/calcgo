@@ -1137,4 +1137,20 @@ func TestParser(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("ParseTokens works the same as parse", t, func() {
+		ast1, e1 := calcgo.ParseTokens(nil)
+		ast2, e2 := calcgo.Parse("")
+		So(ast1, shouldEqualAST, ast2)
+		So(e1, ShouldEqualErrors, e2)
+
+		ast1, e1 = calcgo.ParseTokens([]calcgo.Token{
+			{Type: calcgo.TInteger, Value: "1"},
+			{Type: calcgo.TOperatorPlus, Value: ""},
+			{Type: calcgo.TInteger, Value: "1"},
+		})
+		ast2, e2 = calcgo.Parse("1 + 1")
+		So(ast1, shouldEqualAST, ast2)
+		So(e1, ShouldEqualErrors, e2)
+	})
 }

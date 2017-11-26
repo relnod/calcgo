@@ -85,6 +85,11 @@ func (l *Lexer) NextToken() Token {
 	return <-l.token
 }
 
+// GetChanel returns the token chanel
+func (l *Lexer) GetChanel() chan Token {
+	return l.token
+}
+
 func (l *Lexer) current() byte {
 	return l.str[l.pos]
 }
