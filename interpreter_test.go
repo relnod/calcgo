@@ -8,119 +8,293 @@ import (
 	"github.com/relnod/calcgo"
 )
 
-func getInterpretNumber(str string) float64 {
-	number, _ := calcgo.Interpret(str)
-	return number
+func errorsToString(errors []error) string {
+	var str string
+
+	str += "(\n"
+	for _, err := range errors {
+		str += err.Error() + "\n"
+	}
+	str += ")\n"
+
+	return str
 }
 
-func getInterpretError(str string) error {
-	_, err := calcgo.Interpret(str)
-	return err
+func errorsError(actual []error, expected []error) string {
+	return "Expected: \n" +
+		errorsToString(expected) +
+		"Actual: \n" +
+		errorsToString(actual)
 }
 
-func getInterpretASTError(ast calcgo.AST) error {
-	_, err := calcgo.InterpretAST(ast)
-	return err
+func eqErrors(e1 []error, e2 []error) bool {
+	if len(e1) != len(e2) {
+		return false
+	}
+
+	for i := 0; i < len(e1); i++ {
+		if e1[i] != e2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func ShouldEqualErrors(actual interface{}, expected ...interface{}) string {
+	e1 := actual.([]error)
+	e2 := expected[0].([]error)
+
+	if eqErrors(e1, e2) {
+		return ""
+	}
+
+	return errorsError(e1, e2) + "(Should be Equal)"
 }
 
 func TestInterpreter(t *testing.T) {
 	Convey("interpreter works with", t, func() {
 		Convey("nothing", func() {
-			So(getInterpretNumber(""), ShouldEqual, 0)
+			result, errors := calcgo.Interpret("")
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldBeNil)
 		})
 		Convey("positive integers", func() {
-			So(getInterpretNumber("1"), ShouldEqual, 1)
-			So(getInterpretNumber("12345"), ShouldEqual, 12345)
+			result, errors := calcgo.Interpret("1")
+			So(result, ShouldEqual, 1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("12345")
+			So(result, ShouldEqual, 12345)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("positive decimals", func() {
-			So(getInterpretNumber("1.0"), ShouldEqual, 1.0)
-			So(getInterpretNumber("1234.5678"), ShouldEqual, 1234.5678)
+			result, errors := calcgo.Interpret("1.0")
+			So(result, ShouldEqual, 1.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1234.5678")
+			So(result, ShouldEqual, 1234.5678)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("negativ numbers", func() {
-			So(getInterpretNumber("-1"), ShouldEqual, -1)
-			So(getInterpretNumber("-1.1"), ShouldEqual, -1.1)
+			result, errors := calcgo.Interpret("-1")
+			So(result, ShouldEqual, -1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1.1")
+			So(result, ShouldEqual, -1.1)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("simple additions with integers", func() {
-			So(getInterpretNumber("1 + 1"), ShouldEqual, 2)
-			So(getInterpretNumber("3 + 5"), ShouldEqual, 3+5)
-			So(getInterpretNumber("1 + 2 + 3 + 4 + 5 + 6"), ShouldEqual, 1+2+3+4+5+6)
+			result, errors := calcgo.Interpret("1 + 1")
+			So(result, ShouldEqual, 2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("3 + 5")
+			So(result, ShouldEqual, 3+5)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 + 2 + 3 + 4 + 5 + 6")
+			So(result, ShouldEqual, 1+2+3+4+5+6)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("simple additions with decimals", func() {
-			SkipSo(getInterpretNumber("1.2 + 2.4"), ShouldEqual, 1.2+2.4) // @todo: fix rounding error
-			SkipSo(getInterpretNumber("0.7 + 2.4"), ShouldEqual, 0.7+2.4) // @todo: fix rounding error
-			So(getInterpretNumber("3.5 + 5.1"), ShouldEqual, 3.5+5.1)
+			result, errors := calcgo.Interpret("1.2 + 2.4")
+			SkipSo(result, ShouldEqual, 1.2+2.4) // @todo: fix rounding error
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("0.7 + 2.4")
+			SkipSo(result, ShouldEqual, 0.7+2.4) // @todo: fix rounding error
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("3.5 + 5.1")
+			So(result, ShouldEqual, 3.5+5.1)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("simple subtractions", func() {
-			So(getInterpretNumber("1 - 1"), ShouldEqual, 1-1)
-			So(getInterpretNumber("3 - 5"), ShouldEqual, 3-5)
-			So(getInterpretNumber("1 - 2 - 3 - 4 - 5 - 6"), ShouldEqual, 1-2-3-4-5-6)
+			result, errors := calcgo.Interpret("1 - 1")
+			So(result, ShouldEqual, 1-1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("3 - 5")
+			So(result, ShouldEqual, 3-5)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 - 2 - 3 - 4 - 5 - 6")
+			So(result, ShouldEqual, 1-2-3-4-5-6)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("simple multiplications", func() {
-			So(getInterpretNumber("1 * 1"), ShouldEqual, 1*1)
-			So(getInterpretNumber("3 * 5"), ShouldEqual, 3*5)
-			So(getInterpretNumber("1 * 2 * 3 * 4 * 5 * 6"), ShouldEqual, 1*2*3*4*5*6)
+			result, errors := calcgo.Interpret("1 * 1")
+			So(result, ShouldEqual, 1*1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("3 * 5")
+			So(result, ShouldEqual, 3*5)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 * 2 * 3 * 4 * 5 * 6")
+			So(result, ShouldEqual, 1*2*3*4*5*6)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("simple divisions", func() {
-			So(getInterpretNumber("1 / 1"), ShouldEqual, 1/1)
-			So(getInterpretNumber("3 / 5"), ShouldEqual, 3.0/5.0)
-			So(getInterpretNumber("1 / 2 / 3 / 4 / 5 / 6"), ShouldEqual, 1.0/2.0/3.0/4.0/5.0/6.0)
+			result, errors := calcgo.Interpret("1 / 1")
+			So(result, ShouldEqual, 1/1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("3 / 5")
+			So(result, ShouldEqual, 3.0/5.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 / 2 / 3 / 4 / 5 / 6")
+			So(result, ShouldEqual, 1.0/2.0/3.0/4.0/5.0/6.0)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("basic operations with negative numbers", func() {
-			So(getInterpretNumber("-1 + 2"), ShouldEqual, -1+2)
-			So(getInterpretNumber("-1 - 2"), ShouldEqual, -1-2)
-			So(getInterpretNumber("-1 * 2"), ShouldEqual, -1*2)
-			So(getInterpretNumber("-1 / 2"), ShouldEqual, -1.0/2.0)
+			result, errors := calcgo.Interpret("-1 + 2")
+			So(result, ShouldEqual, -1+2)
+			So(errors, ShouldBeNil)
 
-			So(getInterpretNumber("-1 + -2"), ShouldEqual, -1+-2)
-			So(getInterpretNumber("-1 - -2"), ShouldEqual, -1 - -2)
-			So(getInterpretNumber("-1 * -2"), ShouldEqual, -1*-2)
-			So(getInterpretNumber("-1 / -2"), ShouldEqual, -1.0/-2.0)
+			result, errors = calcgo.Interpret("-1 - 2")
+			So(result, ShouldEqual, -1-2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 * 2")
+			So(result, ShouldEqual, -1*2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 / 2")
+			So(result, ShouldEqual, -1.0/2.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 + -2")
+			So(result, ShouldEqual, -1+-2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 - -2")
+			So(result, ShouldEqual, -1 - -2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 * -2")
+			So(result, ShouldEqual, -1*-2)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("-1 / -2")
+			So(result, ShouldEqual, -1.0/-2.0)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("dot before line rule", func() {
-			SkipSo(getInterpretNumber("1 + 2 / 3"), ShouldEqual, 1.0+2.0/3.0) // @todo: fix rounding error
-			SkipSo(getInterpretNumber("1 - 2 / 3"), ShouldEqual, 1.0-2.0/3.0) // @todo: fix rounding error
-			So(getInterpretNumber("1 + 2 * 3"), ShouldEqual, 1.0+2.0*3.0)
-			So(getInterpretNumber("1 - 2 * 3"), ShouldEqual, 1.0-2.0*3.0)
+			result, errors := calcgo.Interpret("1 + 2 / 3")
+			SkipSo(result, ShouldEqual, 1.0+2.0/3.0) // @todo: fix rounding error
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 - 2 / 3")
+			SkipSo(result, ShouldEqual, 1.0-2.0/3.0) // @todo: fix rounding error
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 + 2 * 3")
+			So(result, ShouldEqual, 1.0+2.0*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 - 2 * 3")
+			So(result, ShouldEqual, 1.0-2.0*3.0)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("brackets", func() {
-			So(getInterpretNumber("(1 + 2) / 3"), ShouldEqual, (1.0+2.0)/3.0)
-			So(getInterpretNumber("(1 - 2) / 3"), ShouldEqual, (1.0-2.0)/3.0)
-			So(getInterpretNumber("(1 + 2) * 3"), ShouldEqual, (1.0+2.0)*3.0)
-			So(getInterpretNumber("(1 - 2) * 3"), ShouldEqual, (1.0-2.0)*3.0)
-			So(getInterpretNumber("2 + (1 - 2) / 3"), ShouldEqual, 2.0+(1.0-2.0)/3.0)
+			result, errors := calcgo.Interpret("(1 + 2) / 3")
+			So(result, ShouldEqual, (1.0+2.0)/3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("(1 - 2) / 3")
+			So(result, ShouldEqual, (1.0-2.0)/3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("(1 + 2) * 3")
+			So(result, ShouldEqual, (1.0+2.0)*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("(1 - 2) * 3")
+			So(result, ShouldEqual, (1.0-2.0)*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("2 + (1 - 2) / 3")
+			So(result, ShouldEqual, 2.0+(1.0-2.0)/3.0)
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("nested brackets", func() {
-			So(getInterpretNumber("((1 + 2) / 3) + 1"), ShouldEqual, ((1.0+2.0)/3.0)+1)
-			So(getInterpretNumber("((2 + 3) / (1 + 2)) * 3"), ShouldEqual, ((2.0+3.0)/(1.0+2.0))*3.0)
-			So(getInterpretNumber("(1 - 2) * (3 - 2) / (1 + 4)"), ShouldEqual, (1.0-2.0)*(3.0-2.0)/(1.0+4.0))
+			result, errors := calcgo.Interpret("((1 + 2) / 3) + 1")
+			So(result, ShouldEqual, ((1.0+2.0)/3.0)+1)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("((2 + 3) / (1 + 2)) * 3")
+			So(result, ShouldEqual, ((2.0+3.0)/(1.0+2.0))*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("(1 - 2) * (3 - 2) / (1 + 4)")
+			So(result, ShouldEqual, (1.0-2.0)*(3.0-2.0)/(1.0+4.0))
+			So(errors, ShouldBeNil)
 		})
 
 		Convey("brackets and dot before line rule", func() {
-			So(getInterpretNumber("1 + (1 + 2) * 3"), ShouldEqual, 1.0+(1.0+2.0)*3.0)
-			So(getInterpretNumber("1 + (1 + 2) / 3"), ShouldEqual, 1.0+(1.0+2.0)/3.0)
-			So(getInterpretNumber("1 - (1 + 2) * 3"), ShouldEqual, 1.0-(1.0+2.0)*3.0)
-			So(getInterpretNumber("1 - (1 + 2) / 3"), ShouldEqual, 1.0-(1.0+2.0)/3.0)
-			So(getInterpretNumber("(1 + 2) * 3 + (4 - 6 / (5 + 2))"), ShouldEqual, (1.0+2.0)*3.0+(4.0-6.0/(5.0+2.0)))
+			result, errors := calcgo.Interpret("1 + (1 + 2) * 3")
+			So(result, ShouldEqual, 1.0+(1.0+2.0)*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 + (1 + 2) / 3")
+			So(result, ShouldEqual, 1.0+(1.0+2.0)/3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 - (1 + 2) * 3")
+			So(result, ShouldEqual, 1.0-(1.0+2.0)*3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 - (1 + 2) / 3")
+			So(result, ShouldEqual, 1.0-(1.0+2.0)/3.0)
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("(1 + 2) * 3 + (4 - 6 / (5 + 2))")
+			So(result, ShouldEqual, (1.0+2.0)*3.0+(4.0-6.0/(5.0+2.0)))
+			So(errors, ShouldBeNil)
+		})
+	})
+
+	Convey("interpreter returns errors, when parser returned errors", t, func() {
+		result, errors := calcgo.Interpret("a")
+		So(result, ShouldEqual, 0)
+		So(errors, ShouldEqualErrors, []error{
+			calcgo.ErrorExpectedNumber,
+		})
+
+		result, errors = calcgo.Interpret("1 + a)")
+		So(result, ShouldEqual, 0)
+		So(errors, ShouldEqualErrors, []error{
+			calcgo.ErrorExpectedNumber,
+			calcgo.ErrorUnexpectedClosingBracket,
 		})
 	})
 
 	Convey("interpreter returns error when", t, func() {
 		Convey("dividing by 0", func() {
-			So(getInterpretError("1 / 0"), ShouldEqual, calcgo.ErrorDivisionByZero)
+			result, errors := calcgo.Interpret("1 / 0")
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorDivisionByZero,
+			})
 		})
 		Convey("a node child is missing", func() {
-			So(getInterpretASTError(calcgo.AST{
+			result, errors := calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:      calcgo.NAddition,
 					Value:     "",
@@ -132,9 +306,11 @@ func TestInterpreter(t *testing.T) {
 						RightChild: nil,
 					},
 				},
-			}), ShouldEqual, calcgo.ErrorMissingLeftChild)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorMissingLeftChild)
 
-			So(getInterpretASTError(calcgo.AST{
+			result, errors = calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "",
@@ -146,31 +322,37 @@ func TestInterpreter(t *testing.T) {
 					},
 					RightChild: nil,
 				},
-			}), ShouldEqual, calcgo.ErrorMissingRightChild)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorMissingRightChild)
 		})
 
 		Convey("a wrong number is given", func() {
-			So(getInterpretASTError(calcgo.AST{
+			result, errors := calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInteger,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
 				},
-			}), ShouldEqual, calcgo.ErrorInvalidInteger)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidInteger)
 
-			So(getInterpretASTError(calcgo.AST{
+			result, errors = calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NDecimal,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
 				},
-			}), ShouldEqual, calcgo.ErrorInvalidDecimal)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidDecimal)
 		})
 
 		Convey("an invalid node type if given", func() {
-			So(getInterpretASTError(calcgo.AST{
+			result, errors := calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "",
@@ -187,11 +369,13 @@ func TestInterpreter(t *testing.T) {
 						RightChild: nil,
 					},
 				},
-			}), ShouldEqual, calcgo.ErrorInvalidNodeType)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidNodeType)
 		})
 
 		Convey("the error doesn't happen on the first node", func() {
-			So(getInterpretASTError(calcgo.AST{
+			result, errors := calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "",
@@ -208,9 +392,11 @@ func TestInterpreter(t *testing.T) {
 						RightChild: nil,
 					},
 				},
-			}), ShouldEqual, calcgo.ErrorInvalidInteger)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidInteger)
 
-			So(getInterpretASTError(calcgo.AST{
+			result, errors = calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
 					Value: "",
@@ -227,7 +413,9 @@ func TestInterpreter(t *testing.T) {
 						RightChild: nil,
 					},
 				},
-			}), ShouldEqual, calcgo.ErrorInvalidInteger)
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidInteger)
 		})
 	})
 }

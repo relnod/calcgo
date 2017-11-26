@@ -1,5 +1,9 @@
 package calcgo
 
+import "errors"
+
+type parseState func(*Parser) parseState
+
 // AST stores the data of the abstract syntax tree.
 // The ast is in the form of a binary tree.
 type AST struct {
@@ -17,15 +21,35 @@ type Node struct {
 // NodeType defines the type of a node
 type NodeType uint
 
+// Parser holds state of parser
+type Parser struct {
+	tokens  []Token
+	topNode *Node
+	current *Node
+	index   int
+	errors  []error
+	nested  bool
+}
+
 // Node types
 const (
 	NError NodeType = iota
+	NInvalidNumber
+	NInvalidOperator
 	NInteger
 	NDecimal
 	NAddition
 	NSubtraction
 	NMultiplication
 	NDivision
+)
+
+// Errors retured by the parser
+var (
+	ErrorExpectedNumber           = errors.New("Error: Expected number got something else")
+	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
+	ErrorMissingClosingBracket    = errors.New("Error: Missing closing bracket")
+	ErrorUnexpectedClosingBracket = errors.New("Error: Unexpected closing bracket")
 )
 
 // Parse parses a string to an ast
@@ -61,25 +85,24 @@ const (
 //      RightChild: nil,
 //    },
 //  },
-func Parse(str string) AST {
+func Parse(str string) (AST, []error) {
 	tokens := Lex(str)
 	return ParseTokens(tokens)
 }
 
 // ParseTokens parses a list of tokens to an ast
-func ParseTokens(tokens []Token) AST {
-	var topNode *Node
-	var current *Node
-	var i int
-
-	topNode, i = numberOrLeftBracketEntry(topNode, tokens, -1, current)
-	if i > 0 {
-		// @todo
+func ParseTokens(tokens []Token) (AST, []error) {
+	if tokens == nil {
+		return AST{}, nil
 	}
+
+	p := &Parser{tokens, nil, nil, -1, nil, false}
+
+	topNode, _ := p.run()
 
 	ast := AST{topNode}
 
-	return ast
+	return ast, p.errors
 }
 
 // IsOperator returns true if the given nodeType is an operator.
@@ -99,19 +122,58 @@ func isHigherOperator(op1 NodeType, op2 NodeType) bool {
 	return op1 < op2
 }
 
-func getNumberNodeType(token TokenType) NodeType {
-	switch token {
+func (p *Parser) run() (*Node, int) {
+	for state := parseStart; state != nil; {
+		p.index++
+		if p.index >= len(p.tokens) {
+			if p.nested {
+				p.pushError(ErrorMissingClosingBracket)
+			}
+			break
+		}
+
+		state = state(p)
+	}
+
+	return p.topNode, p.index
+}
+
+func (p *Parser) currentType() TokenType {
+	return p.tokens[p.index].Type
+}
+
+func (p *Parser) currentValue() string {
+	return p.tokens[p.index].Value
+}
+
+func (p *Parser) newNode(nodeType NodeType) *Node {
+	return &Node{nodeType, p.currentValue(), nil, nil}
+}
+
+func (p *Parser) pushError(err error) {
+	p.errors = append(p.errors, err)
+}
+
+func (p *Parser) pushErrors(errors []error) {
+	for _, err := range errors {
+		p.pushError(err)
+	}
+}
+
+func (p *Parser) getNumberNodeType() NodeType {
+	switch p.currentType() {
 	case TInteger:
 		return NInteger
 	case TDecimal:
 		return NDecimal
 	}
 
-	return NError
+	p.pushError(ErrorExpectedNumber)
+	return NInvalidNumber
 }
 
-func getOperatorNodeType(token TokenType) NodeType {
-	switch token {
+func (p *Parser) getOperatorNodeType() NodeType {
+	switch p.currentType() {
 	case TOperatorPlus:
 		return NAddition
 	case TOperatorMinus:
@@ -122,98 +184,78 @@ func getOperatorNodeType(token TokenType) NodeType {
 		return NDivision
 	}
 
-	return NError
+	p.pushError(ErrorExpectedOperator)
+	return NInvalidOperator
 }
 
-func numberOrLeftBracketEntry(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func parseStart(p *Parser) parseState {
+	if p.currentType() == TLeftBracket {
+		p2 := &Parser{p.tokens, p.topNode, p.current, p.index, nil, true}
+		p.topNode, p.index = p2.run()
+		p.pushErrors(p2.errors)
+
+		return parseOperatorAfterRightBracket
 	}
 
-	if tokens[i].Type == TLeftBracket {
-		topNode, i = numberOrLeftBracketEntry(topNode, tokens, i, current)
+	nodeType := p.getNumberNodeType()
 
-		return operatorAfterRightBracket(topNode, tokens, i, current)
-	}
+	p.topNode = p.newNode(nodeType)
 
-	nodeType := getNumberNodeType(tokens[i].Type)
-
-	//@todo: handle wrong node type
-
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	topNode = node
-
-	return operator(topNode, tokens, i, current)
+	return parseOperator
 }
 
-func numberOrLeftBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func parseNumberOrLeftBracket(p *Parser) parseState {
+	if p.currentType() == TLeftBracket {
+		p2 := &Parser{p.tokens, p.topNode, p.current, p.index, nil, true}
+		p.current.RightChild, p.index = p2.run()
+		p.pushErrors(p2.errors)
+
+		return parseOperator
 	}
 
-	if tokens[i].Type == TLeftBracket {
-		topNodeNested := topNode
-		rightNode, i := numberOrLeftBracketEntry(topNodeNested, tokens, i, current)
-		current.RightChild = rightNode
+	nodeType := p.getNumberNodeType()
 
-		return operator(topNode, tokens, i, current)
-	}
-
-	nodeType := getNumberNodeType(tokens[i].Type)
-
-	//@todo: handle wrong node type
-
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	current.RightChild = node
-
-	return operator(topNode, tokens, i, current)
+	p.current.RightChild = p.newNode(nodeType)
+	return parseOperator
 }
 
-func operator(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func parseOperator(p *Parser) parseState {
+	if p.currentType() == TRightBracket {
+		if !p.nested {
+			p.pushError(ErrorUnexpectedClosingBracket)
+		}
+		return nil
 	}
 
-	if tokens[i].Type == TRightBracket {
-		return topNode, i
-	}
+	nodeType := p.getOperatorNodeType()
 
-	nodeType := getOperatorNodeType(tokens[i].Type)
-
-	// @todo: handle wrong node type
-
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	if IsOperator(topNode.Type) && isHigherOperator(topNode.Type, nodeType) {
-		node.LeftChild = topNode.RightChild
-		topNode.RightChild = node
+	node := p.newNode(nodeType)
+	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, nodeType) {
+		node.LeftChild = p.topNode.RightChild
+		p.topNode.RightChild = node
 	} else {
-		node.LeftChild = topNode
-		topNode = node
+		node.LeftChild = p.topNode
+		p.topNode = node
 	}
+	p.current = node
 
-	return numberOrLeftBracket(topNode, tokens, i, node)
+	return parseNumberOrLeftBracket
 }
 
-func operatorAfterRightBracket(topNode *Node, tokens []Token, i int, current *Node) (*Node, int) {
-	i++
-	if i == len(tokens) {
-		return topNode, i
+func parseOperatorAfterRightBracket(p *Parser) parseState {
+	if p.currentType() == TRightBracket {
+		if !p.nested {
+			p.pushError(ErrorUnexpectedClosingBracket)
+		}
+		return nil
 	}
 
-	if tokens[i].Type == TRightBracket {
-		return topNode, i
-	}
+	nodeType := p.getOperatorNodeType()
 
-	nodeType := getOperatorNodeType(tokens[i].Type)
+	node := p.newNode(nodeType)
+	node.LeftChild = p.topNode
+	p.topNode = node
+	p.current = node
 
-	// @todo: handle wrong node type
-
-	node := &Node{nodeType, tokens[i].Value, nil, nil}
-	node.LeftChild = topNode
-	topNode = node
-
-	return numberOrLeftBracket(topNode, tokens, i, node)
+	return parseNumberOrLeftBracket
 }

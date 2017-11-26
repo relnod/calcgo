@@ -22,13 +22,22 @@ var (
 // Examples:
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
 //  caclgo.Interpret("1 + 2 * 3")   // Result: 7
-func Interpret(str string) (float64, error) {
+func Interpret(str string) (float64, []error) {
 	if len(str) == 0 {
 		return 0, nil
 	}
 
-	ast := Parse(str)
-	return InterpretAST(ast)
+	ast, errors := Parse(str)
+	if errors != nil {
+		return 0, errors
+	}
+
+	result, err := InterpretAST(ast)
+	if err != nil {
+		return 0, []error{err}
+	}
+
+	return result, nil
 }
 
 // InterpretAST interprets a given ast.
@@ -73,19 +82,20 @@ func calculateNode(node *Node) (float64, error) {
 		return 0, err
 	}
 
+	var result float64
 	switch node.Type {
 	case NAddition:
-		return left + right, nil
+		result = left + right
 	case NSubtraction:
-		return left - right, nil
+		result = left - right
 	case NMultiplication:
-		return left * right, nil
+		result = left * right
 	case NDivision:
 		if right == 0 {
 			return 0, ErrorDivisionByZero
 		}
-		return left / right, nil
+		result = left / right
 	}
 
-	return 0, ErrorParserError
+	return result, nil
 }
