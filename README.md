@@ -51,7 +51,8 @@ func main() {
 
 ## Grammar
 
-The lexer, parser and interpreter accept the language L(G), where G is the following deterministic
+### Lexer:
+The lexer accepts the language L(G), where G is the following deterministic
 contextfree grammar:
 
 G = (N,T,P,S)
@@ -60,35 +61,55 @@ N = {S}
 
 T = {n, o, l, r}
 
-P contains 3 rules:
+P contains the following rules:
 
-S → SoS
+S → SOS
 
 S → lSr
 
 S →  n
 
+S →  nN
+
+O →  sos
+
+N →  dF
+
+N →  nF
+
+N →  n
+
+F →  nF
+
+F →  n
+
 #### Terminals
-n ∈ { integer, float }
+n ∈ { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }
 
-o ∈ { +, -, *, / }
+d ∈  { '.' }
 
-l ∈ { ( }
+o ∈ { '+', '-', '*'*, '/' }
 
-r ∈ { ) }
+l ∈ { '(' }
+
+r ∈ { ')' }
+
+s ∈  { ' ' }
 
 ## Tests and Benchmarks
 
-### Running Tests
+#### Running Tests
 
 Run tests with ```go test -v -race``` or with ```goconvey``` to see live test
-result in a browser.
+results in a browser.
 
-### Running Benchmarks
+#### Running Benchmarks
 
 Benchmarks can be tun with ```go test -run=^$ -bench=.```
-To see the differences between two branches/commits run ```./scrpts/benchcmp.sh -n 5```
+
+To see the differences between current branch and master run ```./scripts/benchcmp.sh -n 5```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../master/LICENSE) file for details
+This project is licensed under the MIT License. See the
+[LICENSE](../master/LICENSE) file for details.
