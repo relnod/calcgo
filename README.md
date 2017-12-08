@@ -52,8 +52,7 @@ func main() {
 ## Grammar
 
 ### Lexer:
-The lexer accepts the language L(G), where G is the following deterministic
-contextfree grammar:
+The lexer accepts the language L(G), where G is the following grammar:
 
 G = (N,T,P,S)
 
