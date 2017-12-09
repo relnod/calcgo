@@ -13,7 +13,11 @@ type Tokens []calcgo.Token
 func tokenTypeToString(tokenType calcgo.TokenType) string {
 	switch calcgo.TokenType(tokenType) {
 	case calcgo.TInteger:
-		return "Number"
+		return "Integer"
+	case calcgo.TDecimal:
+		return "Decimal"
+	case calcgo.TVariable:
+		return "Variable"
 	case calcgo.TOperatorPlus:
 		return "Plus"
 	case calcgo.TOperatorMinus:
@@ -26,10 +30,12 @@ func tokenTypeToString(tokenType calcgo.TokenType) string {
 		return "Left Bracket"
 	case calcgo.TRightBracket:
 		return "RightBracket"
-	case calcgo.TInvalidCharacterInNumber:
-		return "Invalid Character in Number"
 	case calcgo.TInvalidCharacter:
 		return "Invalid Character"
+	case calcgo.TInvalidCharacterInNumber:
+		return "Invalid Character in Number"
+	case calcgo.TInvalidCharacterInVariable:
+		return "Invalid Character in Variable"
 	default:
 		return "Undefined Token Type"
 	}
@@ -277,6 +283,12 @@ func TestLexer(t *testing.T) {
 			So(calcgo.Lex("%"), shouldEqualToken, []calcgo.Token{
 				{Value: "%", Type: calcgo.TInvalidCharacter},
 			})
+			So(calcgo.Lex("a$"), shouldEqualToken, []calcgo.Token{
+				{Value: "$", Type: calcgo.TInvalidCharacterInVariable},
+			})
+			So(calcgo.Lex("a1"), shouldEqualToken, []calcgo.Token{
+				{Value: "1", Type: calcgo.TInvalidCharacterInVariable},
+			})
 			So(calcgo.Lex("1 + ~"), shouldEqualToken, []calcgo.Token{
 				{Value: "1", Type: calcgo.TInteger},
 				{Value: "", Type: calcgo.TOperatorPlus},
@@ -346,6 +358,48 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: calcgo.TRightBracket},
 				{Value: "", Type: calcgo.TOperatorMult},
 				{Value: "2", Type: calcgo.TInteger},
+			})
+		})
+	})
+
+	Convey("Lexer works with variables", t, func() {
+		Convey("single letter variables", func() {
+			So(calcgo.Lex("a"), shouldEqualToken, []calcgo.Token{
+				{Value: "a", Type: calcgo.TVariable},
+			})
+		})
+
+		Convey("multi letter variables", func() {
+			So(calcgo.Lex("ab"), shouldEqualToken, []calcgo.Token{
+				{Value: "ab", Type: calcgo.TVariable},
+			})
+
+			So(calcgo.Lex("abcdefghiklmnopqrstvxyz"), shouldEqualToken, []calcgo.Token{
+				{Value: "abcdefghiklmnopqrstvxyz", Type: calcgo.TVariable},
+			})
+		})
+
+		Convey("variables in combination with operators and brackets", func() {
+			So(calcgo.Lex("a  +  2"), shouldEqualToken, []calcgo.Token{
+				{Value: "a", Type: calcgo.TVariable},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "2", Type: calcgo.TInteger},
+			})
+
+			So(calcgo.Lex("ab  +  bc"), shouldEqualToken, []calcgo.Token{
+				{Value: "ab", Type: calcgo.TVariable},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "bc", Type: calcgo.TVariable},
+			})
+
+			So(calcgo.Lex("(a  +  b) - c"), shouldEqualToken, []calcgo.Token{
+				{Value: "", Type: calcgo.TLeftBracket},
+				{Value: "a", Type: calcgo.TVariable},
+				{Value: "", Type: calcgo.TOperatorPlus},
+				{Value: "b", Type: calcgo.TVariable},
+				{Value: "", Type: calcgo.TRightBracket},
+				{Value: "", Type: calcgo.TOperatorMinus},
+				{Value: "c", Type: calcgo.TVariable},
 			})
 		})
 	})
