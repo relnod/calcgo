@@ -12,6 +12,7 @@ var (
 	ErrorInvalidNodeType   = errors.New("Error: Invalid node type")
 	ErrorInvalidInteger    = errors.New("Error: Invalid Integer")
 	ErrorInvalidDecimal    = errors.New("Error: Invalid Decimal")
+	ErrorInvalidVariable   = errors.New("Error: Invalid Variable")
 	ErrorParserError       = errors.New("Error: Parser error")
 	ErrorDivisionByZero    = errors.New("Error: Division by zero")
 )

@@ -274,13 +274,13 @@ func TestInterpreter(t *testing.T) {
 		result, errors := calcgo.Interpret("$")
 		So(result, ShouldEqual, 0)
 		So(errors, ShouldEqualErrors, []error{
-			calcgo.ErrorExpectedNumber,
+			calcgo.ErrorExpectedNumberOrVariable,
 		})
 
 		result, errors = calcgo.Interpret("1 + #)")
 		So(result, ShouldEqual, 0)
 		So(errors, ShouldEqualErrors, []error{
-			calcgo.ErrorExpectedNumber,
+			calcgo.ErrorExpectedNumberOrVariable,
 			calcgo.ErrorUnexpectedClosingBracket,
 		})
 	})
