@@ -270,6 +270,54 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
+	Convey("variables", t, func() {
+		Convey("works with simple variables", func() {
+			i := calcgo.NewInterpreter("a")
+			i.SetVar("a", 1.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 1)
+			So(errors, ShouldBeNil)
+
+			i = calcgo.NewInterpreter("1 + a")
+			i.SetVar("a", 1.0)
+			result, errors = i.GetResult()
+			So(result, ShouldEqual, 2)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("works with multiple variables", func() {
+			i := calcgo.NewInterpreter("a + b")
+			i.SetVar("a", 1)
+			i.SetVar("b", 2)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 3)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("works with reassining variables", func() {
+			i := calcgo.NewInterpreter("1 + a")
+
+			i.SetVar("a", 1.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 2)
+			So(errors, ShouldBeNil)
+
+			i.SetVar("a", 3.0)
+			result, errors = i.GetResult()
+			So(result, ShouldEqual, 4)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("returns error, when not providing variable", func() {
+			i := calcgo.NewInterpreter("1 + a")
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorVariableNotDefined,
+			})
+		})
+	})
+
 	Convey("interpreter returns errors, when parser returned errors", t, func() {
 		result, errors := calcgo.Interpret("$")
 		So(result, ShouldEqual, 0)
