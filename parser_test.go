@@ -913,11 +913,11 @@ func TestParser(t *testing.T) {
 
 	Convey("Parser works with errors", t, func() {
 		Convey("handles invalid number", func() {
-			ast, errors := calcgo.Parse("a")
+			ast, errors := calcgo.Parse("#")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInvalidNumber,
-					Value:      "a",
+					Value:      "#",
 					LeftChild:  nil,
 					RightChild: nil,
 				},
@@ -926,7 +926,7 @@ func TestParser(t *testing.T) {
 				calcgo.ErrorExpectedNumber,
 			})
 
-			ast, errors = calcgo.Parse("1 + a")
+			ast, errors = calcgo.Parse("1 + #")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
@@ -939,7 +939,7 @@ func TestParser(t *testing.T) {
 					},
 					RightChild: &calcgo.Node{
 						Type:       calcgo.NInvalidNumber,
-						Value:      "a",
+						Value:      "#",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
@@ -950,20 +950,20 @@ func TestParser(t *testing.T) {
 			})
 
 			Convey("handles multiple invalid number errors", func() {
-				ast, errors := calcgo.Parse("a + a")
+				ast, errors := calcgo.Parse("# + '")
 				So(ast, shouldEqualAST, calcgo.AST{
 					Node: &calcgo.Node{
 						Type:  calcgo.NAddition,
 						Value: "",
 						LeftChild: &calcgo.Node{
 							Type:       calcgo.NInvalidNumber,
-							Value:      "a",
+							Value:      "#",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &calcgo.Node{
 							Type:       calcgo.NInvalidNumber,
-							Value:      "a",
+							Value:      "'",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
