@@ -123,9 +123,9 @@ func InterpretAST(ast AST) (float64, error) {
 func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 	switch node.Type {
 	case NInteger:
-		return i.interpretInteger(node)
+		return interpretInteger(node)
 	case NDecimal:
-		return i.interpretDecimal(node)
+		return interpretDecimal(node)
 	case NVariable:
 		return i.interpretVariable(node)
 	case NAddition:
@@ -141,7 +141,7 @@ func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 	return 0, ErrorInvalidNodeType
 }
 
-func (i *Interpreter) interpretInteger(node *Node) (float64, error) {
+func interpretInteger(node *Node) (float64, error) {
 	integer, err := strconv.Atoi(node.Value)
 	if err != nil {
 		return 0, ErrorInvalidInteger
@@ -149,7 +149,7 @@ func (i *Interpreter) interpretInteger(node *Node) (float64, error) {
 	return float64(integer), nil
 }
 
-func (i *Interpreter) interpretDecimal(node *Node) (float64, error) {
+func interpretDecimal(node *Node) (float64, error) {
 	decimal, err := strconv.ParseFloat(node.Value, 64)
 	if err != nil {
 		return 0, ErrorInvalidDecimal
