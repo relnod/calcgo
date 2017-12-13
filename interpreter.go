@@ -51,7 +51,8 @@ func (i *Interpreter) SetVar(name string, value float64) {
 // GetResult interprets the ast.
 // All variables have to be set up to this point
 //
-// If the interpreter was initialized with a string, the ast gets generated first
+// If the interpreter was initialized with a string,
+// the ast gets generated first
 func (i *Interpreter) GetResult() (float64, []error) {
 	if i.ast == nil {
 		ast, errors := Parse(i.str)
@@ -71,7 +72,7 @@ func (i *Interpreter) GetResult() (float64, []error) {
 }
 
 // Interpret interprets a given string.
-// Can return an error if parsing failed
+// Returns errors if lexing, parsing or interpreting failed
 //
 // Examples:
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
@@ -87,7 +88,27 @@ func Interpret(str string) (float64, []error) {
 }
 
 // InterpretAST interprets a given ast.
-// Can return an error if the ast is invalid.
+// Returns an error if the ast is invalid.
+//
+// Example:
+//  result, err := calcgo.InterpretAST(calcgo.AST{
+//		Node: &calcgo.Node{
+//			Type:  calcgo.NAddition,
+//			Value: "",
+//			LeftChild: &calcgo.Node{
+//				Type:       calcgo.NInteger,
+//				Value:      "1",
+//				LeftChild:  nil,
+//				RightChild: nil,
+//			},
+//			RightChild: &calcgo.Node{
+//				Type:       calcgo.NInteger,
+//				Value:      "2",
+//				LeftChild:  nil,
+//				RightChild: nil,
+//			},
+//		},
+//  })
 func InterpretAST(ast AST) (float64, error) {
 	interpreter := NewInterpreterFromAST(&ast)
 

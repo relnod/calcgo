@@ -196,7 +196,7 @@ func TestInterpreter(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("dot before line rule", func() {
+		Convey("'multiplication and division before addition and subtraction' rule", func() {
 			result, errors := calcgo.Interpret("1 + 2 / 3")
 			SkipSo(result, ShouldEqual, 1.0+2.0/3.0) // @todo: fix rounding error
 			So(errors, ShouldBeNil)
@@ -250,7 +250,7 @@ func TestInterpreter(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("brackets and dot before line rule", func() {
+		Convey("brackets and 'multiplication and division before addition and subtraction' rule", func() {
 			result, errors := calcgo.Interpret("1 + (1 + 2) * 3")
 			So(result, ShouldEqual, 1.0+(1.0+2.0)*3.0)
 			So(errors, ShouldBeNil)
@@ -273,7 +273,7 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
-	Convey("variables", t, func() {
+	Convey("interpreter handles variables", t, func() {
 		Convey("works with simple variables", func() {
 			i := calcgo.NewInterpreter("a")
 			i.SetVar("a", 1.0)
@@ -364,7 +364,7 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
-	Convey("interpreter returns error when", t, func() {
+	Convey("interpreter returns an error when", t, func() {
 		Convey("dividing by 0", func() {
 			result, errors := calcgo.Interpret("1 / 0")
 			So(result, ShouldEqual, 0)

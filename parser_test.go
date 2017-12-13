@@ -446,7 +446,7 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("dot before line", func() {
+		Convey("'multiplication and division before addition and subtraction' rule", func() {
 			ast, errors := calcgo.Parse("1 + 2 * 3")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
@@ -743,7 +743,7 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("Brackets with dot before line rule", func() {
+		Convey("Brackets with 'multiplication and division before addition and subtraction' rule", func() {
 			ast, errors := calcgo.Parse("3 + (1 - 2) / 4")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{

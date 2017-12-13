@@ -183,7 +183,7 @@ func TestLexer(t *testing.T) {
 		})
 	})
 
-	Convey("works with operators", t, func() {
+	Convey("Lexer works with operators", t, func() {
 		Convey("plus", func() {
 			So(calcgo.Lex("+"), shouldEqualToken, []calcgo.Token{
 				{Value: "", Type: calcgo.TOperatorPlus},
@@ -206,7 +206,7 @@ func TestLexer(t *testing.T) {
 		})
 	})
 
-	Convey("works with brackets", t, func() {
+	Convey("Lexer works with brackets", t, func() {
 		Convey("left bracket", func() {
 			So(calcgo.Lex("("), shouldEqualToken, []calcgo.Token{
 				{Value: "", Type: calcgo.TLeftBracket},
@@ -227,7 +227,7 @@ func TestLexer(t *testing.T) {
 		})
 	})
 
-	Convey("works with mixed types", t, func() {
+	Convey("Lexer works with mixed types", t, func() {
 		So(calcgo.Lex("1 + 2"), shouldEqualToken, []calcgo.Token{
 			{Value: "1", Type: calcgo.TInteger},
 			{Value: "", Type: calcgo.TOperatorPlus},
@@ -266,33 +266,35 @@ func TestLexer(t *testing.T) {
 		})
 	})
 
-	Convey("gives an error with", t, func() {
-		Convey("invalid character in number", func() {
-			So(calcgo.Lex("1%"), shouldEqualToken, []calcgo.Token{
-				{Value: "%", Type: calcgo.TInvalidCharacterInNumber},
+	Convey("Lexer handles invalid input correctly", t, func() {
+		Convey("returns error with", func() {
+			Convey("invalid character in number", func() {
+				So(calcgo.Lex("1%"), shouldEqualToken, []calcgo.Token{
+					{Value: "%", Type: calcgo.TInvalidCharacterInNumber},
+				})
+				So(calcgo.Lex("10123o"), shouldEqualToken, []calcgo.Token{
+					{Value: "o", Type: calcgo.TInvalidCharacterInNumber},
+				})
+				So(calcgo.Lex("10123? "), shouldEqualToken, []calcgo.Token{
+					{Value: "?", Type: calcgo.TInvalidCharacterInNumber},
+				})
 			})
-			So(calcgo.Lex("10123o"), shouldEqualToken, []calcgo.Token{
-				{Value: "o", Type: calcgo.TInvalidCharacterInNumber},
-			})
-			So(calcgo.Lex("10123? "), shouldEqualToken, []calcgo.Token{
-				{Value: "?", Type: calcgo.TInvalidCharacterInNumber},
-			})
-		})
 
-		Convey("invalid characters", func() {
-			So(calcgo.Lex("%"), shouldEqualToken, []calcgo.Token{
-				{Value: "%", Type: calcgo.TInvalidCharacter},
-			})
-			So(calcgo.Lex("a$"), shouldEqualToken, []calcgo.Token{
-				{Value: "$", Type: calcgo.TInvalidCharacterInVariable},
-			})
-			So(calcgo.Lex("a1"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInvalidCharacterInVariable},
-			})
-			So(calcgo.Lex("1 + ~"), shouldEqualToken, []calcgo.Token{
-				{Value: "1", Type: calcgo.TInteger},
-				{Value: "", Type: calcgo.TOperatorPlus},
-				{Value: "~", Type: calcgo.TInvalidCharacter},
+			Convey("invalid characters", func() {
+				So(calcgo.Lex("%"), shouldEqualToken, []calcgo.Token{
+					{Value: "%", Type: calcgo.TInvalidCharacter},
+				})
+				So(calcgo.Lex("a$"), shouldEqualToken, []calcgo.Token{
+					{Value: "$", Type: calcgo.TInvalidCharacterInVariable},
+				})
+				So(calcgo.Lex("a1"), shouldEqualToken, []calcgo.Token{
+					{Value: "1", Type: calcgo.TInvalidCharacterInVariable},
+				})
+				So(calcgo.Lex("1 + ~"), shouldEqualToken, []calcgo.Token{
+					{Value: "1", Type: calcgo.TInteger},
+					{Value: "", Type: calcgo.TOperatorPlus},
+					{Value: "~", Type: calcgo.TInvalidCharacter},
+				})
 			})
 		})
 
@@ -317,8 +319,8 @@ func TestLexer(t *testing.T) {
 		})
 	})
 
-	Convey("works whitespace", t, func() {
-		Convey("whitespace at the beginning", func() {
+	Convey("Lexer handles whitespace", t, func() {
+		Convey("at the beginning", func() {
 			So(calcgo.Lex(" 1 + 2"), shouldEqualToken, []calcgo.Token{
 				{Value: "1", Type: calcgo.TInteger},
 				{Value: "", Type: calcgo.TOperatorPlus},
@@ -331,7 +333,7 @@ func TestLexer(t *testing.T) {
 			})
 		})
 
-		Convey("whitespace at the end", func() {
+		Convey("at the end", func() {
 			So(calcgo.Lex("1 + 2 "), shouldEqualToken, []calcgo.Token{
 				{Value: "1", Type: calcgo.TInteger},
 				{Value: "", Type: calcgo.TOperatorPlus},
