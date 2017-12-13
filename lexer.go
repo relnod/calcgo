@@ -10,6 +10,7 @@ const (
 	TEOF TokenType = iota
 	TInteger
 	TDecimal
+	TVariable
 	TOperatorPlus
 	TOperatorMinus
 	TOperatorMult
@@ -18,6 +19,7 @@ const (
 	TRightBracket
 	TInvalidCharacter
 	TInvalidCharacterInNumber
+	TInvalidCharacterInVariable
 )
 
 // Token represents a token returned by the lexer
@@ -141,6 +143,10 @@ func isDigit(b byte) bool {
 	return b >= '0' && b <= '9'
 }
 
+func isLetter(b byte) bool {
+	return b >= 'a' && b <= 'z'
+}
+
 func lexAll(l *Lexer) stateFn {
 	var tokenType TokenType
 
@@ -152,6 +158,9 @@ func lexAll(l *Lexer) stateFn {
 	}
 	if isDigit(b) {
 		return lexNumber
+	}
+	if isLetter(b) {
+		return lexVariable
 	}
 	if isWhiteSpace(b) {
 		return lexAll
@@ -206,5 +215,28 @@ func lexNumber(l *Lexer) stateFn {
 	}
 
 	l.emit(tokenType)
+	return lexAll
+}
+
+func lexVariable(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isLetter(b) {
+			continue
+		} else if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		} else {
+			l.lastPos = l.pos - 1
+			l.emit(TInvalidCharacterInVariable)
+			return lexAll
+		}
+	}
+
+	l.emit(TVariable)
 	return lexAll
 }

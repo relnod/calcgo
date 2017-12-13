@@ -13,6 +13,9 @@ func errorsToString(errors []error) string {
 
 	str += "(\n"
 	for _, err := range errors {
+		if err == nil {
+			continue
+		}
 		str += err.Error() + "\n"
 	}
 	str += ")\n"
@@ -193,7 +196,7 @@ func TestInterpreter(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("dot before line rule", func() {
+		Convey("'multiplication and division before addition and subtraction' rule", func() {
 			result, errors := calcgo.Interpret("1 + 2 / 3")
 			SkipSo(result, ShouldEqual, 1.0+2.0/3.0) // @todo: fix rounding error
 			So(errors, ShouldBeNil)
@@ -247,7 +250,7 @@ func TestInterpreter(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("brackets and dot before line rule", func() {
+		Convey("brackets and 'multiplication and division before addition and subtraction' rule", func() {
 			result, errors := calcgo.Interpret("1 + (1 + 2) * 3")
 			So(result, ShouldEqual, 1.0+(1.0+2.0)*3.0)
 			So(errors, ShouldBeNil)
@@ -270,22 +273,98 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
-	Convey("interpreter returns errors, when parser returned errors", t, func() {
-		result, errors := calcgo.Interpret("a")
-		So(result, ShouldEqual, 0)
-		So(errors, ShouldEqualErrors, []error{
-			calcgo.ErrorExpectedNumber,
+	Convey("interpreter handles variables", t, func() {
+		Convey("works with simple variables", func() {
+			i := calcgo.NewInterpreter("a")
+			i.SetVar("a", 1.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 1)
+			So(errors, ShouldBeNil)
+
+			i = calcgo.NewInterpreter("1 + a")
+			i.SetVar("a", 1.0)
+			result, errors = i.GetResult()
+			So(result, ShouldEqual, 2)
+			So(errors, ShouldBeNil)
 		})
 
-		result, errors = calcgo.Interpret("1 + a)")
+		Convey("works with multiple variables", func() {
+			i := calcgo.NewInterpreter("a + b")
+			i.SetVar("a", 1)
+			i.SetVar("b", 2)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 3)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("works with reassining variables", func() {
+			i := calcgo.NewInterpreter("1 + a")
+
+			i.SetVar("a", 1.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 2)
+			So(errors, ShouldBeNil)
+
+			i.SetVar("a", 3.0)
+			result, errors = i.GetResult()
+			So(result, ShouldEqual, 4)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("returns error, when not providing variable", func() {
+			i := calcgo.NewInterpreter("1 + a")
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorVariableNotDefined,
+			})
+		})
+	})
+
+	Convey("Interpret() works the same as InterpretAST()", t, func() {
+		result1, errors1 := calcgo.Interpret("1 + 2")
+		result2, err := calcgo.InterpretAST(calcgo.AST{
+			Node: &calcgo.Node{
+				Type:  calcgo.NAddition,
+				Value: "",
+				LeftChild: &calcgo.Node{
+					Type:       calcgo.NInteger,
+					Value:      "1",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+				RightChild: &calcgo.Node{
+					Type:       calcgo.NInteger,
+					Value:      "2",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			},
+		})
+		errors2 := []error{err}
+		if err == nil {
+			errors2 = nil
+		}
+		So(result1, ShouldEqual, result2)
+		So(errors1, ShouldEqualErrors, errors2)
+	})
+
+	Convey("interpreter returns errors, when parser returned errors", t, func() {
+		result, errors := calcgo.Interpret("$")
 		So(result, ShouldEqual, 0)
 		So(errors, ShouldEqualErrors, []error{
-			calcgo.ErrorExpectedNumber,
+			calcgo.ErrorExpectedNumberOrVariable,
+		})
+
+		result, errors = calcgo.Interpret("1 + #)")
+		So(result, ShouldEqual, 0)
+		So(errors, ShouldEqualErrors, []error{
+			calcgo.ErrorExpectedNumberOrVariable,
 			calcgo.ErrorUnexpectedClosingBracket,
 		})
 	})
 
-	Convey("interpreter returns error when", t, func() {
+	Convey("interpreter returns an error when", t, func() {
 		Convey("dividing by 0", func() {
 			result, errors := calcgo.Interpret("1 / 0")
 			So(result, ShouldEqual, 0)
@@ -351,10 +430,73 @@ func TestInterpreter(t *testing.T) {
 			So(errors, ShouldEqual, calcgo.ErrorInvalidDecimal)
 		})
 
-		Convey("an invalid node type if given", func() {
+		Convey("an invalid node type is given", func() {
 			result, errors := calcgo.InterpretAST(calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       30000,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidNodeType)
+
+			result, errors = calcgo.InterpretAST(calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NSubtraction,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       30000,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidNodeType)
+
+			result, errors = calcgo.InterpretAST(calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NMultiplication,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       30000,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqual, calcgo.ErrorInvalidNodeType)
+
+			result, errors = calcgo.InterpretAST(calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NDivision,
 					Value: "",
 					LeftChild: &calcgo.Node{
 						Type:       30000,

@@ -137,6 +137,32 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
+		Convey("variables", func() {
+			ast, errors := calcgo.Parse("a")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NVariable,
+					Value:      "a",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+
+			So(errors, ShouldBeNil)
+
+			ast, errors = calcgo.Parse("abcdef")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NVariable,
+					Value:      "abcdef",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+			So(errors, ShouldBeNil)
+
+		})
+
 		Convey("additions", func() {
 			ast, errors := calcgo.Parse("1 + 2")
 			So(ast, shouldEqualAST, calcgo.AST{
@@ -376,7 +402,51 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("dot before line", func() {
+		Convey("variables and operators", func() {
+			ast, errors := calcgo.Parse("a + 2")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NAddition,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NVariable,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NInteger,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+
+			ast, errors = calcgo.Parse("a - b")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:  calcgo.NSubtraction,
+					Value: "",
+					LeftChild: &calcgo.Node{
+						Type:       calcgo.NVariable,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &calcgo.Node{
+						Type:       calcgo.NVariable,
+						Value:      "b",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("'multiplication and division before addition and subtraction' rule", func() {
 			ast, errors := calcgo.Parse("1 + 2 * 3")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
@@ -673,7 +743,7 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("Brackets with dot before line rule", func() {
+		Convey("Brackets with 'multiplication and division before addition and subtraction' rule", func() {
 			ast, errors := calcgo.Parse("3 + (1 - 2) / 4")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
@@ -913,20 +983,20 @@ func TestParser(t *testing.T) {
 
 	Convey("Parser works with errors", t, func() {
 		Convey("handles invalid number", func() {
-			ast, errors := calcgo.Parse("a")
+			ast, errors := calcgo.Parse("1#")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:       calcgo.NInvalidNumber,
-					Value:      "a",
+					Value:      "#",
 					LeftChild:  nil,
 					RightChild: nil,
 				},
 			})
 			So(errors, ShouldEqualErrors, []error{
-				calcgo.ErrorExpectedNumber,
+				calcgo.ErrorExpectedNumberOrVariable,
 			})
 
-			ast, errors = calcgo.Parse("1 + a")
+			ast, errors = calcgo.Parse("1 + 3#")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NAddition,
@@ -939,40 +1009,70 @@ func TestParser(t *testing.T) {
 					},
 					RightChild: &calcgo.Node{
 						Type:       calcgo.NInvalidNumber,
-						Value:      "a",
+						Value:      "#",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 				},
 			})
 			So(errors, ShouldEqualErrors, []error{
-				calcgo.ErrorExpectedNumber,
+				calcgo.ErrorExpectedNumberOrVariable,
 			})
 
 			Convey("handles multiple invalid number errors", func() {
-				ast, errors := calcgo.Parse("a + a")
+				ast, errors := calcgo.Parse("2# + 3'")
 				So(ast, shouldEqualAST, calcgo.AST{
 					Node: &calcgo.Node{
 						Type:  calcgo.NAddition,
 						Value: "",
 						LeftChild: &calcgo.Node{
 							Type:       calcgo.NInvalidNumber,
-							Value:      "a",
+							Value:      "#",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &calcgo.Node{
 							Type:       calcgo.NInvalidNumber,
-							Value:      "a",
+							Value:      "'",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 				})
 				So(errors, ShouldEqualErrors, []error{
-					calcgo.ErrorExpectedNumber,
-					calcgo.ErrorExpectedNumber,
+					calcgo.ErrorExpectedNumberOrVariable,
+					calcgo.ErrorExpectedNumberOrVariable,
 				})
+			})
+		})
+
+		Convey("handles invalid variable", func() {
+			ast, errors := calcgo.Parse("a#")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NInvalidVariable,
+					Value:      "#",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedNumberOrVariable,
+			})
+		})
+
+		Convey("handles invalid number or variable", func() {
+			ast, errors := calcgo.Parse("#")
+			So(ast, shouldEqualAST, calcgo.AST{
+				Node: &calcgo.Node{
+					Type:       calcgo.NError,
+					Value:      "#",
+					LeftChild:  nil,
+					RightChild: nil,
+				},
+			})
+			So(errors, ShouldEqualErrors, []error{
+				calcgo.ErrorExpectedNumberOrVariable,
 			})
 		})
 
@@ -1038,29 +1138,29 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("handles multiple mixed errors", func() {
-			ast, errors := calcgo.Parse("a $ a")
+			ast, errors := calcgo.Parse("1# $ 1#")
 			So(ast, shouldEqualAST, calcgo.AST{
 				Node: &calcgo.Node{
 					Type:  calcgo.NInvalidOperator,
 					Value: "$",
 					LeftChild: &calcgo.Node{
 						Type:       calcgo.NInvalidNumber,
-						Value:      "a",
+						Value:      "#",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &calcgo.Node{
 						Type:       calcgo.NInvalidNumber,
-						Value:      "a",
+						Value:      "#",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 				},
 			})
 			So(errors, ShouldEqualErrors, []error{
-				calcgo.ErrorExpectedNumber,
+				calcgo.ErrorExpectedNumberOrVariable,
 				calcgo.ErrorExpectedOperator,
-				calcgo.ErrorExpectedNumber,
+				calcgo.ErrorExpectedNumberOrVariable,
 			})
 		})
 

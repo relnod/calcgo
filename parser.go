@@ -35,9 +35,11 @@ type Parser struct {
 const (
 	NError NodeType = iota
 	NInvalidNumber
+	NInvalidVariable
 	NInvalidOperator
 	NInteger
 	NDecimal
+	NVariable
 	NAddition
 	NSubtraction
 	NMultiplication
@@ -46,7 +48,7 @@ const (
 
 // Errors retured by the parser
 var (
-	ErrorExpectedNumber           = errors.New("Error: Expected number got something else")
+	ErrorExpectedNumberOrVariable = errors.New("Error: Expected number or variable got something else")
 	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
 	ErrorMissingClosingBracket    = errors.New("Error: Missing closing bracket")
 	ErrorUnexpectedClosingBracket = errors.New("Error: Unexpected closing bracket")
@@ -168,20 +170,28 @@ func (p *Parser) newOperatorNode() *Node {
 	return &Node{p.getOperatorNodeType(), p.currToken.Value, nil, nil}
 }
 
-func (p *Parser) newNumberNode() *Node {
-	return &Node{p.getNumberNodeType(), p.currToken.Value, nil, nil}
+func (p *Parser) newNumberOrVariableNode() *Node {
+	return &Node{p.getNumberOrVariableNodeType(), p.currToken.Value, nil, nil}
 }
 
-func (p *Parser) getNumberNodeType() NodeType {
+func (p *Parser) getNumberOrVariableNodeType() NodeType {
 	switch p.currToken.Type {
 	case TInteger:
 		return NInteger
 	case TDecimal:
 		return NDecimal
+	case TVariable:
+		return NVariable
 	}
 
-	p.pushError(ErrorExpectedNumber)
-	return NInvalidNumber
+	p.pushError(ErrorExpectedNumberOrVariable)
+	switch p.currToken.Type {
+	case TInvalidCharacterInNumber:
+		return NInvalidNumber
+	case TInvalidCharacterInVariable:
+		return NInvalidVariable
+	}
+	return NError
 }
 
 func (p *Parser) getOperatorNodeType() NodeType {
@@ -210,7 +220,7 @@ func parseStart(p *Parser) parseState {
 		return parseOperatorAfterRightBracket
 	}
 
-	p.topNode = p.newNumberNode()
+	p.topNode = p.newNumberOrVariableNode()
 
 	return parseOperator
 }
@@ -225,7 +235,7 @@ func parseNumberOrLeftBracket(p *Parser) parseState {
 		return parseOperator
 	}
 
-	p.current.RightChild = p.newNumberNode()
+	p.current.RightChild = p.newNumberOrVariableNode()
 	return parseOperator
 }
 
