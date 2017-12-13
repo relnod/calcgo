@@ -62,7 +62,7 @@ func (i *Interpreter) GetResult() (float64, []error) {
 		i.ast = &ast
 	}
 
-	result, err := i.calculateNode(i.ast.Node)
+	result, err := i.interpretNode(i.ast.Node)
 	if err != nil {
 		return 0, []error{err}
 	}
@@ -99,64 +99,108 @@ func InterpretAST(ast AST) (float64, error) {
 	return result, nil
 }
 
-func (i *Interpreter) calculateNode(node *Node) (float64, error) {
+func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 	switch node.Type {
 	case NInteger:
-		integer, err := strconv.Atoi(node.Value)
-		if err != nil {
-			return 0, ErrorInvalidInteger
-		}
-		return float64(integer), nil
+		return i.interpretInteger(node)
 	case NDecimal:
-		decimal, err := strconv.ParseFloat(node.Value, 64)
-		if err != nil {
-			return 0, ErrorInvalidDecimal
-		}
-		return decimal, nil
+		return i.interpretDecimal(node)
 	case NVariable:
-		number, ok := i.vars[node.Value]
-		if ok {
-			return number, nil
-		}
-
-		return 0, ErrorVariableNotDefined
-
+		return i.interpretVariable(node)
+	case NAddition:
+		return i.interpretAddition(node)
+	case NSubtraction:
+		return i.interpretSubtraction(node)
+	case NMultiplication:
+		return i.interpretMultiplication(node)
+	case NDivision:
+		return i.interpretDivision(node)
 	}
 
-	if !IsOperator(node.Type) {
-		return 0, ErrorInvalidNodeType
+	return 0, ErrorInvalidNodeType
+}
+
+func (i *Interpreter) interpretInteger(node *Node) (float64, error) {
+	integer, err := strconv.Atoi(node.Value)
+	if err != nil {
+		return 0, ErrorInvalidInteger
+	}
+	return float64(integer), nil
+}
+
+func (i *Interpreter) interpretDecimal(node *Node) (float64, error) {
+	decimal, err := strconv.ParseFloat(node.Value, 64)
+	if err != nil {
+		return 0, ErrorInvalidDecimal
+	}
+	return decimal, nil
+}
+
+func (i *Interpreter) interpretVariable(node *Node) (float64, error) {
+	number, ok := i.vars[node.Value]
+	if ok {
+		return number, nil
 	}
 
+	return 0, ErrorVariableNotDefined
+}
+
+func (i *Interpreter) interpretAddition(node *Node) (float64, error) {
+	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left + right, nil
+}
+
+func (i *Interpreter) interpretSubtraction(node *Node) (float64, error) {
+	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left - right, nil
+}
+
+func (i *Interpreter) interpretMultiplication(node *Node) (float64, error) {
+	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left * right, nil
+}
+
+func (i *Interpreter) interpretDivision(node *Node) (float64, error) {
+	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	if right == 0 {
+		return 0, ErrorDivisionByZero
+	}
+
+	return left / right, nil
+}
+
+func (i *Interpreter) getInterpretedNodeChilds(node *Node) (float64, float64, error) {
 	if node.LeftChild == nil {
-		return 0, ErrorMissingLeftChild
+		return 0, 0, ErrorMissingLeftChild
 	}
 	if node.RightChild == nil {
-		return 0, ErrorMissingRightChild
+		return 0, 0, ErrorMissingRightChild
 	}
 
-	left, err := i.calculateNode(node.LeftChild)
+	left, err := i.interpretNode(node.LeftChild)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	right, err := i.calculateNode(node.RightChild)
+	right, err := i.interpretNode(node.RightChild)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	var result float64
-	switch node.Type {
-	case NAddition:
-		result = left + right
-	case NSubtraction:
-		result = left - right
-	case NMultiplication:
-		result = left * right
-	case NDivision:
-		if right == 0 {
-			return 0, ErrorDivisionByZero
-		}
-		result = left / right
-	}
-
-	return result, nil
+	return left, right, nil
 }
