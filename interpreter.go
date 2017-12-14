@@ -141,14 +141,8 @@ func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 		return interpretDecimal(node)
 	case NVariable:
 		return i.interpretVariable(node)
-	case NAddition:
-		return i.interpretAddition(node)
-	case NSubtraction:
-		return i.interpretSubtraction(node)
-	case NMultiplication:
-		return i.interpretMultiplication(node)
-	case NDivision:
-		return i.interpretDivision(node)
+	case NAddition, NSubtraction, NMultiplication, NDivision:
+		return i.interpretOperator(node)
 	}
 
 	return 0, ErrorInvalidNodeType
@@ -162,14 +156,8 @@ func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, erro
 	switch node.Type {
 	case NVariable:
 		return i.interpretOptimizedVariable(node)
-	case NAddition:
-		return i.interpretOptimizedAddition(node)
-	case NSubtraction:
-		return i.interpretOptimizedSubtraction(node)
-	case NMultiplication:
-		return i.interpretOptimizedMultiplication(node)
-	case NDivision:
-		return i.interpretOptimizedDivision(node)
+	case NAddition, NSubtraction, NMultiplication, NDivision:
+		return i.interpretOptimizedOperator(node)
 	}
 
 	return 0, ErrorInvalidNodeType
@@ -209,84 +197,42 @@ func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, 
 	return 0, ErrorVariableNotDefined
 }
 
-func (i *Interpreter) interpretAddition(node *Node) (float64, error) {
+func (i *Interpreter) interpretOperator(node *Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
 	if err != nil {
 		return 0, err
 	}
 
-	return left + right, nil
+	return calculateOperator(left, right, node.Type)
 }
 
-func (i *Interpreter) interpretOptimizedAddition(node *OptimizedNode) (float64, error) {
+func (i *Interpreter) interpretOptimizedOperator(node *OptimizedNode) (float64, error) {
 	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
 	if err != nil {
 		return 0, err
 	}
 
-	return left + right, nil
+	return calculateOperator(left, right, node.Type)
 }
 
-func (i *Interpreter) interpretSubtraction(node *Node) (float64, error) {
-	left, right, err := i.getInterpretedNodeChilds(node)
-	if err != nil {
-		return 0, err
+func calculateOperator(left, right float64, nodeType NodeType) (float64, error) {
+	var result float64
+
+	switch nodeType {
+	case NAddition:
+		result = left + right
+	case NSubtraction:
+		result = left - right
+	case NMultiplication:
+		result = left * right
+	case NDivision:
+		if right == 0 {
+			return 0, ErrorDivisionByZero
+		}
+		result = left / right
 	}
 
-	return left - right, nil
-}
-
-func (i *Interpreter) interpretOptimizedSubtraction(node *OptimizedNode) (float64, error) {
-	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	return left - right, nil
-}
-
-func (i *Interpreter) interpretMultiplication(node *Node) (float64, error) {
-	left, right, err := i.getInterpretedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	return left * right, nil
-}
-
-func (i *Interpreter) interpretOptimizedMultiplication(node *OptimizedNode) (float64, error) {
-	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	return left * right, nil
-}
-
-func (i *Interpreter) interpretDivision(node *Node) (float64, error) {
-	left, right, err := i.getInterpretedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	if right == 0 {
-		return 0, ErrorDivisionByZero
-	}
-
-	return left / right, nil
-}
-
-func (i *Interpreter) interpretOptimizedDivision(node *OptimizedNode) (float64, error) {
-	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	if right == 0 {
-		return 0, ErrorDivisionByZero
-	}
-
-	return left / right, nil
+	return result, nil
 }
 
 func (i *Interpreter) getInterpretedNodeChilds(node *Node) (float64, float64, error) {

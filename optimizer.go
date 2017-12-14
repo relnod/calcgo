@@ -90,19 +90,9 @@ func optimizeOperator(node *Node) (*OptimizedNode, error) {
 	}
 
 	var result float64
-
-	switch node.Type {
-	case NAddition:
-		result = left.Value + right.Value
-	case NSubtraction:
-		result = left.Value - right.Value
-	case NMultiplication:
-		result = left.Value * right.Value
-	case NDivision:
-		if right.Value == 0 {
-			return nil, ErrorDivisionByZero
-		}
-		result = left.Value / right.Value
+	result, err = calculateOperator(left.Value, right.Value, node.Type)
+	if err != nil {
+		return nil, err
 	}
 
 	return &OptimizedNode{
