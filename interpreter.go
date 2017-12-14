@@ -22,6 +22,7 @@ var (
 type Interpreter struct {
 	str  string
 	ast  *AST
+	oast *OptimizedAST
 	vars map[string]float64
 }
 
@@ -30,6 +31,7 @@ func NewInterpreter(str string) *Interpreter {
 	return &Interpreter{
 		str:  str,
 		ast:  nil,
+		oast: nil,
 		vars: make(map[string]float64),
 	}
 }
@@ -39,6 +41,7 @@ func NewInterpreterFromAST(ast *AST) *Interpreter {
 	return &Interpreter{
 		str:  "",
 		ast:  ast,
+		oast: nil,
 		vars: make(map[string]float64),
 	}
 }
@@ -63,7 +66,17 @@ func (i *Interpreter) GetResult() (float64, []error) {
 		i.ast = &ast
 	}
 
-	result, err := i.interpretNode(i.ast.Node)
+	if i.oast == nil {
+		oast, err := Optimize(i.ast)
+		if err != nil {
+			return 0, []error{err}
+		}
+
+		i.oast = oast
+	}
+
+	// result, err := i.interpretNode(i.ast.Node)
+	result, err := i.interpretOptimizedNode(i.oast.Node)
 	if err != nil {
 		return 0, []error{err}
 	}
@@ -141,6 +154,27 @@ func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 	return 0, ErrorInvalidNodeType
 }
 
+func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, error) {
+	if node.IsOptimized {
+		return node.Value, nil
+	}
+
+	switch node.Type {
+	case NVariable:
+		return i.interpretOptimizedVariable(node)
+	case NAddition:
+		return i.interpretOptimizedAddition(node)
+	case NSubtraction:
+		return i.interpretOptimizedSubtraction(node)
+	case NMultiplication:
+		return i.interpretOptimizedMultiplication(node)
+	case NDivision:
+		return i.interpretOptimizedDivision(node)
+	}
+
+	return 0, ErrorInvalidNodeType
+}
+
 func interpretInteger(node *Node) (float64, error) {
 	integer, err := strconv.Atoi(node.Value)
 	if err != nil {
@@ -166,8 +200,26 @@ func (i *Interpreter) interpretVariable(node *Node) (float64, error) {
 	return 0, ErrorVariableNotDefined
 }
 
+func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, error) {
+	number, ok := i.vars[node.OldValue]
+	if ok {
+		return number, nil
+	}
+
+	return 0, ErrorVariableNotDefined
+}
+
 func (i *Interpreter) interpretAddition(node *Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left + right, nil
+}
+
+func (i *Interpreter) interpretOptimizedAddition(node *OptimizedNode) (float64, error) {
+	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
 	if err != nil {
 		return 0, err
 	}
@@ -184,6 +236,15 @@ func (i *Interpreter) interpretSubtraction(node *Node) (float64, error) {
 	return left - right, nil
 }
 
+func (i *Interpreter) interpretOptimizedSubtraction(node *OptimizedNode) (float64, error) {
+	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left - right, nil
+}
+
 func (i *Interpreter) interpretMultiplication(node *Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
 	if err != nil {
@@ -193,8 +254,30 @@ func (i *Interpreter) interpretMultiplication(node *Node) (float64, error) {
 	return left * right, nil
 }
 
+func (i *Interpreter) interpretOptimizedMultiplication(node *OptimizedNode) (float64, error) {
+	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	return left * right, nil
+}
+
 func (i *Interpreter) interpretDivision(node *Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
+	if err != nil {
+		return 0, err
+	}
+
+	if right == 0 {
+		return 0, ErrorDivisionByZero
+	}
+
+	return left / right, nil
+}
+
+func (i *Interpreter) interpretOptimizedDivision(node *OptimizedNode) (float64, error) {
+	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
 	if err != nil {
 		return 0, err
 	}
@@ -219,6 +302,26 @@ func (i *Interpreter) getInterpretedNodeChilds(node *Node) (float64, float64, er
 		return 0, 0, err
 	}
 	right, err := i.interpretNode(node.RightChild)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return left, right, nil
+}
+
+func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (float64, float64, error) {
+	if node.LeftChild == nil {
+		return 0, 0, ErrorMissingLeftChild
+	}
+	if node.RightChild == nil {
+		return 0, 0, ErrorMissingRightChild
+	}
+
+	left, err := i.interpretOptimizedNode(node.LeftChild)
+	if err != nil {
+		return 0, 0, err
+	}
+	right, err := i.interpretOptimizedNode(node.RightChild)
 	if err != nil {
 		return 0, 0, err
 	}
