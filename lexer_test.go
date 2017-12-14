@@ -26,6 +26,8 @@ func tokenTypeToString(tokenType calcgo.TokenType) string {
 		return "Mult"
 	case calcgo.TOperatorDiv:
 		return "Div"
+	case calcgo.TFuncSqrt:
+		return "Sqrt"
 	case calcgo.TLeftBracket:
 		return "Left Bracket"
 	case calcgo.TRightBracket:
@@ -402,6 +404,29 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: calcgo.TRightBracket},
 				{Value: "", Type: calcgo.TOperatorMinus},
 				{Value: "c", Type: calcgo.TVariable},
+			})
+		})
+	})
+
+	Convey("Lexer works with functions", t, func() {
+		Convey("sqrt()", func() {
+			So(calcgo.Lex("sqrt"), shouldEqualToken, []calcgo.Token{
+				{Value: "sqrt", Type: calcgo.TVariable},
+			})
+
+			So(calcgo.Lex("sqrt("), shouldEqualToken, []calcgo.Token{
+				{Value: "", Type: calcgo.TFuncSqrt},
+			})
+
+			So(calcgo.Lex("sqrt()"), shouldEqualToken, []calcgo.Token{
+				{Value: "", Type: calcgo.TFuncSqrt},
+				{Value: "", Type: calcgo.TRightBracket},
+			})
+
+			So(calcgo.Lex("sqrt( 1 )"), shouldEqualToken, []calcgo.Token{
+				{Value: "", Type: calcgo.TFuncSqrt},
+				{Value: "1", Type: calcgo.TInteger},
+				{Value: "", Type: calcgo.TRightBracket},
 			})
 		})
 	})

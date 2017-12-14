@@ -15,6 +15,7 @@ const (
 	TOperatorMinus
 	TOperatorMult
 	TOperatorDiv
+	TFuncSqrt
 	TLeftBracket
 	TRightBracket
 	TInvalidCharacter
@@ -96,6 +97,10 @@ func (l *Lexer) current() byte {
 	return l.str[l.pos]
 }
 
+func (l *Lexer) stored() string {
+	return l.str[l.lastPos+1 : l.pos+1]
+}
+
 func (l *Lexer) next() (byte, bool) {
 	if l.pos+1 >= len(l.str) {
 		return 0, false
@@ -121,11 +126,16 @@ func (l *Lexer) peek() (byte, bool) {
 }
 
 func (l *Lexer) emit(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: l.str[l.lastPos+1 : l.pos+1]}
+	l.token <- Token{Type: tokenType, Value: l.stored()}
 }
 
 func (l *Lexer) emitEmpty(tokenType TokenType) {
 	l.token <- Token{Type: tokenType, Value: ""}
+}
+
+func (l *Lexer) emitSingle(tokenType TokenType) {
+	l.lastPos = l.pos - 1
+	l.token <- Token{Type: tokenType, Value: l.stored()}
 }
 
 func (l *Lexer) run() {
@@ -160,7 +170,7 @@ func lexAll(l *Lexer) stateFn {
 		return lexNumber
 	}
 	if isLetter(b) {
-		return lexVariable
+		return lexVariableOrFunction
 	}
 	if isWhiteSpace(b) {
 		return lexAll
@@ -208,8 +218,7 @@ func lexNumber(l *Lexer) stateFn {
 			l.backup()
 			break
 		} else {
-			l.lastPos = l.pos - 1
-			l.emit(TInvalidCharacterInNumber)
+			l.emitSingle(TInvalidCharacterInNumber)
 			return lexAll
 		}
 	}
@@ -218,7 +227,7 @@ func lexNumber(l *Lexer) stateFn {
 	return lexAll
 }
 
-func lexVariable(l *Lexer) stateFn {
+func lexVariableOrFunction(l *Lexer) stateFn {
 	for {
 		b, ok := l.next()
 		if !ok {
@@ -230,11 +239,15 @@ func lexVariable(l *Lexer) stateFn {
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
-		} else {
-			l.lastPos = l.pos - 1
-			l.emit(TInvalidCharacterInVariable)
-			return lexAll
+		} else if b == '(' {
+			if l.stored() == "sqrt(" {
+				l.emitEmpty(TFuncSqrt)
+				return lexAll
+			}
 		}
+
+		l.emitSingle(TInvalidCharacterInVariable)
+		return lexAll
 	}
 
 	l.emit(TVariable)
