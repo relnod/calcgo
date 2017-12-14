@@ -349,6 +349,126 @@ func TestInterpreter(t *testing.T) {
 		So(errors1, ShouldEqualErrors, errors2)
 	})
 
+	Convey("Interpreter works with optimizer enabled", t, func() {
+		Convey("simple number", func() {
+			i := calcgo.NewInterpreter("1")
+			i.EnableOptimizer()
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 1)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("simple variable", func() {
+			i := calcgo.NewInterpreter("a")
+			i.EnableOptimizer()
+			i.SetVar("a", 1.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 1)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("operations", func() {
+			Convey("without variables", func() {
+				i := calcgo.NewInterpreter("1 + 1")
+				i.EnableOptimizer()
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 2)
+				So(errors, ShouldBeNil)
+			})
+
+			Convey("with variables", func() {
+				i := calcgo.NewInterpreter("1 + a")
+				i.EnableOptimizer()
+				i.SetVar("a", 1.0)
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 2)
+				So(errors, ShouldBeNil)
+			})
+		})
+
+		Convey("handles errors correctly", func() {
+			Convey("division by 0", func() {
+				i := calcgo.NewInterpreter("1 / 0")
+				i.EnableOptimizer()
+				i.SetVar("a", 1.0)
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 0)
+				So(errors, ShouldEqualErrors, []error{calcgo.ErrorDivisionByZero})
+			})
+
+			Convey("undefined variable", func() {
+				i := calcgo.NewInterpreter("a")
+				i.EnableOptimizer()
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 0)
+				So(errors, ShouldEqualErrors, []error{calcgo.ErrorVariableNotDefined})
+			})
+
+			Convey("invalid node type", func() {
+				i := calcgo.NewInterpreterFromAST(&calcgo.AST{
+					Node: &calcgo.Node{
+						Type:       30000,
+						Value:      "a",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				i.EnableOptimizer()
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 0)
+				So(errors, ShouldEqualErrors, []error{calcgo.ErrorInvalidNodeType})
+			})
+
+			Convey("error occurs not not on first node", func() {
+				i := calcgo.NewInterpreterFromAST(&calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NAddition,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NVariable,
+							Value:      "a",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+				})
+				i.EnableOptimizer()
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 0)
+				So(errors, ShouldEqualErrors, []error{calcgo.ErrorVariableNotDefined})
+
+				i = calcgo.NewInterpreterFromAST(&calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NAddition,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:       calcgo.NVariable,
+							Value:      "a",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+				})
+				i.EnableOptimizer()
+				result, errors = i.GetResult()
+				So(result, ShouldEqual, 0)
+				So(errors, ShouldEqualErrors, []error{calcgo.ErrorVariableNotDefined})
+			})
+		})
+	})
+
 	Convey("interpreter returns errors, when parser returned errors", t, func() {
 		result, errors := calcgo.Interpret("$")
 		So(result, ShouldEqual, 0)

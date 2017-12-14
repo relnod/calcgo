@@ -20,35 +20,44 @@ var (
 
 // Interpreter holds state of interpreter
 type Interpreter struct {
-	str  string
-	ast  *AST
-	oast *OptimizedAST
-	vars map[string]float64
+	str              string
+	ast              *AST
+	oast             *OptimizedAST
+	vars             map[string]float64
+	optimizerEnabled bool
 }
 
 // NewInterpreter returns a new interpreter from a string
 func NewInterpreter(str string) *Interpreter {
 	return &Interpreter{
-		str:  str,
-		ast:  nil,
-		oast: nil,
-		vars: make(map[string]float64),
+		str:              str,
+		ast:              nil,
+		oast:             nil,
+		vars:             make(map[string]float64),
+		optimizerEnabled: false,
 	}
 }
 
 // NewInterpreterFromAST returns a new interpreter from an ast
 func NewInterpreterFromAST(ast *AST) *Interpreter {
 	return &Interpreter{
-		str:  "",
-		ast:  ast,
-		oast: nil,
-		vars: make(map[string]float64),
+		str:              "",
+		ast:              ast,
+		oast:             nil,
+		vars:             make(map[string]float64),
+		optimizerEnabled: false,
 	}
 }
 
 // SetVar sets the value of a variable
 func (i *Interpreter) SetVar(name string, value float64) {
 	i.vars[name] = value
+}
+
+// EnableOptimizer enables optimization of the ast.
+// Optimization happens at the next GetResult() call
+func (i *Interpreter) EnableOptimizer() {
+	i.optimizerEnabled = true
 }
 
 // GetResult interprets the ast.
@@ -66,17 +75,23 @@ func (i *Interpreter) GetResult() (float64, []error) {
 		i.ast = &ast
 	}
 
-	if i.oast == nil {
-		oast, err := Optimize(i.ast)
-		if err != nil {
-			return 0, []error{err}
+	var result float64
+	var err error
+	if i.optimizerEnabled {
+		if i.oast == nil {
+			oast, err := Optimize(i.ast)
+			if err != nil {
+				return 0, []error{err}
+			}
+
+			i.oast = oast
 		}
 
-		i.oast = oast
+		result, err = i.interpretOptimizedNode(i.oast.Node)
+	} else {
+		result, err = i.interpretNode(i.ast.Node)
 	}
 
-	// result, err := i.interpretNode(i.ast.Node)
-	result, err := i.interpretOptimizedNode(i.oast.Node)
 	if err != nil {
 		return 0, []error{err}
 	}
@@ -153,14 +168,11 @@ func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, erro
 		return node.Value, nil
 	}
 
-	switch node.Type {
-	case NVariable:
+	if node.Type == NVariable {
 		return i.interpretOptimizedVariable(node)
-	case NAddition, NSubtraction, NMultiplication, NDivision:
-		return i.interpretOptimizedOperator(node)
 	}
 
-	return 0, ErrorInvalidNodeType
+	return i.interpretOptimizedOperator(node)
 }
 
 func interpretInteger(node *Node) (float64, error) {
@@ -256,13 +268,6 @@ func (i *Interpreter) getInterpretedNodeChilds(node *Node) (float64, float64, er
 }
 
 func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (float64, float64, error) {
-	if node.LeftChild == nil {
-		return 0, 0, ErrorMissingLeftChild
-	}
-	if node.RightChild == nil {
-		return 0, 0, ErrorMissingRightChild
-	}
-
 	left, err := i.interpretOptimizedNode(node.LeftChild)
 	if err != nil {
 		return 0, 0, err
