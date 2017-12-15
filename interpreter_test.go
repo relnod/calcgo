@@ -1,6 +1,7 @@
 package calcgo_test
 
 import (
+	"math"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -273,6 +274,22 @@ func TestInterpreter(t *testing.T) {
 		})
 	})
 
+	Convey("Interpreter handles functions", t, func() {
+		Convey("sqrt", func() {
+			result, errors := calcgo.Interpret("sqrt(9)")
+			So(result, ShouldEqual, math.Sqrt(9))
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("sqrt(3 * 3)")
+			So(result, ShouldEqual, math.Sqrt(3*3))
+			So(errors, ShouldBeNil)
+
+			result, errors = calcgo.Interpret("1 + sqrt(3 * 3)")
+			So(result, ShouldEqual, 1+math.Sqrt(3*3))
+			So(errors, ShouldBeNil)
+		})
+	})
+
 	Convey("interpreter handles variables", t, func() {
 		Convey("works with simple variables", func() {
 			i := calcgo.NewInterpreter("a")
@@ -382,6 +399,25 @@ func TestInterpreter(t *testing.T) {
 				i.SetVar("a", 1.0)
 				result, errors := i.GetResult()
 				So(result, ShouldEqual, 2)
+				So(errors, ShouldBeNil)
+			})
+		})
+
+		Convey("sqrt", func() {
+			Convey("without variables", func() {
+				i := calcgo.NewInterpreter("sqrt(9)")
+				i.EnableOptimizer()
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 3)
+				So(errors, ShouldBeNil)
+			})
+
+			Convey("with variables", func() {
+				i := calcgo.NewInterpreter("sqrt(a)")
+				i.EnableOptimizer()
+				i.SetVar("a", 9.0)
+				result, errors := i.GetResult()
+				So(result, ShouldEqual, 3)
 				So(errors, ShouldBeNil)
 			})
 		})

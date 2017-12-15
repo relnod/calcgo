@@ -2,20 +2,22 @@ package calcgo
 
 import (
 	"errors"
+	"math"
 	"strconv"
 )
 
 // Errors, that can be returned by the interpreter
 var (
-	ErrorMissingLeftChild   = errors.New("Error: Missing left child of node")
-	ErrorMissingRightChild  = errors.New("Error: Missing right child of node")
-	ErrorInvalidNodeType    = errors.New("Error: Invalid node type")
-	ErrorInvalidInteger     = errors.New("Error: Invalid Integer")
-	ErrorInvalidDecimal     = errors.New("Error: Invalid Decimal")
-	ErrorInvalidVariable    = errors.New("Error: Invalid Variable")
-	ErrorParserError        = errors.New("Error: Parser error")
-	ErrorDivisionByZero     = errors.New("Error: Division by zero")
-	ErrorVariableNotDefined = errors.New("Error: A variable was not defined")
+	ErrorMissingLeftChild       = errors.New("Error: Missing left child of node")
+	ErrorMissingRightChild      = errors.New("Error: Missing right child of node")
+	ErrorMissingFunctionArguent = errors.New("Error: Missing function argument")
+	ErrorInvalidNodeType        = errors.New("Error: Invalid node type")
+	ErrorInvalidInteger         = errors.New("Error: Invalid Integer")
+	ErrorInvalidDecimal         = errors.New("Error: Invalid Decimal")
+	ErrorInvalidVariable        = errors.New("Error: Invalid Variable")
+	ErrorParserError            = errors.New("Error: Parser error")
+	ErrorDivisionByZero         = errors.New("Error: Division by zero")
+	ErrorVariableNotDefined     = errors.New("Error: A variable was not defined")
 )
 
 // Interpreter holds state of interpreter
@@ -158,6 +160,8 @@ func (i *Interpreter) interpretNode(node *Node) (float64, error) {
 		return i.interpretVariable(node)
 	case NAddition, NSubtraction, NMultiplication, NDivision:
 		return i.interpretOperator(node)
+	case NFuncSqrt:
+		return i.interpretSqrt(node)
 	}
 
 	return 0, ErrorInvalidNodeType
@@ -168,8 +172,11 @@ func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, erro
 		return node.Value, nil
 	}
 
-	if node.Type == NVariable {
+	switch node.Type {
+	case NVariable:
 		return i.interpretOptimizedVariable(node)
+	case NFuncSqrt:
+		return i.interpretOptimizedSqrt(node)
 	}
 
 	return i.interpretOptimizedOperator(node)
@@ -278,4 +285,33 @@ func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (fl
 	}
 
 	return left, right, nil
+}
+
+func (i *Interpreter) interpretSqrt(node *Node) (float64, error) {
+	left, err := i.interpretNode(node.LeftChild)
+	if err != nil {
+		return 0, err
+	}
+
+	return math.Sqrt(left), nil
+}
+
+func (i *Interpreter) interpretOptimizedSqrt(node *OptimizedNode) (float64, error) {
+	left, err := i.interpretOptimizedNode(node.LeftChild)
+	if err != nil {
+		return 0, err
+	}
+
+	return math.Sqrt(left), nil
+}
+
+func calculateFunction(arg float64, nodeType NodeType) (float64, error) {
+	var result float64
+
+	switch nodeType {
+	case NFuncSqrt:
+		result = math.Sqrt(arg)
+	}
+
+	return result, nil
 }

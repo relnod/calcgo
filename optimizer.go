@@ -54,6 +54,8 @@ func optimizeNode(node *Node) (*OptimizedNode, error) {
 		}, nil
 	case NAddition, NSubtraction, NMultiplication, NDivision:
 		return optimizeOperator(node)
+	case NFuncSqrt:
+		return optimizeFunction(node)
 	default:
 		return nil, ErrorInvalidNodeType
 	}
@@ -123,4 +125,37 @@ func getOptimizedNodeChilds(node *Node) (*OptimizedNode, *OptimizedNode, error) 
 	}
 
 	return left, right, nil
+}
+
+func optimizeFunction(node *Node) (*OptimizedNode, error) {
+	left, err := optimizeNode(node.LeftChild)
+	if err != nil {
+		return nil, err
+	}
+
+	if !left.IsOptimized {
+		return &OptimizedNode{
+			Type:        node.Type,
+			Value:       0,
+			OldValue:    "",
+			IsOptimized: false,
+			LeftChild:   left,
+			RightChild:  nil,
+		}, nil
+	}
+
+	var result float64
+	result, err = calculateFunction(left.Value, node.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	return &OptimizedNode{
+		Type:        NDecimal,
+		Value:       result,
+		OldValue:    "",
+		IsOptimized: true,
+		LeftChild:   nil,
+		RightChild:  nil,
+	}, nil
 }
