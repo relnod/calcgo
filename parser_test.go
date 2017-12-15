@@ -979,6 +979,78 @@ func TestParser(t *testing.T) {
 			})
 			So(errors, ShouldBeNil)
 		})
+
+		Convey("functions", func() {
+			Convey("sqrt", func() {
+				ast, errors := calcgo.Parse("sqrt(1)")
+				So(ast, shouldEqualAST, calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NFuncSqrt,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+
+				ast, errors = calcgo.Parse("sqrt(1 + 1)")
+				So(ast, shouldEqualAST, calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NFuncSqrt,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:  calcgo.NAddition,
+							Value: "",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+
+				ast, errors = calcgo.Parse("1 + sqrt(1)")
+				So(ast, shouldEqualAST, calcgo.AST{
+					Node: &calcgo.Node{
+						Type:  calcgo.NAddition,
+						Value: "",
+						LeftChild: &calcgo.Node{
+							Type:       calcgo.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &calcgo.Node{
+							Type:  calcgo.NFuncSqrt,
+							Value: "",
+							LeftChild: &calcgo.Node{
+								Type:       calcgo.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+		})
 	})
 
 	Convey("Parser works with errors", t, func() {

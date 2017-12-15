@@ -1,6 +1,8 @@
 package calcgo
 
-import "errors"
+import (
+	"errors"
+)
 
 type parseState func(*Parser) parseState
 
@@ -37,10 +39,12 @@ const (
 	NInvalidNumber
 	NInvalidVariable
 	NInvalidOperator
+	NInvalidFunction
 	NInteger
 	NDecimal
 	NVariable
 	NAddition
+	NFuncSqrt
 	NSubtraction
 	NMultiplication
 	NDivision
@@ -50,6 +54,7 @@ const (
 var (
 	ErrorExpectedNumberOrVariable = errors.New("Error: Expected number or variable got something else")
 	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
+	ErrorExpectedFunction         = errors.New("Error: Expected function got something else")
 	ErrorMissingClosingBracket    = errors.New("Error: Missing closing bracket")
 	ErrorUnexpectedClosingBracket = errors.New("Error: Unexpected closing bracket")
 )
@@ -174,6 +179,10 @@ func (p *Parser) newNumberOrVariableNode() *Node {
 	return &Node{p.getNumberOrVariableNodeType(), p.currToken.Value, nil, nil}
 }
 
+func (p *Parser) newFunctionNode() *Node {
+	return &Node{p.getFunctionNodeType(), p.currToken.Value, nil, nil}
+}
+
 func (p *Parser) getNumberOrVariableNodeType() NodeType {
 	switch p.currToken.Type {
 	case TInteger:
@@ -210,6 +219,10 @@ func (p *Parser) getOperatorNodeType() NodeType {
 	return NInvalidOperator
 }
 
+func (p *Parser) getFunctionNodeType() NodeType {
+	return NFuncSqrt
+}
+
 func parseStart(p *Parser) parseState {
 	if p.currToken.Type == TLeftBracket {
 		p2 := &Parser{p.tokens, Token{}, p.topNode, p.current, nil, true}
@@ -218,6 +231,17 @@ func parseStart(p *Parser) parseState {
 		p.pushErrors(p2.errors)
 
 		return parseOperatorAfterRightBracket
+	}
+
+	if p.currToken.Type == TFuncSqrt {
+		p.topNode = p.newFunctionNode()
+		p.current = p.topNode
+		p2 := &Parser{p.tokens, Token{}, p.topNode, p.current, nil, true}
+		p2.run()
+		p.current.LeftChild = p2.topNode
+		p.pushErrors(p2.errors)
+
+		return parseOperator
 	}
 
 	p.topNode = p.newNumberOrVariableNode()
@@ -230,6 +254,18 @@ func parseNumberOrLeftBracket(p *Parser) parseState {
 		p2 := &Parser{p.tokens, Token{}, p.topNode, p.current, nil, true}
 		p2.run()
 		p.current.RightChild = p2.topNode
+		p.pushErrors(p2.errors)
+
+		return parseOperator
+	}
+
+	if p.currToken.Type == TFuncSqrt {
+		node := p.newFunctionNode()
+		p.current.RightChild = node
+		p.current = node
+		p2 := &Parser{p.tokens, Token{}, p.topNode, p.current, nil, true}
+		p2.run()
+		p.current.LeftChild = p2.topNode
 		p.pushErrors(p2.errors)
 
 		return parseOperator
