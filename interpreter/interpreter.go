@@ -70,6 +70,10 @@ func (i *Interpreter) EnableOptimizer() {
 // If the interpreter was initialized with a string,
 // the ast gets generated first
 func (i *Interpreter) GetResult() (float64, []error) {
+	if i.str == "" {
+		return 0, nil
+	}
+
 	if i.ast == nil {
 		ast, errors := parser.Parse(i.str)
 		if errors != nil {
