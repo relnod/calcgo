@@ -10,7 +10,69 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+type testCase struct {
+	description    string
+	given          string
+	expectedValue  float64
+	expectedErrors []error
+	testCases      []testCase
+}
+
+var testCases = []testCase{
+	{"no input", "", 0, nil, nil},
+	{"numbers", "", 0, nil, []testCase{
+		{"positive integer", "1", 1, nil, nil},
+		{"positive decimals", "1.0", 1, nil, nil},
+		{"negativ numbers", "-1", -1, nil, nil},
+	}},
+}
+
+type interpretFnc func(string) (float64, []error)
+
+func interpret(s string) (float64, []error) {
+	return interpreter.Interpret(s)
+}
+
+func interpreterOptimizerDisabled(s string) (float64, []error) {
+	i := interpreter.NewInterpreter(s)
+	return i.GetResult()
+}
+
+func interpreterOptimizerEnabled(s string) (float64, []error) {
+	i := interpreter.NewInterpreter(s)
+	i.EnableOptimizer()
+	return i.GetResult()
+}
+
+func handleTestCases(cases []testCase, fnc interpretFnc) {
+	for _, c := range cases {
+		Convey(c.description, func() {
+			result, errors := fnc(c.given)
+			So(result, ShouldEqual, c.expectedValue)
+			So(errors, ShouldEqualErrors, c.expectedErrors)
+
+			if c.testCases != nil {
+				handleTestCases(c.testCases, fnc)
+			}
+		})
+	}
+}
+
 func TestInterpreter(t *testing.T) {
+	Convey("Interpret Spec", t, func() {
+		handleTestCases(testCases, interpret)
+	})
+
+	Convey("Interpreter Spec (optimizer disabled)", t, func() {
+		handleTestCases(testCases, interpreterOptimizerDisabled)
+	})
+
+	Convey("Interpreter Spec (optimizer enabled)", t, func() {
+		handleTestCases(testCases, interpreterOptimizerEnabled)
+	})
+}
+
+func SkipTestInterpreter(t *testing.T) {
 	Convey("interpreter works with", t, func() {
 		Convey("nothing", func() {
 			result, errors := interpreter.Interpret("")
