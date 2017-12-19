@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math"
 	"strconv"
+
+	"github.com/relnod/calcgo/parser"
 )
 
 // Errors, that can be returned by the interpreter
@@ -23,7 +25,7 @@ var (
 // Interpreter holds state of interpreter
 type Interpreter struct {
 	str              string
-	ast              *AST
+	ast              *parser.AST
 	oast             *OptimizedAST
 	vars             map[string]float64
 	optimizerEnabled bool
@@ -41,7 +43,7 @@ func NewInterpreter(str string) *Interpreter {
 }
 
 // NewInterpreterFromAST returns a new interpreter from an ast
-func NewInterpreterFromAST(ast *AST) *Interpreter {
+func NewInterpreterFromAST(ast *parser.AST) *Interpreter {
 	return &Interpreter{
 		str:              "",
 		ast:              ast,
@@ -69,7 +71,7 @@ func (i *Interpreter) EnableOptimizer() {
 // the ast gets generated first
 func (i *Interpreter) GetResult() (float64, []error) {
 	if i.ast == nil {
-		ast, errors := Parse(i.str)
+		ast, errors := parser.Parse(i.str)
 		if errors != nil {
 			return 0, errors
 		}
@@ -139,7 +141,7 @@ func Interpret(str string) (float64, []error) {
 //			},
 //		},
 //  })
-func InterpretAST(ast AST) (float64, error) {
+func InterpretAST(ast parser.AST) (float64, error) {
 	interpreter := NewInterpreterFromAST(&ast)
 
 	result, errors := interpreter.GetResult()
@@ -150,17 +152,17 @@ func InterpretAST(ast AST) (float64, error) {
 	return result, nil
 }
 
-func (i *Interpreter) interpretNode(node *Node) (float64, error) {
+func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 	switch node.Type {
-	case NInteger:
+	case parser.NInteger:
 		return interpretInteger(node)
-	case NDecimal:
+	case parser.NDecimal:
 		return interpretDecimal(node)
-	case NVariable:
+	case parser.NVariable:
 		return i.interpretVariable(node)
-	case NAddition, NSubtraction, NMultiplication, NDivision:
+	case parser.NAddition, parser.NSubtraction, parser.NMultiplication, parser.NDivision:
 		return i.interpretOperator(node)
-	case NFuncSqrt:
+	case parser.NFuncSqrt:
 		return i.interpretSqrt(node)
 	}
 
@@ -173,16 +175,16 @@ func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, erro
 	}
 
 	switch node.Type {
-	case NVariable:
+	case parser.NVariable:
 		return i.interpretOptimizedVariable(node)
-	case NFuncSqrt:
+	case parser.NFuncSqrt:
 		return i.interpretOptimizedSqrt(node)
 	}
 
 	return i.interpretOptimizedOperator(node)
 }
 
-func interpretInteger(node *Node) (float64, error) {
+func interpretInteger(node *parser.Node) (float64, error) {
 	integer, err := strconv.Atoi(node.Value)
 	if err != nil {
 		return 0, ErrorInvalidInteger
@@ -190,7 +192,7 @@ func interpretInteger(node *Node) (float64, error) {
 	return float64(integer), nil
 }
 
-func interpretDecimal(node *Node) (float64, error) {
+func interpretDecimal(node *parser.Node) (float64, error) {
 	decimal, err := strconv.ParseFloat(node.Value, 64)
 	if err != nil {
 		return 0, ErrorInvalidDecimal
@@ -198,7 +200,7 @@ func interpretDecimal(node *Node) (float64, error) {
 	return decimal, nil
 }
 
-func (i *Interpreter) interpretVariable(node *Node) (float64, error) {
+func (i *Interpreter) interpretVariable(node *parser.Node) (float64, error) {
 	number, ok := i.vars[node.Value]
 	if ok {
 		return number, nil
@@ -216,7 +218,7 @@ func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, 
 	return 0, ErrorVariableNotDefined
 }
 
-func (i *Interpreter) interpretOperator(node *Node) (float64, error) {
+func (i *Interpreter) interpretOperator(node *parser.Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
 	if err != nil {
 		return 0, err
@@ -234,17 +236,17 @@ func (i *Interpreter) interpretOptimizedOperator(node *OptimizedNode) (float64, 
 	return calculateOperator(left, right, node.Type)
 }
 
-func calculateOperator(left, right float64, nodeType NodeType) (float64, error) {
+func calculateOperator(left, right float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
 
 	switch nodeType {
-	case NAddition:
+	case parser.NAddition:
 		result = left + right
-	case NSubtraction:
+	case parser.NSubtraction:
 		result = left - right
-	case NMultiplication:
+	case parser.NMultiplication:
 		result = left * right
-	case NDivision:
+	case parser.NDivision:
 		if right == 0 {
 			return 0, ErrorDivisionByZero
 		}
@@ -254,7 +256,7 @@ func calculateOperator(left, right float64, nodeType NodeType) (float64, error) 
 	return result, nil
 }
 
-func (i *Interpreter) getInterpretedNodeChilds(node *Node) (float64, float64, error) {
+func (i *Interpreter) getInterpretedNodeChilds(node *parser.Node) (float64, float64, error) {
 	if node.LeftChild == nil {
 		return 0, 0, ErrorMissingLeftChild
 	}
@@ -287,7 +289,7 @@ func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (fl
 	return left, right, nil
 }
 
-func (i *Interpreter) interpretSqrt(node *Node) (float64, error) {
+func (i *Interpreter) interpretSqrt(node *parser.Node) (float64, error) {
 	left, err := i.interpretNode(node.LeftChild)
 	if err != nil {
 		return 0, err
@@ -305,11 +307,11 @@ func (i *Interpreter) interpretOptimizedSqrt(node *OptimizedNode) (float64, erro
 	return math.Sqrt(left), nil
 }
 
-func calculateFunction(arg float64, nodeType NodeType) (float64, error) {
+func calculateFunction(arg float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
 
 	switch nodeType {
-	case NFuncSqrt:
+	case parser.NFuncSqrt:
 		result = math.Sqrt(arg)
 	}
 

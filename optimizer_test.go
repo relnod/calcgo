@@ -8,6 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/parser"
 )
 
 func oastToString(ast *calcgo.OptimizedAST) string {
@@ -94,7 +95,7 @@ func ShouldEqualOptimizedAST(actual interface{}, expected ...interface{}) string
 }
 
 func optimize(str string) (*calcgo.OptimizedAST, error) {
-	ast, errors := calcgo.Parse(str)
+	ast, errors := parser.Parse(str)
 	if errors != nil {
 		return nil, errors[0]
 	}
@@ -115,7 +116,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       1.0,
 						OldValue:    "",
 						IsOptimized: true,
@@ -130,7 +131,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1.3")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       1.3,
 						OldValue:    "",
 						IsOptimized: true,
@@ -145,7 +146,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 + 1")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       2.0,
 						OldValue:    "",
 						IsOptimized: true,
@@ -160,7 +161,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 - 1")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       0.0,
 						OldValue:    "",
 						IsOptimized: true,
@@ -175,7 +176,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 * 1")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       1.0,
 						OldValue:    "",
 						IsOptimized: true,
@@ -190,7 +191,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 / 1")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       1.0,
 						OldValue:    "",
 						IsOptimized: true,
@@ -207,7 +208,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("a")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDecimal,
+						Type:        parser.NDecimal,
 						Value:       0,
 						OldValue:    "a",
 						IsOptimized: false,
@@ -222,12 +223,12 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 + a")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NAddition,
+						Type:        parser.NAddition,
 						Value:       0,
 						OldValue:    "",
 						IsOptimized: false,
 						LeftChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NDecimal,
+							Type:        parser.NDecimal,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -235,7 +236,7 @@ func TestOptimizer(t *testing.T) {
 							RightChild:  nil,
 						},
 						RightChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NVariable,
+							Type:        parser.NVariable,
 							Value:       0,
 							OldValue:    "a",
 							IsOptimized: false,
@@ -251,12 +252,12 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 - a")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NSubtraction,
+						Type:        parser.NSubtraction,
 						Value:       0,
 						OldValue:    "",
 						IsOptimized: false,
 						LeftChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NDecimal,
+							Type:        parser.NDecimal,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -264,7 +265,7 @@ func TestOptimizer(t *testing.T) {
 							RightChild:  nil,
 						},
 						RightChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NVariable,
+							Type:        parser.NVariable,
 							Value:       0,
 							OldValue:    "a",
 							IsOptimized: false,
@@ -280,12 +281,12 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 - a")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NMultiplication,
+						Type:        parser.NMultiplication,
 						Value:       0,
 						OldValue:    "",
 						IsOptimized: false,
 						LeftChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NDecimal,
+							Type:        parser.NDecimal,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -293,7 +294,7 @@ func TestOptimizer(t *testing.T) {
 							RightChild:  nil,
 						},
 						RightChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NVariable,
+							Type:        parser.NVariable,
 							Value:       0,
 							OldValue:    "a",
 							IsOptimized: false,
@@ -309,12 +310,12 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("1 / a")
 				So(oast, ShouldEqualOptimizedAST, &calcgo.OptimizedAST{
 					Node: &calcgo.OptimizedNode{
-						Type:        calcgo.NDivision,
+						Type:        parser.NDivision,
 						Value:       0,
 						OldValue:    "",
 						IsOptimized: false,
 						LeftChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NDecimal,
+							Type:        parser.NDecimal,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -322,7 +323,7 @@ func TestOptimizer(t *testing.T) {
 							RightChild:  nil,
 						},
 						RightChild: &calcgo.OptimizedNode{
-							Type:        calcgo.NVariable,
+							Type:        parser.NVariable,
 							Value:       0,
 							OldValue:    "a",
 							IsOptimized: false,
@@ -344,9 +345,9 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("interpreting wrong number", func() {
-			oast, err := calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:       calcgo.NInteger,
+			oast, err := calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:       parser.NInteger,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -355,9 +356,9 @@ func TestOptimizer(t *testing.T) {
 			So(oast, ShouldBeNil)
 			So(err, ShouldEqual, calcgo.ErrorInvalidInteger)
 
-			oast, err = calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:       calcgo.NDecimal,
+			oast, err = calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:       parser.NDecimal,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -368,8 +369,8 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("invalid node type", func() {
-			oast, err := calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
+			oast, err := calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
 					Type:       3000,
 					Value:      "",
 					LeftChild:  nil,
@@ -381,12 +382,12 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("left child is missing", func() {
-			oast, err := calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:      calcgo.NAddition,
+			oast, err := calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:      parser.NAddition,
 					Value:     "",
 					LeftChild: nil,
-					RightChild: &calcgo.Node{
+					RightChild: &parser.Node{
 						Type:       3000,
 						Value:      "",
 						LeftChild:  nil,
@@ -399,11 +400,11 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("right child is missing", func() {
-			oast, err := calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:  calcgo.NAddition,
+			oast, err := calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NAddition,
 					Value: "",
-					LeftChild: &calcgo.Node{
+					LeftChild: &parser.Node{
 						Type:       3000,
 						Value:      "",
 						LeftChild:  nil,
@@ -417,17 +418,17 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("error happens in nested node", func() {
-			oast, err := calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:  calcgo.NAddition,
+			oast, err := calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NAddition,
 					Value: "",
-					LeftChild: &calcgo.Node{
+					LeftChild: &parser.Node{
 						Type:       3000,
 						Value:      "",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
-					RightChild: &calcgo.Node{
+					RightChild: &parser.Node{
 						Type:       3000,
 						Value:      "",
 						LeftChild:  nil,
@@ -438,17 +439,17 @@ func TestOptimizer(t *testing.T) {
 			So(oast, ShouldBeNil)
 			So(err, ShouldEqual, calcgo.ErrorInvalidNodeType)
 
-			oast, err = calcgo.Optimize(&calcgo.AST{
-				Node: &calcgo.Node{
-					Type:  calcgo.NAddition,
+			oast, err = calcgo.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NAddition,
 					Value: "",
-					LeftChild: &calcgo.Node{
-						Type:       calcgo.NInteger,
+					LeftChild: &parser.Node{
+						Type:       parser.NInteger,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
-					RightChild: &calcgo.Node{
+					RightChild: &parser.Node{
 						Type:       3000,
 						Value:      "",
 						LeftChild:  nil,

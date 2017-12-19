@@ -1,5 +1,7 @@
 package calcgo
 
+import "github.com/relnod/calcgo/parser"
+
 // OptimizedAST holds an optimized ast.
 // For all integer and decimal the value was already interpreted.
 // All operations are already interpreted, if both child nodes could already be
@@ -10,18 +12,18 @@ type OptimizedAST struct {
 
 // OptimizedNode holds an optimized node
 type OptimizedNode struct {
-	Type        NodeType       `json:"type"`
-	Value       float64        `json:"value"`
-	OldValue    string         `json:"old_value"`
-	IsOptimized bool           `json:"is_optimized"`
-	LeftChild   *OptimizedNode `json:"left"`
-	RightChild  *OptimizedNode `json:"right"`
+	Type        parser.NodeType `json:"type"`
+	Value       float64         `json:"value"`
+	OldValue    string          `json:"old_value"`
+	IsOptimized bool            `json:"is_optimized"`
+	LeftChild   *OptimizedNode  `json:"left"`
+	RightChild  *OptimizedNode  `json:"right"`
 }
 
 // Optimize optimizes an ast.
 // Interprets all integer and decimal nodes.
 // Interprets all operations, if their child nodes can already be interpreted
-func Optimize(ast *AST) (*OptimizedAST, error) {
+func Optimize(ast *parser.AST) (*OptimizedAST, error) {
 	if ast == nil {
 		return nil, nil
 	}
@@ -34,27 +36,27 @@ func Optimize(ast *AST) (*OptimizedAST, error) {
 	return &OptimizedAST{Node: optimizedNode}, nil
 }
 
-func optimizeNode(node *Node) (*OptimizedNode, error) {
+func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 	var result float64
 	var err error
 
 	switch node.Type {
-	case NInteger:
+	case parser.NInteger:
 		result, err = interpretInteger(node)
-	case NDecimal:
+	case parser.NDecimal:
 		result, err = interpretDecimal(node)
-	case NVariable:
+	case parser.NVariable:
 		return &OptimizedNode{
-			Type:        NVariable,
+			Type:        parser.NVariable,
 			Value:       0,
 			OldValue:    node.Value,
 			IsOptimized: false,
 			LeftChild:   nil,
 			RightChild:  nil,
 		}, nil
-	case NAddition, NSubtraction, NMultiplication, NDivision:
+	case parser.NAddition, parser.NSubtraction, parser.NMultiplication, parser.NDivision:
 		return optimizeOperator(node)
-	case NFuncSqrt:
+	case parser.NFuncSqrt:
 		return optimizeFunction(node)
 	default:
 		return nil, ErrorInvalidNodeType
@@ -65,7 +67,7 @@ func optimizeNode(node *Node) (*OptimizedNode, error) {
 	}
 
 	return &OptimizedNode{
-		Type:        NDecimal,
+		Type:        parser.NDecimal,
 		Value:       result,
 		OldValue:    "",
 		IsOptimized: true,
@@ -74,7 +76,7 @@ func optimizeNode(node *Node) (*OptimizedNode, error) {
 	}, nil
 }
 
-func optimizeOperator(node *Node) (*OptimizedNode, error) {
+func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
 	left, right, err := getOptimizedNodeChilds(node)
 	if err != nil {
 		return nil, err
@@ -98,7 +100,7 @@ func optimizeOperator(node *Node) (*OptimizedNode, error) {
 	}
 
 	return &OptimizedNode{
-		Type:        NDecimal,
+		Type:        parser.NDecimal,
 		Value:       result,
 		OldValue:    "",
 		IsOptimized: true,
@@ -107,7 +109,7 @@ func optimizeOperator(node *Node) (*OptimizedNode, error) {
 	}, nil
 }
 
-func getOptimizedNodeChilds(node *Node) (*OptimizedNode, *OptimizedNode, error) {
+func getOptimizedNodeChilds(node *parser.Node) (*OptimizedNode, *OptimizedNode, error) {
 	if node.LeftChild == nil {
 		return nil, nil, ErrorMissingLeftChild
 	}
@@ -127,7 +129,7 @@ func getOptimizedNodeChilds(node *Node) (*OptimizedNode, *OptimizedNode, error) 
 	return left, right, nil
 }
 
-func optimizeFunction(node *Node) (*OptimizedNode, error) {
+func optimizeFunction(node *parser.Node) (*OptimizedNode, error) {
 	left, err := optimizeNode(node.LeftChild)
 	if err != nil {
 		return nil, err
@@ -151,7 +153,7 @@ func optimizeFunction(node *Node) (*OptimizedNode, error) {
 	}
 
 	return &OptimizedNode{
-		Type:        NDecimal,
+		Type:        parser.NDecimal,
 		Value:       result,
 		OldValue:    "",
 		IsOptimized: true,

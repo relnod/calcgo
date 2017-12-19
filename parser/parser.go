@@ -1,4 +1,4 @@
-package calcgo
+package parser
 
 import (
 	"errors"

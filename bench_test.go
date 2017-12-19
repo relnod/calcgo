@@ -5,6 +5,7 @@ import (
 
 	"github.com/relnod/calcgo"
 	"github.com/relnod/calcgo/lexer"
+	"github.com/relnod/calcgo/parser"
 )
 
 var (
@@ -33,19 +34,19 @@ func Benchmark3Lexer(b *testing.B) {
 
 func Benchmark1Parser(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Parse(str1)
+		parser.Parse(str1)
 	}
 }
 
 func Benchmark2Parser(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Parse(str2)
+		parser.Parse(str2)
 	}
 }
 
 func Benchmark3Parser(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Parse(str3)
+		parser.Parse(str3)
 	}
 }
 
