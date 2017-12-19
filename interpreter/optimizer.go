@@ -1,4 +1,4 @@
-package calcgo
+package interpreter
 
 import "github.com/relnod/calcgo/parser"
 

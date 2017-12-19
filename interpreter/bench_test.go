@@ -1,9 +1,9 @@
-package calcgo_test
+package interpreter_test
 
 import (
 	"testing"
 
-	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/interpreter"
 	"github.com/relnod/calcgo/lexer"
 	"github.com/relnod/calcgo/parser"
 )
@@ -52,18 +52,18 @@ func Benchmark3Parser(b *testing.B) {
 
 func Benchmark1Interpreter(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Interpret(str1)
+		interpreter.Interpret(str1)
 	}
 }
 
 func Benchmark2Interpreter(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Interpret(str2)
+		interpreter.Interpret(str2)
 	}
 }
 
 func Benchmark3Interpreter(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Interpret(str3)
+		interpreter.Interpret(str3)
 	}
 }
