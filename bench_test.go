@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/lexer"
 )
 
 var (
@@ -14,19 +15,19 @@ var (
 
 func Benchmark1Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Lex(str1)
+		lexer.Lex(str1)
 	}
 }
 
 func Benchmark2Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Lex(str2)
+		lexer.Lex(str2)
 	}
 }
 
 func Benchmark3Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		calcgo.Lex(str3)
+		lexer.Lex(str3)
 	}
 }
 

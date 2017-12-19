@@ -1,4 +1,4 @@
-package calcgo
+package lexer
 
 type stateFn func(*Lexer) stateFn
 

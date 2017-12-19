@@ -8,6 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/lexer"
 )
 
 func astToString(ast calcgo.AST) string {
@@ -1316,10 +1317,10 @@ func TestParser(t *testing.T) {
 		So(ast1, shouldEqualAST, ast2)
 		So(e1, ShouldEqualErrors, e2)
 
-		ast1, e1 = calcgo.ParseTokens([]calcgo.Token{
-			{Type: calcgo.TInteger, Value: "1"},
-			{Type: calcgo.TOperatorPlus, Value: ""},
-			{Type: calcgo.TInteger, Value: "1"},
+		ast1, e1 = calcgo.ParseTokens([]lexer.Token{
+			{Type: lexer.TInteger, Value: "1"},
+			{Type: lexer.TOperatorPlus, Value: ""},
+			{Type: lexer.TInteger, Value: "1"},
 		})
 		ast2, e2 = calcgo.Parse("1 + 1")
 		So(ast1, shouldEqualAST, ast2)
