@@ -9,48 +9,11 @@ import (
 
 type Tokens []lexer.Token
 
-func tokenTypeToString(tokenType lexer.TokenType) string {
-	switch lexer.TokenType(tokenType) {
-	case lexer.TInteger:
-		return "Integer"
-	case lexer.TDecimal:
-		return "Decimal"
-	case lexer.TVariable:
-		return "Variable"
-	case lexer.TOperatorPlus:
-		return "Plus"
-	case lexer.TOperatorMinus:
-		return "Minus"
-	case lexer.TOperatorMult:
-		return "Mult"
-	case lexer.TOperatorDiv:
-		return "Div"
-	case lexer.TFuncSqrt:
-		return "Sqrt"
-	case lexer.TLeftBracket:
-		return "Left Bracket"
-	case lexer.TRightBracket:
-		return "RightBracket"
-	case lexer.TInvalidCharacter:
-		return "Invalid Character"
-	case lexer.TInvalidCharacterInNumber:
-		return "Invalid Character in Number"
-	case lexer.TInvalidCharacterInVariable:
-		return "Invalid Character in Variable"
-	default:
-		return "Undefined Token Type"
-	}
-}
-
-func tokenToString(t lexer.Token) string {
-	return "{\"" + t.Value + "\", " + tokenTypeToString(t.Type) + "}"
-}
-
-func tokensToString(tokens []lexer.Token) string {
+func (tokens Tokens) String() string {
 	str := ""
 
 	for i := 0; i < len(tokens); i++ {
-		str += tokenToString(tokens[i]) + "\n"
+		str += tokens[i].String() + "\n"
 	}
 
 	return str
@@ -58,9 +21,9 @@ func tokensToString(tokens []lexer.Token) string {
 
 func tokenError(actual Tokens, expected Tokens) string {
 	return "Expected: \n" +
-		tokensToString(expected) +
+		expected.String() +
 		"Actual: \n" +
-		tokensToString(actual)
+		actual.String()
 }
 
 func eq(t1 Tokens, t2 Tokens) bool {

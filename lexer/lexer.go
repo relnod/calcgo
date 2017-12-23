@@ -2,33 +2,6 @@ package lexer
 
 type stateFn func(*Lexer) stateFn
 
-// TokenType describes the type of a token
-type TokenType byte
-
-// Token types
-const (
-	TEOF TokenType = iota
-	TInteger
-	TDecimal
-	TVariable
-	TOperatorPlus
-	TOperatorMinus
-	TOperatorMult
-	TOperatorDiv
-	TFuncSqrt
-	TLeftBracket
-	TRightBracket
-	TInvalidCharacter
-	TInvalidCharacterInNumber
-	TInvalidCharacterInVariable
-)
-
-// Token represents a token returned by the lexer
-type Token struct {
-	Type  TokenType
-	Value string
-}
-
 // Lexer holds the state of the lexer
 type Lexer struct {
 	token   chan Token
