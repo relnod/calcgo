@@ -19,11 +19,18 @@ type Node struct {
 	RightChild *Node    `json:"right"`
 }
 
-// IsOperator returns true if the given nodeType is an operator.
+// IsOperator returns true if the type of n is an operator.
 func (n *Node) IsOperator() bool {
-	return n.Type > NDecimal && n.Type <= NDivision
+	return n.Type == NAddition ||
+		n.Type == NSubtraction ||
+		n.Type == NMultiplication ||
+		n.Type == NDivision
 }
 
+// isHigherOperator returns true if operator n is of higher than n2.
+// Order is defined as the following:
+// NAddition, NSubtraction = 0
+// NMultiplication, NDivision = 1
 func (n *Node) isHigherOperator(n2 *Node) bool {
 	if n.Type <= NSubtraction && n2.Type <= NSubtraction {
 		return false
@@ -36,6 +43,9 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 	return n.Type < n2.Type
 }
 
+// getOperatorNodeType converts a token type to a node type.
+// The given token should be an operator. Returns an invalid operator node
+// otherwise.
 func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
 	case lexer.TOperatorPlus:
@@ -51,6 +61,9 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 	return NInvalidOperator, false
 }
 
+// getOperatorNodeType converts a token type to a node type.
+// The given token should be a number or variable. Returns an invalid number or
+// variable node otherwise.
 func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
 	case lexer.TInteger:
@@ -71,6 +84,8 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 	return NError, false
 }
 
+// getOperatorNodeType converts a token type to a node type.
+// The given token should be a function.
 func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
 	return NFuncSqrt, true
 }

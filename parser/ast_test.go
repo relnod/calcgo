@@ -2,16 +2,30 @@ package parser_test
 
 import (
 	"testing"
+
+	"github.com/relnod/calcgo/parser"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestParser(t *testing.T) {
-	// Convey("IsOperator works", t, func() {
-	// 	So(parser.IsOperator(parser.NDecimal), ShouldEqual, false)
-	// 	So(parser.IsOperator(parser.NInteger), ShouldEqual, false)
-	// 	So(parser.IsOperator(parser.NError), ShouldEqual, false)
-	// 	So(parser.IsOperator(parser.NAddition), ShouldEqual, true)
-	// 	So(parser.IsOperator(parser.NSubtraction), ShouldEqual, true)
-	// 	So(parser.IsOperator(parser.NMultiplication), ShouldEqual, true)
-	// 	So(parser.IsOperator(parser.NDivision), ShouldEqual, true)
-	// })
+func TestAST(t *testing.T) {
+	var cases = []struct {
+		nt         parser.NodeType
+		isOperator bool
+	}{
+		{parser.NDecimal, false},
+		{parser.NInteger, false},
+		{parser.NVariable, false},
+		{parser.NError, false},
+		{parser.NAddition, true},
+		{parser.NSubtraction, true},
+		{parser.NMultiplication, true},
+		{parser.NDivision, true},
+	}
+
+	Convey("IsOperator works", t, func() {
+		for _, c := range cases {
+			n := parser.Node{Type: c.nt}
+			So(n.IsOperator(), ShouldEqual, c.isOperator)
+		}
+	})
 }
