@@ -140,55 +140,30 @@ func (p *Parser) pushErrors(errors []error) {
 }
 
 func (p *Parser) newOperatorNode() *Node {
-	return &Node{p.getOperatorNodeType(), p.currToken.Value, nil, nil}
+	nt, ok := getOperatorNodeType(p.currToken)
+	if !ok {
+		p.pushError(ErrorExpectedOperator)
+	}
+
+	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
 func (p *Parser) newNumberOrVariableNode() *Node {
-	return &Node{p.getNumberOrVariableNodeType(), p.currToken.Value, nil, nil}
+	nt, ok := getNumberOrVariableNodeType(p.currToken)
+	if !ok {
+		p.pushError(ErrorExpectedNumberOrVariable)
+	}
+
+	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
 func (p *Parser) newFunctionNode() *Node {
-	return &Node{p.getFunctionNodeType(), p.currToken.Value, nil, nil}
-}
-
-func (p *Parser) getNumberOrVariableNodeType() NodeType {
-	switch p.currToken.Type {
-	case lexer.TInteger:
-		return NInteger
-	case lexer.TDecimal:
-		return NDecimal
-	case lexer.TVariable:
-		return NVariable
+	nt, ok := getFunctionNodeType(p.currToken)
+	if !ok {
+		p.pushError(ErrorExpectedFunction)
 	}
 
-	p.pushError(ErrorExpectedNumberOrVariable)
-	switch p.currToken.Type {
-	case lexer.TInvalidCharacterInNumber:
-		return NInvalidNumber
-	case lexer.TInvalidCharacterInVariable:
-		return NInvalidVariable
-	}
-	return NError
-}
-
-func (p *Parser) getOperatorNodeType() NodeType {
-	switch p.currToken.Type {
-	case lexer.TOperatorPlus:
-		return NAddition
-	case lexer.TOperatorMinus:
-		return NSubtraction
-	case lexer.TOperatorMult:
-		return NMultiplication
-	case lexer.TOperatorDiv:
-		return NDivision
-	}
-
-	p.pushError(ErrorExpectedOperator)
-	return NInvalidOperator
-}
-
-func (p *Parser) getFunctionNodeType() NodeType {
-	return NFuncSqrt
+	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
 func parseStart(p *Parser) parseState {
