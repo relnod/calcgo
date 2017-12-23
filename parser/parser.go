@@ -1,3 +1,4 @@
+// Package parser contains the parser of calcgo.
 package parser
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/relnod/calcgo/lexer"
 )
 
+// parseState defines a state function of the parser machine.
 type parseState func(*Parser) parseState
 
 // Parser holds state of parser
@@ -35,7 +37,7 @@ const (
 	NDivision
 )
 
-// Errors retured by the parser
+// Errors, that can occur during parsing
 var (
 	ErrorExpectedNumberOrVariable = errors.New("Error: Expected number or variable got something else")
 	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
@@ -77,6 +79,7 @@ var (
 //      RightChild: nil,
 //    },
 //  },
+//
 func Parse(str string) (AST, []error) {
 	if len(str) == 0 {
 		return AST{}, nil
@@ -111,13 +114,11 @@ func ParseTokenStream(c chan lexer.Token) (AST, []error) {
 	return AST{p.topNode}, p.errors
 }
 
+// run runs the parser state machine.
 func (p *Parser) run() {
 	for state := parseStart; state != nil; {
-		p.next()
-		if p.currToken.Type == lexer.TEOF {
-			if p.nested {
-				p.pushError(ErrorMissingClosingBracket)
-			}
+		ok := p.next()
+		if !ok {
 			break
 		}
 
@@ -125,20 +126,34 @@ func (p *Parser) run() {
 	}
 }
 
-func (p *Parser) next() {
+// next retrieves the next token from the lexer. If the lexer is finished next
+// returns false. Otherwise returns true.
+func (p *Parser) next() bool {
 	p.currToken = <-p.tokens
+
+	if p.currToken.Type == lexer.TEOF {
+		if p.nested {
+			p.pushError(ErrorMissingClosingBracket)
+		}
+		return false
+	}
+
+	return true
 }
 
+// pushError adds an error to the parser error list.
 func (p *Parser) pushError(err error) {
 	p.errors = append(p.errors, err)
 }
 
+// pushErrors adds a list of errors to the parser error list.
 func (p *Parser) pushErrors(errors []error) {
 	for _, err := range errors {
 		p.pushError(err)
 	}
 }
 
+// newOperatorNode returns a new operator node.
 func (p *Parser) newOperatorNode() *Node {
 	nt, ok := getOperatorNodeType(p.currToken)
 	if !ok {
@@ -148,6 +163,7 @@ func (p *Parser) newOperatorNode() *Node {
 	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
+// newNumberOrVariableNode returns a new number or variable node.
 func (p *Parser) newNumberOrVariableNode() *Node {
 	nt, ok := getNumberOrVariableNodeType(p.currToken)
 	if !ok {
@@ -157,6 +173,7 @@ func (p *Parser) newNumberOrVariableNode() *Node {
 	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
+// newFunctionNode returns a new function node.
 func (p *Parser) newFunctionNode() *Node {
 	nt, ok := getFunctionNodeType(p.currToken)
 	if !ok {
@@ -166,58 +183,157 @@ func (p *Parser) newFunctionNode() *Node {
 	return &Node{nt, p.currToken.Value, nil, nil}
 }
 
+// subParse creates another parser and runs it until a closing bracket appears.
+func (p *Parser) subParse() (*Node, []error) {
+	p2 := &Parser{
+		tokens:    p.tokens,
+		currToken: lexer.Token{},
+		topNode:   p.topNode,
+		current:   nil,
+		errors:    nil,
+		nested:    true,
+	}
+
+	p2.run()
+
+	return p2.topNode, p2.errors
+}
+
+// subParseFunctionArgument parses the argument of a function.
+func (p *Parser) subParseFunctionArgument(n *Node) {
+	p.current = n
+	n, errors := p.subParse()
+	p.current.LeftChild = n
+	p.pushErrors(errors)
+}
+
+// setFirstTopNode sets the first top node
+func (p *Parser) setFirstTopNode(n *Node) {
+	p.topNode = n
+}
+
+// setNewTopNode sets a new top node.
+// The top node from before will be the left child of the new top node.
+//
+//    a            n
+//   / \   =>     /
+//  b   c        a
+//              / \
+//             b   c
+//
+func (p *Parser) setNewTopNode(n *Node) {
+	n.LeftChild = p.topNode
+	p.topNode = n
+	p.current = n
+}
+
+// setNewRightChild sets a new right child of the current top child.
+// The right child from before, will be the new left child of the new node.
+//
+//    a          a
+//   / \   =>   / \
+//  b   c      b   n
+//                /
+//               c
+//
+func (p *Parser) setNewRightChild(n *Node) {
+	n.LeftChild = p.topNode.RightChild
+	p.topNode.RightChild = n
+	p.current = n
+}
+
+// addNewRightChild sets the right child to the given node.
+//
+//    a         a
+//   /    =>   / \
+//  b         b   n
+//
+func (p *Parser) addNewRightChild(n *Node) {
+	p.current.RightChild = n
+}
+
+// parseStart is the start state of the parser machine.
+// Behaves the same as parseValue, except, that it sets the first top node.
+//
+// Expects one of these tokens:
+//  - TLeftBracket
+//  - TFunc*
+//  - TInteger
+//  - TDecimal
+//  - TVariable
+//
+// The following states can follow:
+//  - parseOperator
+//  - parseOperatorAfterRightBracket
+//
 func parseStart(p *Parser) parseState {
 	if p.currToken.Type == lexer.TLeftBracket {
-		p2 := &Parser{p.tokens, lexer.Token{}, p.topNode, p.current, nil, true}
-		p2.run()
-		p.topNode = p2.topNode
-		p.pushErrors(p2.errors)
+		n, errors := p.subParse()
+		p.setFirstTopNode(n)
+		p.pushErrors(errors)
 
 		return parseOperatorAfterRightBracket
 	}
 
 	if p.currToken.Type == lexer.TFuncSqrt {
-		p.topNode = p.newFunctionNode()
-		p.current = p.topNode
-		p2 := &Parser{p.tokens, lexer.Token{}, p.topNode, p.current, nil, true}
-		p2.run()
-		p.current.LeftChild = p2.topNode
-		p.pushErrors(p2.errors)
+		n := p.newFunctionNode()
+		p.setFirstTopNode(n)
+		p.current = n
+		p.subParseFunctionArgument(n)
 
 		return parseOperator
 	}
 
-	p.topNode = p.newNumberOrVariableNode()
+	n := p.newNumberOrVariableNode()
+	p.setFirstTopNode(n)
 
 	return parseOperator
 }
 
-func parseNumberOrLeftBracket(p *Parser) parseState {
+// parseValue is the state, that parses
+//
+// Expects one of these tokens:
+//  - TLeftBracket
+//  - TFunc*
+//  - TInteger
+//  - TDecimal
+//  - TVariable
+//
+// The following states can follow:
+//  - parseOperator
+//  - parseOperatorAfterRightBracket
+//
+func parseValue(p *Parser) parseState {
 	if p.currToken.Type == lexer.TLeftBracket {
-		p2 := &Parser{p.tokens, lexer.Token{}, p.topNode, p.current, nil, true}
-		p2.run()
-		p.current.RightChild = p2.topNode
-		p.pushErrors(p2.errors)
+		n, errors := p.subParse()
+		p.addNewRightChild(n)
+		p.pushErrors(errors)
 
 		return parseOperator
 	}
 
 	if p.currToken.Type == lexer.TFuncSqrt {
-		node := p.newFunctionNode()
-		p.current.RightChild = node
-		p.current = node
-		p2 := &Parser{p.tokens, lexer.Token{}, p.topNode, p.current, nil, true}
-		p2.run()
-		p.current.LeftChild = p2.topNode
-		p.pushErrors(p2.errors)
+		n := p.newFunctionNode()
+		p.addNewRightChild(n)
+		p.subParseFunctionArgument(n)
 
 		return parseOperator
 	}
 
-	p.current.RightChild = p.newNumberOrVariableNode()
+	n := p.newNumberOrVariableNode()
+	p.addNewRightChild(n)
 	return parseOperator
 }
 
+// parseOperator is the state, that handles an operator.
+//
+// Expects one of these tokens:
+//  - TRightBracket
+//  - TOperator*
+//
+// The following states can follow:
+//  - parseValue
+//
 func parseOperator(p *Parser) parseState {
 	if p.currToken.Type == lexer.TRightBracket {
 		if !p.nested {
@@ -227,18 +343,26 @@ func parseOperator(p *Parser) parseState {
 	}
 
 	node := p.newOperatorNode()
+	// Handle 'multiplication and division before addition and subtraction' rule
 	if p.topNode.IsOperator() && p.topNode.isHigherOperator(node) {
-		node.LeftChild = p.topNode.RightChild
-		p.topNode.RightChild = node
+		p.setNewRightChild(node)
 	} else {
-		node.LeftChild = p.topNode
-		p.topNode = node
+		p.setNewTopNode(node)
 	}
-	p.current = node
 
-	return parseNumberOrLeftBracket
+	return parseValue
 }
 
+// parseOperatorAfterRightBracket is the state, that happens after a closing
+// bracket.
+//
+// Expects one of these tokens:
+//  - TRightBracket
+//  - TOperator*
+//
+// The following states can follow:
+//  - parseValue
+//
 func parseOperatorAfterRightBracket(p *Parser) parseState {
 	if p.currToken.Type == lexer.TRightBracket {
 		if !p.nested {
@@ -248,9 +372,7 @@ func parseOperatorAfterRightBracket(p *Parser) parseState {
 	}
 
 	node := p.newOperatorNode()
-	node.LeftChild = p.topNode
-	p.topNode = node
-	p.current = node
+	p.setNewTopNode(node)
 
-	return parseNumberOrLeftBracket
+	return parseValue
 }
