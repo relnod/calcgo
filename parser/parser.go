@@ -8,23 +8,6 @@ import (
 
 type parseState func(*Parser) parseState
 
-// AST stores the data of the abstract syntax tree.
-// The ast is in the form of a binary tree.
-type AST struct {
-	Node *Node
-}
-
-// Node represents a node
-type Node struct {
-	Type       NodeType `json:"type"`
-	Value      string   `json:"value"`
-	LeftChild  *Node    `json:"left"`
-	RightChild *Node    `json:"right"`
-}
-
-// NodeType defines the type of a node
-type NodeType uint
-
 // Parser holds state of parser
 type Parser struct {
 	tokens    chan lexer.Token
@@ -126,23 +109,6 @@ func ParseTokenStream(c chan lexer.Token) (AST, []error) {
 	p.run()
 
 	return AST{p.topNode}, p.errors
-}
-
-// IsOperator returns true if the given nodeType is an operator.
-func IsOperator(op NodeType) bool {
-	return op > NDecimal && op <= NDivision
-}
-
-func isHigherOperator(op1 NodeType, op2 NodeType) bool {
-	if op1 <= NSubtraction && op2 <= NSubtraction {
-		return false
-	}
-
-	if op1 > NSubtraction && op2 > NSubtraction {
-		return false
-	}
-
-	return op1 < op2
 }
 
 func (p *Parser) run() {
@@ -286,7 +252,7 @@ func parseOperator(p *Parser) parseState {
 	}
 
 	node := p.newOperatorNode()
-	if IsOperator(p.topNode.Type) && isHigherOperator(p.topNode.Type, node.Type) {
+	if p.topNode.IsOperator() && p.topNode.isHigherOperator(node) {
 		node.LeftChild = p.topNode.RightChild
 		p.topNode.RightChild = node
 	} else {
