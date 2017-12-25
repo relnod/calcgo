@@ -1252,6 +1252,27 @@ func TestParser(t *testing.T) {
 			})
 		})
 
+		Convey("handles missing closing bracket of function", func() {
+			ast, errors := parser.Parse("sqrt(1")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NFuncSqrt,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: nil,
+				},
+			})
+
+			So(errors, ShouldEqualErrors, []error{
+				parser.ErrorMissingClosingBracket,
+			})
+		})
+
 		Convey("handles unexpected closing bracket", func() {
 			ast, errors := parser.Parse("1 + 1)")
 			So(ast, shouldEqualAST, parser.AST{

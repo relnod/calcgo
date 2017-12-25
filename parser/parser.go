@@ -175,10 +175,7 @@ func (p *Parser) newNumberOrVariableNode() *Node {
 
 // newFunctionNode returns a new function node.
 func (p *Parser) newFunctionNode() *Node {
-	nt, ok := getFunctionNodeType(p.currToken)
-	if !ok {
-		p.pushError(ErrorExpectedFunction)
-	}
+	nt, _ := getFunctionNodeType(p.currToken)
 
 	return &Node{nt, p.currToken.Value, nil, nil}
 }
