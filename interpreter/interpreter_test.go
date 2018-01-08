@@ -10,20 +10,75 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-type testCase struct {
-	description    string
+type TestCaseWrapper struct {
+	description string
+	cases       []TestCase
+	wrappers    []TestCaseWrapper
+}
+
+type TestCase struct {
 	given          string
 	expectedValue  float64
 	expectedErrors []error
-	testCases      []testCase
 }
 
-var testCases = []testCase{
-	{"no input", "", 0, nil, nil},
-	{"numbers", "", 0, nil, []testCase{
-		{"positive integer", "1", 1, nil, nil},
-		{"positive decimals", "1.0", 1, nil, nil},
-		{"negativ numbers", "-1", -1, nil, nil},
+var testCases = []TestCaseWrapper{
+	{"no input", []TestCase{{"", 0, nil}}, nil},
+	{"numbers", nil, []TestCaseWrapper{
+		{"positive integer", []TestCase{
+			{"1", 1, nil},
+			{"123456789", 123456789, nil},
+		}, nil},
+		{"positive decimals", []TestCase{
+			{"1.0", 1, nil},
+			{"12345.67890", 12345.67890, nil},
+		}, nil},
+		{"negativ integers", []TestCase{
+			{"-1", -1, nil},
+			{"-123456789", -123456789, nil},
+		}, nil},
+		{"negativ decimals", []TestCase{
+			{"-2.0", -2, nil},
+			{"-23456.123", -23456.123, nil},
+		}, nil},
+	}},
+	{"operators", nil, []TestCaseWrapper{
+		{"addition", []TestCase{
+			{"1 + 1", 1 + 1, nil},
+			{"1 + 2 + 3", 1 + 2 + 3, nil},
+		}, nil},
+		{"subtraction", []TestCase{
+			{"1 - 1", 1 - 1, nil},
+			{"1 - 2 - 3", 1 - 2 - 3, nil},
+		}, nil},
+		{"multiplication", []TestCase{
+			{"1 * 1", 1 * 1, nil},
+			{"1 * 2 * 3", 1 * 2 * 3, nil},
+		}, nil},
+		{"division", []TestCase{
+			{"1 / 1", 1 / 1, nil},
+			{"1 / 2 / 3", 1.0 / 2.0 / 3.0, nil},
+		}, nil},
+	}},
+	{"operations with negative numbers", nil, []TestCaseWrapper{
+		{"left side negative", []TestCase{
+			{"-1 + 1", -1 + 1, nil},
+			{"-1 - 1", -1 - 1, nil},
+			{"-1 * 1", -1 * 1, nil},
+			{"-1 / 1", -1 / 1, nil},
+		}, nil},
+		{"right side negative", []TestCase{
+			{"1 + -1", 1 + -1, nil},
+			{"1 - -1", 1 - -1, nil},
+			{"1 * -1", 1 * -1, nil},
+			{"1 / -1", 1 / -1, nil},
+		}, nil},
+		{"both sides negative", []TestCase{
+			{"-1 + -1", -1 + -1, nil},
+			{"-1 - -1", -1 - -1, nil},
+			{"-1 * -1", -1 * -1, nil},
+			{"-1 / -1", -1 / -1, nil},
+		}, nil},
 	}},
 }
 
@@ -44,15 +99,19 @@ func interpreterOptimizerEnabled(s string) (float64, []error) {
 	return i.GetResult()
 }
 
-func handleTestCases(cases []testCase, fnc interpretFnc) {
-	for _, c := range cases {
-		Convey(c.description, func() {
-			result, errors := fnc(c.given)
-			So(result, ShouldEqual, c.expectedValue)
-			So(errors, ShouldEqualErrors, c.expectedErrors)
+func handleTestCases(cases []TestCaseWrapper, fnc interpretFnc) {
+	for _, wrapper := range cases {
+		Convey(wrapper.description, func() {
+			if wrapper.cases != nil {
+				for _, c := range wrapper.cases {
+					result, errors := fnc(c.given)
+					So(result, ShouldEqual, c.expectedValue)
+					So(errors, ShouldEqualErrors, c.expectedErrors)
+				}
+			}
 
-			if c.testCases != nil {
-				handleTestCases(c.testCases, fnc)
+			if wrapper.wrappers != nil {
+				handleTestCases(wrapper.wrappers, fnc)
 			}
 		})
 	}
