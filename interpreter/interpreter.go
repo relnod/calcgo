@@ -70,7 +70,7 @@ func (i *Interpreter) EnableOptimizer() {
 // If the interpreter was initialized with a string,
 // the ast gets generated first
 func (i *Interpreter) GetResult() (float64, []error) {
-	if i.str == "" {
+	if i.str == "" && i.ast == nil {
 		return 0, nil
 	}
 
@@ -147,10 +147,10 @@ func Interpret(str string) (float64, []error) {
 //		},
 //  })
 //
-func InterpretAST(ast parser.AST) (float64, error) {
-	interpreter := NewInterpreterFromAST(&ast)
+func InterpretAST(ast *parser.AST) (float64, error) {
+	i := NewInterpreterFromAST(ast)
 
-	result, errors := interpreter.GetResult()
+	result, errors := i.GetResult()
 	if errors != nil {
 		return 0, errors[0]
 	}

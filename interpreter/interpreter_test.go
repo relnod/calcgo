@@ -10,6 +10,16 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func newInterpreter(str string, optimized bool) *interpreter.Interpreter {
+	i := interpreter.NewInterpreter(str)
+
+	if optimized {
+		i.EnableOptimizer()
+	}
+
+	return i
+}
+
 type TestCaseWrapper struct {
 	description string
 	cases       []TestCase
@@ -22,8 +32,25 @@ type TestCase struct {
 	expectedErrors []error
 }
 
+type interpretFnc func(string) (float64, []error)
+
+func interpret(str string) (float64, []error) {
+	return interpreter.Interpret(str)
+}
+
+func interpreterOptimizerDisabled(str string) (float64, []error) {
+	i := newInterpreter(str, false)
+	return i.GetResult()
+}
+
+func interpreterOptimizerEnabled(str string) (float64, []error) {
+	i := newInterpreter(str, true)
+	return i.GetResult()
+}
+
 var testCases = []TestCaseWrapper{
 	{"no input", []TestCase{{"", 0, nil}}, nil},
+
 	{"numbers", nil, []TestCaseWrapper{
 		{"positive integer", []TestCase{
 			{"1", 1, nil},
@@ -127,28 +154,21 @@ var testCases = []TestCaseWrapper{
 			{"sqrt((1 + 2) * (1 + 3))", math.Sqrt((1 + 2) * (1 + 3)), nil},
 			{"sqrt(1) + 4", math.Sqrt(1) + 4, nil},
 			{"4 + sqrt(1)", 4 + math.Sqrt(1), nil},
+			{"sqrt(1 / 0)", 0, []error{interpreter.ErrorDivisionByZero}},
 		}, nil},
 	}},
+
+	{"errors", []TestCase{
+		{"1 / 0", 0, []error{interpreter.ErrorDivisionByZero}},
+		{"$", 0, []error{parser.ErrorExpectedNumberOrVariable}},
+		{"1 + #)", 0, []error{
+			parser.ErrorExpectedNumberOrVariable,
+			parser.ErrorUnexpectedClosingBracket,
+		}},
+	}, nil},
 }
 
-type interpretFnc func(string) (float64, []error)
-
-func interpret(s string) (float64, []error) {
-	return interpreter.Interpret(s)
-}
-
-func interpreterOptimizerDisabled(s string) (float64, []error) {
-	i := interpreter.NewInterpreter(s)
-	return i.GetResult()
-}
-
-func interpreterOptimizerEnabled(s string) (float64, []error) {
-	i := interpreter.NewInterpreter(s)
-	i.EnableOptimizer()
-	return i.GetResult()
-}
-
-func handleTestCases(cases []TestCaseWrapper, fnc interpretFnc) {
+func testInterpreter(cases []TestCaseWrapper, fnc interpretFnc) {
 	for _, wrapper := range cases {
 		Convey(wrapper.description, func() {
 			if wrapper.cases != nil {
@@ -160,44 +180,30 @@ func handleTestCases(cases []TestCaseWrapper, fnc interpretFnc) {
 			}
 
 			if wrapper.wrappers != nil {
-				handleTestCases(wrapper.wrappers, fnc)
+				testInterpreter(wrapper.wrappers, fnc)
 			}
 		})
 	}
 }
 
-func TestInterpreter(t *testing.T) {
-	Convey("Interpret Spec", t, func() {
-		handleTestCases(testCases, interpret)
-	})
-
-	Convey("Interpreter Spec (optimizer disabled)", t, func() {
-		handleTestCases(testCases, interpreterOptimizerDisabled)
-	})
-
-	Convey("Interpreter Spec (optimizer enabled)", t, func() {
-		handleTestCases(testCases, interpreterOptimizerEnabled)
-	})
-}
-
-func SkipTestInterpreter2(t *testing.T) {
-	Convey("interpreter handles variables", t, func() {
-		Convey("works with simple variables", func() {
-			i := interpreter.NewInterpreter("a")
+func testVariables(optimized bool) {
+	Convey("variables", func() {
+		Convey("simple variables", func() {
+			i := newInterpreter("a", optimized)
 			i.SetVar("a", 1.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 1)
 			So(errors, ShouldBeNil)
 
-			i = interpreter.NewInterpreter("1 + a")
-			i.SetVar("a", 1.0)
+			i = newInterpreter("1 + a", optimized)
+			i.SetVar("a", 2.0)
 			result, errors = i.GetResult()
-			So(result, ShouldEqual, 1)
+			So(result, ShouldEqual, 3)
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("works with multiple variables", func() {
-			i := interpreter.NewInterpreter("a + b")
+		Convey("multiple variables", func() {
+			i := newInterpreter("a + b", optimized)
 			i.SetVar("a", 1)
 			i.SetVar("b", 2)
 			result, errors := i.GetResult()
@@ -205,9 +211,8 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("works with reassining variables", func() {
-			i := interpreter.NewInterpreter("1 + a")
-
+		Convey("reassining variables", func() {
+			i := newInterpreter("1 + a", optimized)
 			i.SetVar("a", 1.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 2)
@@ -219,19 +224,49 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("returns error, when not providing variable", func() {
-			i := interpreter.NewInterpreter("1 + a")
+		Convey("functions", func() {
+			i := newInterpreter("sqrt(1 + a)", optimized)
+			i.SetVar("a", 8.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 3)
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("error, when not providing variable", func() {
+			i := newInterpreter("1 + a", optimized)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqualErrors, []error{
 				interpreter.ErrorVariableNotDefined,
 			})
 		})
-	})
 
-	Convey("Interpret() works the same as InterpretAST()", t, func() {
+		Convey("error, when dividing by 0", func() {
+			i := newInterpreter("(1 / a) + 1", optimized)
+			i.SetVar("a", 0.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqualErrors, []error{
+				interpreter.ErrorDivisionByZero,
+			})
+		})
+
+		Convey("error, when dividing by 0 in function", func() {
+			i := newInterpreter("sqrt(1 / a)", optimized)
+			i.SetVar("a", 0.0)
+			result, errors := i.GetResult()
+			So(result, ShouldEqual, 0)
+			So(errors, ShouldEqualErrors, []error{
+				interpreter.ErrorDivisionByZero,
+			})
+		})
+	})
+}
+
+func testInterpretAST() {
+	Convey("works same as Interpret()", func() {
 		result1, errors1 := interpreter.Interpret("1 + 2")
-		result2, err := interpreter.InterpretAST(parser.AST{
+		result2, err := interpreter.InterpretAST(&parser.AST{
 			Node: &parser.Node{
 				Type:  parser.NAddition,
 				Value: "",
@@ -257,170 +292,9 @@ func SkipTestInterpreter2(t *testing.T) {
 		So(errors1, ShouldEqualErrors, errors2)
 	})
 
-	Convey("Interpreter works with optimizer enabled", t, func() {
-		Convey("simple number", func() {
-			i := interpreter.NewInterpreter("1")
-			i.EnableOptimizer()
-			result, errors := i.GetResult()
-			So(result, ShouldEqual, 1)
-			So(errors, ShouldBeNil)
-		})
-
-		Convey("simple variable", func() {
-			i := interpreter.NewInterpreter("a")
-			i.EnableOptimizer()
-			i.SetVar("a", 1.0)
-			result, errors := i.GetResult()
-			So(result, ShouldEqual, 1)
-			So(errors, ShouldBeNil)
-		})
-
-		Convey("operations", func() {
-			Convey("without variables", func() {
-				i := interpreter.NewInterpreter("1 + 1")
-				i.EnableOptimizer()
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 2)
-				So(errors, ShouldBeNil)
-			})
-
-			Convey("with variables", func() {
-				i := interpreter.NewInterpreter("1 + a")
-				i.EnableOptimizer()
-				i.SetVar("a", 1.0)
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 2)
-				So(errors, ShouldBeNil)
-			})
-		})
-
-		Convey("sqrt", func() {
-			Convey("without variables", func() {
-				i := interpreter.NewInterpreter("sqrt(9)")
-				i.EnableOptimizer()
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 3)
-				So(errors, ShouldBeNil)
-			})
-
-			Convey("with variables", func() {
-				i := interpreter.NewInterpreter("sqrt(a)")
-				i.EnableOptimizer()
-				i.SetVar("a", 9.0)
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 3)
-				So(errors, ShouldBeNil)
-			})
-		})
-
-		Convey("handles errors correctly", func() {
-			Convey("division by 0", func() {
-				i := interpreter.NewInterpreter("1 / 0")
-				i.EnableOptimizer()
-				i.SetVar("a", 1.0)
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 0)
-				So(errors, ShouldEqualErrors, []error{interpreter.ErrorDivisionByZero})
-			})
-
-			Convey("undefined variable", func() {
-				i := interpreter.NewInterpreter("a")
-				i.EnableOptimizer()
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 0)
-				So(errors, ShouldEqualErrors, []error{interpreter.ErrorVariableNotDefined})
-			})
-
-			Convey("invalid node type", func() {
-				i := interpreter.NewInterpreterFromAST(&parser.AST{
-					Node: &parser.Node{
-						Type:       30000,
-						Value:      "a",
-						LeftChild:  nil,
-						RightChild: nil,
-					},
-				})
-				i.EnableOptimizer()
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 0)
-				So(errors, ShouldEqualErrors, []error{interpreter.ErrorInvalidNodeType})
-			})
-
-			Convey("error occurs not not on first node", func() {
-				i := interpreter.NewInterpreterFromAST(&parser.AST{
-					Node: &parser.Node{
-						Type:  parser.NAddition,
-						Value: "",
-						LeftChild: &parser.Node{
-							Type:       parser.NVariable,
-							Value:      "a",
-							LeftChild:  nil,
-							RightChild: nil,
-						},
-						RightChild: &parser.Node{
-							Type:       parser.NInteger,
-							Value:      "1",
-							LeftChild:  nil,
-							RightChild: nil,
-						},
-					},
-				})
-				i.EnableOptimizer()
-				result, errors := i.GetResult()
-				So(result, ShouldEqual, 0)
-				So(errors, ShouldEqualErrors, []error{interpreter.ErrorVariableNotDefined})
-
-				i = interpreter.NewInterpreterFromAST(&parser.AST{
-					Node: &parser.Node{
-						Type:  parser.NAddition,
-						Value: "",
-						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
-							Value:      "1",
-							LeftChild:  nil,
-							RightChild: nil,
-						},
-						RightChild: &parser.Node{
-							Type:       parser.NVariable,
-							Value:      "a",
-							LeftChild:  nil,
-							RightChild: nil,
-						},
-					},
-				})
-				i.EnableOptimizer()
-				result, errors = i.GetResult()
-				So(result, ShouldEqual, 0)
-				So(errors, ShouldEqualErrors, []error{interpreter.ErrorVariableNotDefined})
-			})
-		})
-	})
-
-	Convey("interpreter returns errors, when parser returned errors", t, func() {
-		result, errors := interpreter.Interpret("$")
-		So(result, ShouldEqual, 0)
-		So(errors, ShouldEqualErrors, []error{
-			parser.ErrorExpectedNumberOrVariable,
-		})
-
-		result, errors = interpreter.Interpret("1 + #)")
-		So(result, ShouldEqual, 0)
-		So(errors, ShouldEqualErrors, []error{
-			parser.ErrorExpectedNumberOrVariable,
-			parser.ErrorUnexpectedClosingBracket,
-		})
-	})
-
-	Convey("interpreter returns an error when", t, func() {
-		Convey("dividing by 0", func() {
-			result, errors := interpreter.Interpret("1 / 0")
-			So(result, ShouldEqual, 0)
-			So(errors, ShouldEqualErrors, []error{
-				interpreter.ErrorDivisionByZero,
-			})
-		})
+	Convey("interpreter returns an error when", func() {
 		Convey("a node child is missing", func() {
-			result, errors := interpreter.InterpretAST(parser.AST{
+			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:      parser.NAddition,
 					Value:     "",
@@ -436,7 +310,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorMissingLeftChild)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NAddition,
 					Value: "",
@@ -454,7 +328,7 @@ func SkipTestInterpreter2(t *testing.T) {
 		})
 
 		Convey("a wrong number is given", func() {
-			result, errors := interpreter.InterpretAST(parser.AST{
+			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:       parser.NInteger,
 					Value:      "a",
@@ -465,7 +339,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:       parser.NDecimal,
 					Value:      "a",
@@ -478,7 +352,7 @@ func SkipTestInterpreter2(t *testing.T) {
 		})
 
 		Convey("an invalid node type is given", func() {
-			result, errors := interpreter.InterpretAST(parser.AST{
+			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NAddition,
 					Value: "",
@@ -499,7 +373,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidNodeType)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NSubtraction,
 					Value: "",
@@ -520,7 +394,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidNodeType)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NMultiplication,
 					Value: "",
@@ -541,7 +415,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidNodeType)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NDivision,
 					Value: "",
@@ -564,7 +438,7 @@ func SkipTestInterpreter2(t *testing.T) {
 		})
 
 		Convey("the error doesn't happen on the first node", func() {
-			result, errors := interpreter.InterpretAST(parser.AST{
+			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NAddition,
 					Value: "",
@@ -585,7 +459,7 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
 
-			result, errors = interpreter.InterpretAST(parser.AST{
+			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
 					Type:  parser.NAddition,
 					Value: "",
@@ -606,5 +480,31 @@ func SkipTestInterpreter2(t *testing.T) {
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
 		})
+	})
+}
+
+func TestInterpret(t *testing.T) {
+	Convey("Interpret Spec", t, func() {
+		testInterpreter(testCases, interpret)
+	})
+}
+
+func TestInterpretAST(t *testing.T) {
+	Convey("InterpretAST() Spec", t, func() {
+		testInterpretAST()
+	})
+}
+
+func TestInterpreter(t *testing.T) {
+	Convey("Interpreter Spec (optimizer disabled)", t, func() {
+		testInterpreter(testCases, interpreterOptimizerDisabled)
+		testVariables(false)
+	})
+}
+
+func TestInterpreterWithOptimizer(t *testing.T) {
+	Convey("Interpreter Spec (optimizer enabled)", t, func() {
+		testInterpreter(testCases, interpreterOptimizerEnabled)
+		testVariables(true)
 	})
 }
