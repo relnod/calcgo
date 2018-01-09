@@ -20,6 +20,18 @@ type OptimizedNode struct {
 	RightChild  *OptimizedNode  `json:"right"`
 }
 
+// newOptimizedNode returns a new optimized node.
+func newOptimizedNode(value float64) *OptimizedNode {
+	return &OptimizedNode{
+		Type:        parser.NDecimal,
+		Value:       value,
+		OldValue:    "",
+		IsOptimized: true,
+		LeftChild:   nil,
+		RightChild:  nil,
+	}
+}
+
 // Optimize optimizes an ast.
 // Interprets all integer and decimal nodes.
 // Interprets all operations, if their child nodes can already be interpreted
@@ -36,6 +48,7 @@ func Optimize(ast *parser.AST) (*OptimizedAST, error) {
 	return &OptimizedAST{Node: optimizedNode}, nil
 }
 
+// optimizeNode recursively optimizes all nodes, that can be optimized.
 func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 	var result float64
 	var err error
@@ -54,7 +67,10 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 			LeftChild:   nil,
 			RightChild:  nil,
 		}, nil
-	case parser.NAddition, parser.NSubtraction, parser.NMultiplication, parser.NDivision:
+	case parser.NAddition,
+		parser.NSubtraction,
+		parser.NMultiplication,
+		parser.NDivision:
 		return optimizeOperator(node)
 	case parser.NFuncSqrt:
 		return optimizeFunction(node)
@@ -66,16 +82,10 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 		return nil, err
 	}
 
-	return &OptimizedNode{
-		Type:        parser.NDecimal,
-		Value:       result,
-		OldValue:    "",
-		IsOptimized: true,
-		LeftChild:   nil,
-		RightChild:  nil,
-	}, nil
+	return newOptimizedNode(result), nil
 }
 
+// optimizeOperator recursively optimizes an operator node and its child nodes.
 func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
 	left, right, err := getOptimizedNodeChilds(node)
 	if err != nil {
@@ -99,16 +109,10 @@ func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
 		return nil, err
 	}
 
-	return &OptimizedNode{
-		Type:        parser.NDecimal,
-		Value:       result,
-		OldValue:    "",
-		IsOptimized: true,
-		LeftChild:   nil,
-		RightChild:  nil,
-	}, nil
+	return newOptimizedNode(result), nil
 }
 
+// getOptimizedNodeChilds returns all optimized child nodes of a node.
 func getOptimizedNodeChilds(node *parser.Node) (*OptimizedNode, *OptimizedNode, error) {
 	if node.LeftChild == nil {
 		return nil, nil, ErrorMissingLeftChild
@@ -129,6 +133,7 @@ func getOptimizedNodeChilds(node *parser.Node) (*OptimizedNode, *OptimizedNode, 
 	return left, right, nil
 }
 
+// optimizeFunction recursively optimizes a function node and its arguments.
 func optimizeFunction(node *parser.Node) (*OptimizedNode, error) {
 	left, err := optimizeNode(node.LeftChild)
 	if err != nil {
@@ -152,12 +157,5 @@ func optimizeFunction(node *parser.Node) (*OptimizedNode, error) {
 		return nil, err
 	}
 
-	return &OptimizedNode{
-		Type:        parser.NDecimal,
-		Value:       result,
-		OldValue:    "",
-		IsOptimized: true,
-		LeftChild:   nil,
-		RightChild:  nil,
-	}, nil
+	return newOptimizedNode(result), nil
 }

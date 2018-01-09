@@ -71,16 +71,6 @@ func shouldEqualAST(actual interface{}, expected ...interface{}) string {
 }
 
 func TestParser(t *testing.T) {
-	Convey("IsOperator works", t, func() {
-		So(parser.IsOperator(parser.NDecimal), ShouldEqual, false)
-		So(parser.IsOperator(parser.NInteger), ShouldEqual, false)
-		So(parser.IsOperator(parser.NError), ShouldEqual, false)
-		So(parser.IsOperator(parser.NAddition), ShouldEqual, true)
-		So(parser.IsOperator(parser.NSubtraction), ShouldEqual, true)
-		So(parser.IsOperator(parser.NMultiplication), ShouldEqual, true)
-		So(parser.IsOperator(parser.NDivision), ShouldEqual, true)
-	})
-
 	Convey("Parser works with", t, func() {
 		Convey("nothing", func() {
 			ast, errors := parser.Parse("")
@@ -1257,6 +1247,27 @@ func TestParser(t *testing.T) {
 					},
 				},
 			})
+			So(errors, ShouldEqualErrors, []error{
+				parser.ErrorMissingClosingBracket,
+			})
+		})
+
+		Convey("handles missing closing bracket of function", func() {
+			ast, errors := parser.Parse("sqrt(1")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NFuncSqrt,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInteger,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: nil,
+				},
+			})
+
 			So(errors, ShouldEqualErrors, []error{
 				parser.ErrorMissingClosingBracket,
 			})

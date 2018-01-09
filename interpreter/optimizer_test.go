@@ -3,6 +3,7 @@ package interpreter_test
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/relnod/calcgo/interpreter"
@@ -67,10 +68,6 @@ func eqOptimizedNodes(n1, n2 *interpreter.OptimizedNode) bool {
 }
 
 func eqOptimizedAST(oast1, oast2 *interpreter.OptimizedAST) bool {
-	if oast1 != nil && oast2 != nil {
-		return true
-	}
-
 	if oast1 != nil && oast2 == nil {
 		return false
 	}
@@ -111,103 +108,124 @@ func TestOptimizer(t *testing.T) {
 		})
 
 		Convey("ast without variable", func() {
-			Convey("integer number", func() {
-				oast, err := optimize("1")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       1.0,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
+			Convey("numbers", func() {
+				Convey("integer number", func() {
+					oast, err := optimize("1")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       1.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
 				})
-				So(err, ShouldBeNil)
+
+				Convey("decimal number", func() {
+					oast, err := optimize("1.3")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       1.3,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
-			Convey("decimal number", func() {
-				oast, err := optimize("1.3")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       1.3,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
+			Convey("operators", func() {
+				Convey("addition", func() {
+					oast, err := optimize("1 + 1")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       2.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
 				})
-				So(err, ShouldBeNil)
+
+				Convey("subtraction", func() {
+					oast, err := optimize("1 - 1")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       0.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("multiplication", func() {
+					oast, err := optimize("1 * 1")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       1.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("division", func() {
+					oast, err := optimize("1 / 1")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       1.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
-			Convey("addition", func() {
-				oast, err := optimize("1 + 1")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       2.0,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
+			Convey("functions", func() {
+				Convey("sqrt", func() {
+					oast, err := optimize("sqrt(1)")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       math.Sqrt(1),
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
 				})
-				So(err, ShouldBeNil)
-			})
-
-			Convey("subtraction", func() {
-				oast, err := optimize("1 - 1")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       0.0,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
-				})
-				So(err, ShouldBeNil)
-			})
-
-			Convey("multiplication", func() {
-				oast, err := optimize("1 * 1")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       1.0,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
-				})
-				So(err, ShouldBeNil)
-			})
-
-			Convey("division", func() {
-				oast, err := optimize("1 / 1")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
-						Value:       1.0,
-						OldValue:    "",
-						IsOptimized: true,
-						LeftChild:   nil,
-						RightChild:  nil,
-					},
-				})
-				So(err, ShouldBeNil)
 			})
 		})
 
 		Convey("ast with variable", func() {
-			Convey("only vairable", func() {
+			Convey("only variable", func() {
 				oast, err := optimize("a")
 				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
 					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDecimal,
+						Type:        parser.NVariable,
 						Value:       0,
 						OldValue:    "a",
 						IsOptimized: false,
@@ -218,120 +236,146 @@ func TestOptimizer(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("addition", func() {
-				oast, err := optimize("1 + a")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NAddition,
-						Value:       0,
-						OldValue:    "",
-						IsOptimized: false,
-						LeftChild: &interpreter.OptimizedNode{
-							Type:        parser.NDecimal,
-							Value:       1.0,
-							OldValue:    "",
-							IsOptimized: true,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-						RightChild: &interpreter.OptimizedNode{
-							Type:        parser.NVariable,
+			Convey("operators", func() {
+				Convey("addition", func() {
+					oast, err := optimize("1 + a")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NAddition,
 							Value:       0,
-							OldValue:    "a",
+							OldValue:    "",
 							IsOptimized: false,
-							LeftChild:   nil,
-							RightChild:  nil,
+							LeftChild: &interpreter.OptimizedNode{
+								Type:        parser.NDecimal,
+								Value:       1.0,
+								OldValue:    "",
+								IsOptimized: true,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+							RightChild: &interpreter.OptimizedNode{
+								Type:        parser.NVariable,
+								Value:       0,
+								OldValue:    "a",
+								IsOptimized: false,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
 						},
-					},
+					})
+					So(err, ShouldBeNil)
 				})
-				So(err, ShouldBeNil)
+
+				Convey("subtraction", func() {
+					oast, err := optimize("1 - a")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NSubtraction,
+							Value:       0,
+							OldValue:    "",
+							IsOptimized: false,
+							LeftChild: &interpreter.OptimizedNode{
+								Type:        parser.NDecimal,
+								Value:       1.0,
+								OldValue:    "",
+								IsOptimized: true,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+							RightChild: &interpreter.OptimizedNode{
+								Type:        parser.NVariable,
+								Value:       0,
+								OldValue:    "a",
+								IsOptimized: false,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("multiplication", func() {
+					oast, err := optimize("1 - a")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NSubtraction,
+							Value:       0,
+							OldValue:    "",
+							IsOptimized: false,
+							LeftChild: &interpreter.OptimizedNode{
+								Type:        parser.NDecimal,
+								Value:       1.0,
+								OldValue:    "",
+								IsOptimized: true,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+							RightChild: &interpreter.OptimizedNode{
+								Type:        parser.NVariable,
+								Value:       0,
+								OldValue:    "a",
+								IsOptimized: false,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("division", func() {
+					oast, err := optimize("1 / a")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NDivision,
+							Value:       0,
+							OldValue:    "",
+							IsOptimized: false,
+							LeftChild: &interpreter.OptimizedNode{
+								Type:        parser.NDecimal,
+								Value:       1.0,
+								OldValue:    "",
+								IsOptimized: true,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+							RightChild: &interpreter.OptimizedNode{
+								Type:        parser.NVariable,
+								Value:       0,
+								OldValue:    "a",
+								IsOptimized: false,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
-			Convey("subtraction", func() {
-				oast, err := optimize("1 - a")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NSubtraction,
-						Value:       0,
-						OldValue:    "",
-						IsOptimized: false,
-						LeftChild: &interpreter.OptimizedNode{
-							Type:        parser.NDecimal,
-							Value:       1.0,
-							OldValue:    "",
-							IsOptimized: true,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-						RightChild: &interpreter.OptimizedNode{
-							Type:        parser.NVariable,
+			Convey("functions", func() {
+				Convey("sqrt", func() {
+					oast, err := optimize("sqrt(a)")
+					So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
+						Node: &interpreter.OptimizedNode{
+							Type:        parser.NFuncSqrt,
 							Value:       0,
-							OldValue:    "a",
-							IsOptimized: false,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-					},
-				})
-				So(err, ShouldBeNil)
-			})
-
-			Convey("multiplication", func() {
-				oast, err := optimize("1 - a")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NMultiplication,
-						Value:       0,
-						OldValue:    "",
-						IsOptimized: false,
-						LeftChild: &interpreter.OptimizedNode{
-							Type:        parser.NDecimal,
-							Value:       1.0,
 							OldValue:    "",
-							IsOptimized: true,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-						RightChild: &interpreter.OptimizedNode{
-							Type:        parser.NVariable,
-							Value:       0,
-							OldValue:    "a",
 							IsOptimized: false,
-							LeftChild:   nil,
-							RightChild:  nil,
+							LeftChild: &interpreter.OptimizedNode{
+								Type:        parser.NVariable,
+								Value:       0,
+								OldValue:    "a",
+								IsOptimized: false,
+								LeftChild:   nil,
+								RightChild:  nil,
+							},
+							RightChild: nil,
 						},
-					},
+					})
+					So(err, ShouldBeNil)
 				})
-				So(err, ShouldBeNil)
-			})
-
-			Convey("division", func() {
-				oast, err := optimize("1 / a")
-				So(oast, ShouldEqualOptimizedAST, &interpreter.OptimizedAST{
-					Node: &interpreter.OptimizedNode{
-						Type:        parser.NDivision,
-						Value:       0,
-						OldValue:    "",
-						IsOptimized: false,
-						LeftChild: &interpreter.OptimizedNode{
-							Type:        parser.NDecimal,
-							Value:       1.0,
-							OldValue:    "",
-							IsOptimized: true,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-						RightChild: &interpreter.OptimizedNode{
-							Type:        parser.NVariable,
-							Value:       0,
-							OldValue:    "a",
-							IsOptimized: false,
-							LeftChild:   nil,
-							RightChild:  nil,
-						},
-					},
-				})
-				So(err, ShouldBeNil)
 			})
 		})
 	})
@@ -414,6 +458,24 @@ func TestOptimizer(t *testing.T) {
 			})
 			So(oast, ShouldBeNil)
 			So(err, ShouldEqual, interpreter.ErrorMissingRightChild)
+		})
+
+		Convey("error happens in function", func() {
+			oast, err := interpreter.Optimize(&parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NFuncSqrt,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       3000,
+						Value:      "",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: nil,
+				},
+			})
+			So(oast, ShouldBeNil)
+			So(err, ShouldEqual, interpreter.ErrorInvalidNodeType)
 		})
 
 		Convey("error happens in nested node", func() {

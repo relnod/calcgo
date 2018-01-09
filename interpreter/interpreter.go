@@ -8,7 +8,7 @@ import (
 	"github.com/relnod/calcgo/parser"
 )
 
-// Errors, that can be returned by the interpreter
+// Errors, that can occur during interpreting
 var (
 	ErrorMissingLeftChild       = errors.New("Error: Missing left child of node")
 	ErrorMissingRightChild      = errors.New("Error: Missing right child of node")
@@ -113,6 +113,7 @@ func (i *Interpreter) GetResult() (float64, []error) {
 // Examples:
 //  caclgo.Interpret("(1 + 2) * 3") // Result: 9
 //  caclgo.Interpret("1 + 2 * 3")   // Result: 7
+//
 func Interpret(str string) (float64, []error) {
 	if len(str) == 0 {
 		return 0, nil
@@ -145,6 +146,7 @@ func Interpret(str string) (float64, []error) {
 //			},
 //		},
 //  })
+//
 func InterpretAST(ast parser.AST) (float64, error) {
 	interpreter := NewInterpreterFromAST(&ast)
 
@@ -156,6 +158,7 @@ func InterpretAST(ast parser.AST) (float64, error) {
 	return result, nil
 }
 
+// interpretNode recursively interprets a given node.
 func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 	switch node.Type {
 	case parser.NInteger:
@@ -164,7 +167,10 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 		return interpretDecimal(node)
 	case parser.NVariable:
 		return i.interpretVariable(node)
-	case parser.NAddition, parser.NSubtraction, parser.NMultiplication, parser.NDivision:
+	case parser.NAddition,
+		parser.NSubtraction,
+		parser.NMultiplication,
+		parser.NDivision:
 		return i.interpretOperator(node)
 	case parser.NFuncSqrt:
 		return i.interpretSqrt(node)
@@ -173,6 +179,7 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 	return 0, ErrorInvalidNodeType
 }
 
+// interpretOptimizedNode recursively interprets a given optimized node
 func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, error) {
 	if node.IsOptimized {
 		return node.Value, nil
@@ -188,6 +195,9 @@ func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, erro
 	return i.interpretOptimizedOperator(node)
 }
 
+// interpretInteger interprets an integer node. The string value simply gets
+// converted to an int.
+// Returns an error if conversion failed.
 func interpretInteger(node *parser.Node) (float64, error) {
 	integer, err := strconv.Atoi(node.Value)
 	if err != nil {
@@ -196,6 +206,9 @@ func interpretInteger(node *parser.Node) (float64, error) {
 	return float64(integer), nil
 }
 
+// interpretDecimal interprets a decimal node. The string value simply gets
+// converted to a float64.
+// Returns an error if conversion failed.
 func interpretDecimal(node *parser.Node) (float64, error) {
 	decimal, err := strconv.ParseFloat(node.Value, 64)
 	if err != nil {
@@ -204,6 +217,8 @@ func interpretDecimal(node *parser.Node) (float64, error) {
 	return decimal, nil
 }
 
+// interpretVariable interprets a variable node.
+// Returns an error if the variable is not defined.
 func (i *Interpreter) interpretVariable(node *parser.Node) (float64, error) {
 	number, ok := i.vars[node.Value]
 	if ok {
@@ -213,6 +228,8 @@ func (i *Interpreter) interpretVariable(node *parser.Node) (float64, error) {
 	return 0, ErrorVariableNotDefined
 }
 
+// interpretOptimizedVariable interprets an optimized variable node.
+// Returns an error if the variable is not defined.
 func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, error) {
 	number, ok := i.vars[node.OldValue]
 	if ok {
@@ -222,6 +239,7 @@ func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, 
 	return 0, ErrorVariableNotDefined
 }
 
+// interpretOperator recursively interprets an operator node.
 func (i *Interpreter) interpretOperator(node *parser.Node) (float64, error) {
 	left, right, err := i.getInterpretedNodeChilds(node)
 	if err != nil {
@@ -231,6 +249,7 @@ func (i *Interpreter) interpretOperator(node *parser.Node) (float64, error) {
 	return calculateOperator(left, right, node.Type)
 }
 
+// interpretOptimizedOperator recursively interprets an optimized operator node.
 func (i *Interpreter) interpretOptimizedOperator(node *OptimizedNode) (float64, error) {
 	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
 	if err != nil {
@@ -240,6 +259,8 @@ func (i *Interpreter) interpretOptimizedOperator(node *OptimizedNode) (float64, 
 	return calculateOperator(left, right, node.Type)
 }
 
+// getInterpretedNodeChilds returns the interpreted child nodes of a given node.
+// Both child nodes have to be defined. Retruns an error otherwise.
 func (i *Interpreter) getInterpretedNodeChilds(node *parser.Node) (float64, float64, error) {
 	if node.LeftChild == nil {
 		return 0, 0, ErrorMissingLeftChild
@@ -260,6 +281,9 @@ func (i *Interpreter) getInterpretedNodeChilds(node *parser.Node) (float64, floa
 	return left, right, nil
 }
 
+// getInterpretedOptimizedNodeChilds returns the optimized interpreted child
+// nodes of a given node.
+// Both child nodes have to be defined. Retruns an error otherwise.
 func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (float64, float64, error) {
 	left, err := i.interpretOptimizedNode(node.LeftChild)
 	if err != nil {
@@ -273,6 +297,7 @@ func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (fl
 	return left, right, nil
 }
 
+// interpretSqrt interprets the sqrt function
 func (i *Interpreter) interpretSqrt(node *parser.Node) (float64, error) {
 	left, err := i.interpretNode(node.LeftChild)
 	if err != nil {
@@ -282,6 +307,7 @@ func (i *Interpreter) interpretSqrt(node *parser.Node) (float64, error) {
 	return math.Sqrt(left), nil
 }
 
+// interpretOptimizedSqrtinterprets the sqrt function
 func (i *Interpreter) interpretOptimizedSqrt(node *OptimizedNode) (float64, error) {
 	left, err := i.interpretOptimizedNode(node.LeftChild)
 	if err != nil {

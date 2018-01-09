@@ -6,6 +6,7 @@ import (
 	"github.com/relnod/calcgo/parser"
 )
 
+// calculateOperator calculates the result of an operator.
 func calculateOperator(left, right float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
 
@@ -26,6 +27,7 @@ func calculateOperator(left, right float64, nodeType parser.NodeType) (float64, 
 	return result, nil
 }
 
+// calculateFunction calculates the result of a function.
 func calculateFunction(arg float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
 
