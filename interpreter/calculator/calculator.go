@@ -8,12 +8,15 @@ import (
 	"github.com/relnod/calcgo/parser"
 )
 
+// Errors that can occur during calculation or conversion.
 var (
-	ErrorInvalidInteger = errors.New("Error: Invalid Integer")
-	ErrorInvalidDecimal = errors.New("Error: Invalid Decimal")
-	ErrorDivisionByZero = errors.New("Error: Division by zero")
+	ErrorInvalidInteger = errors.New("Invalid Integer")
+	ErrorInvalidDecimal = errors.New("Invalid Decimal")
+	ErrorDivisionByZero = errors.New("Division by zero")
 )
 
+// ConvertInteger converts a string to a float64.
+// Returns an error if conversion failed.
 func ConvertInteger(value string) (float64, error) {
 	integer, err := strconv.Atoi(value)
 	if err != nil {
@@ -22,6 +25,8 @@ func ConvertInteger(value string) (float64, error) {
 	return float64(integer), nil
 }
 
+// ConvertDecimal converts a string to a float64.
+// Returns an error if conversion failed.
 func ConvertDecimal(value string) (float64, error) {
 	decimal, err := strconv.ParseFloat(value, 64)
 	if err != nil {

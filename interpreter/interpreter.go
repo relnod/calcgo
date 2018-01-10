@@ -159,9 +159,9 @@ func InterpretAST(ast *parser.AST) (float64, error) {
 func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 	switch node.Type {
 	case parser.NInteger:
-		return interpretInteger(node)
+		return calculator.ConvertInteger(node.Value)
 	case parser.NDecimal:
-		return interpretDecimal(node)
+		return calculator.ConvertDecimal(node.Value)
 	case parser.NVariable:
 		return i.interpretVariable(node)
 	case parser.NAddition,
@@ -190,20 +190,6 @@ func (i *Interpreter) interpretOptimizedNode(node *optimizer.OptimizedNode) (flo
 	}
 
 	return i.interpretOptimizedOperator(node)
-}
-
-// interpretInteger interprets an integer node. The string value simply gets
-// converted to an int.
-// Returns an error if conversion failed.
-func interpretInteger(node *parser.Node) (float64, error) {
-	return calculator.ConvertInteger(node.Value)
-}
-
-// interpretDecimal interprets a decimal node. The string value simply gets
-// converted to a float64.
-// Returns an error if conversion failed.
-func interpretDecimal(node *parser.Node) (float64, error) {
-	return calculator.ConvertDecimal(node.Value)
 }
 
 // interpretVariable interprets a variable node.
