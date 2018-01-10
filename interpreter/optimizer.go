@@ -1,6 +1,9 @@
 package interpreter
 
-import "github.com/relnod/calcgo/parser"
+import (
+	"github.com/relnod/calcgo/interpreter/calculator"
+	"github.com/relnod/calcgo/parser"
+)
 
 // OptimizedAST holds an optimized ast.
 // For all integer and decimal the value was already interpreted.
@@ -104,7 +107,7 @@ func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
 	}
 
 	var result float64
-	result, err = calculateOperator(left.Value, right.Value, node.Type)
+	result, err = calculator.CalculateOperator(left.Value, right.Value, node.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +155,7 @@ func optimizeFunction(node *parser.Node) (*OptimizedNode, error) {
 	}
 
 	var result float64
-	result, err = calculateFunction(left.Value, node.Type)
+	result, err = calculator.CalculateFunction(left.Value, node.Type)
 	if err != nil {
 		return nil, err
 	}

@@ -6,19 +6,10 @@ import (
 
 	. "github.com/relnod/calcgo/calcgotest"
 	"github.com/relnod/calcgo/interpreter"
+	"github.com/relnod/calcgo/interpreter/calculator"
 	"github.com/relnod/calcgo/parser"
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func newInterpreter(str string, optimized bool) *interpreter.Interpreter {
-	i := interpreter.NewInterpreter(str)
-
-	if optimized {
-		i.EnableOptimizer()
-	}
-
-	return i
-}
 
 type TestCaseWrapper struct {
 	description string
@@ -32,6 +23,19 @@ type TestCase struct {
 	expectedErrors []error
 }
 
+type newInterpreterFnc func(string) *interpreter.Interpreter
+
+func newInterpreterOptimizerDisbaled(str string) *interpreter.Interpreter {
+	return interpreter.NewInterpreter(str)
+}
+
+func newInterpreterOptimizerEnabled(str string) *interpreter.Interpreter {
+	i := interpreter.NewInterpreter(str)
+	i.EnableOptimizer()
+
+	return i
+}
+
 type interpretFnc func(string) (float64, []error)
 
 func interpret(str string) (float64, []error) {
@@ -39,12 +43,12 @@ func interpret(str string) (float64, []error) {
 }
 
 func interpreterOptimizerDisabled(str string) (float64, []error) {
-	i := newInterpreter(str, false)
+	i := newInterpreterOptimizerDisbaled(str)
 	return i.GetResult()
 }
 
 func interpreterOptimizerEnabled(str string) (float64, []error) {
-	i := newInterpreter(str, true)
+	i := newInterpreterOptimizerEnabled(str)
 	return i.GetResult()
 }
 
@@ -154,12 +158,12 @@ var testCases = []TestCaseWrapper{
 			{"sqrt((1 + 2) * (1 + 3))", math.Sqrt((1 + 2) * (1 + 3)), nil},
 			{"sqrt(1) + 4", math.Sqrt(1) + 4, nil},
 			{"4 + sqrt(1)", 4 + math.Sqrt(1), nil},
-			{"sqrt(1 / 0)", 0, []error{interpreter.ErrorDivisionByZero}},
+			{"sqrt(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
 		}, nil},
 	}},
 
 	{"errors", []TestCase{
-		{"1 / 0", 0, []error{interpreter.ErrorDivisionByZero}},
+		{"1 / 0", 0, []error{calculator.ErrorDivisionByZero}},
 		{"$", 0, []error{parser.ErrorExpectedNumberOrVariable}},
 		{"1 + #)", 0, []error{
 			parser.ErrorExpectedNumberOrVariable,
@@ -186,16 +190,16 @@ func testInterpreter(cases []TestCaseWrapper, fnc interpretFnc) {
 	}
 }
 
-func testVariables(optimized bool) {
+func testVariables(newInterpreter newInterpreterFnc) {
 	Convey("variables", func() {
 		Convey("simple variables", func() {
-			i := newInterpreter("a", optimized)
+			i := newInterpreter("a")
 			i.SetVar("a", 1.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 1)
 			So(errors, ShouldBeNil)
 
-			i = newInterpreter("1 + a", optimized)
+			i = newInterpreter("1 + a")
 			i.SetVar("a", 2.0)
 			result, errors = i.GetResult()
 			So(result, ShouldEqual, 3)
@@ -203,7 +207,7 @@ func testVariables(optimized bool) {
 		})
 
 		Convey("multiple variables", func() {
-			i := newInterpreter("a + b", optimized)
+			i := newInterpreter("a + b")
 			i.SetVar("a", 1)
 			i.SetVar("b", 2)
 			result, errors := i.GetResult()
@@ -212,7 +216,7 @@ func testVariables(optimized bool) {
 		})
 
 		Convey("reassining variables", func() {
-			i := newInterpreter("1 + a", optimized)
+			i := newInterpreter("1 + a")
 			i.SetVar("a", 1.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 2)
@@ -225,7 +229,7 @@ func testVariables(optimized bool) {
 		})
 
 		Convey("functions", func() {
-			i := newInterpreter("sqrt(1 + a)", optimized)
+			i := newInterpreter("sqrt(1 + a)")
 			i.SetVar("a", 8.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 3)
@@ -233,7 +237,7 @@ func testVariables(optimized bool) {
 		})
 
 		Convey("error, when not providing variable", func() {
-			i := newInterpreter("1 + a", optimized)
+			i := newInterpreter("1 + a")
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqualErrors, []error{
@@ -242,22 +246,22 @@ func testVariables(optimized bool) {
 		})
 
 		Convey("error, when dividing by 0", func() {
-			i := newInterpreter("(1 / a) + 1", optimized)
+			i := newInterpreter("(1 / a) + 1")
 			i.SetVar("a", 0.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqualErrors, []error{
-				interpreter.ErrorDivisionByZero,
+				calculator.ErrorDivisionByZero,
 			})
 		})
 
 		Convey("error, when dividing by 0 in function", func() {
-			i := newInterpreter("sqrt(1 / a)", optimized)
+			i := newInterpreter("sqrt(1 / a)")
 			i.SetVar("a", 0.0)
 			result, errors := i.GetResult()
 			So(result, ShouldEqual, 0)
 			So(errors, ShouldEqualErrors, []error{
-				interpreter.ErrorDivisionByZero,
+				calculator.ErrorDivisionByZero,
 			})
 		})
 	})
@@ -337,7 +341,7 @@ func testInterpretAST() {
 				},
 			})
 			So(result, ShouldEqual, 0)
-			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
+			So(errors, ShouldEqual, calculator.ErrorInvalidInteger)
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
@@ -348,7 +352,7 @@ func testInterpretAST() {
 				},
 			})
 			So(result, ShouldEqual, 0)
-			So(errors, ShouldEqual, interpreter.ErrorInvalidDecimal)
+			So(errors, ShouldEqual, calculator.ErrorInvalidDecimal)
 		})
 
 		Convey("an invalid node type is given", func() {
@@ -457,7 +461,7 @@ func testInterpretAST() {
 				},
 			})
 			So(result, ShouldEqual, 0)
-			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
+			So(errors, ShouldEqual, calculator.ErrorInvalidInteger)
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
@@ -478,7 +482,7 @@ func testInterpretAST() {
 				},
 			})
 			So(result, ShouldEqual, 0)
-			So(errors, ShouldEqual, interpreter.ErrorInvalidInteger)
+			So(errors, ShouldEqual, calculator.ErrorInvalidInteger)
 		})
 	})
 }
@@ -498,13 +502,13 @@ func TestInterpretAST(t *testing.T) {
 func TestInterpreter(t *testing.T) {
 	Convey("Interpreter Spec (optimizer disabled)", t, func() {
 		testInterpreter(testCases, interpreterOptimizerDisabled)
-		testVariables(false)
+		testVariables(newInterpreterOptimizerDisbaled)
 	})
 }
 
 func TestInterpreterWithOptimizer(t *testing.T) {
 	Convey("Interpreter Spec (optimizer enabled)", t, func() {
 		testInterpreter(testCases, interpreterOptimizerEnabled)
-		testVariables(true)
+		testVariables(newInterpreterOptimizerEnabled)
 	})
 }

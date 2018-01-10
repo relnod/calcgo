@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/relnod/calcgo/interpreter"
+	"github.com/relnod/calcgo/interpreter/calculator"
 	"github.com/relnod/calcgo/parser"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -384,7 +385,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("dividing by 0", func() {
 			oast, err := optimize("1 / 0")
 			So(oast, ShouldBeNil)
-			So(err, ShouldEqual, interpreter.ErrorDivisionByZero)
+			So(err, ShouldEqual, calculator.ErrorDivisionByZero)
 		})
 
 		Convey("interpreting wrong number", func() {
@@ -397,7 +398,7 @@ func TestOptimizer(t *testing.T) {
 				},
 			})
 			So(oast, ShouldBeNil)
-			So(err, ShouldEqual, interpreter.ErrorInvalidInteger)
+			So(err, ShouldEqual, calculator.ErrorInvalidInteger)
 
 			oast, err = interpreter.Optimize(&parser.AST{
 				Node: &parser.Node{
@@ -408,7 +409,7 @@ func TestOptimizer(t *testing.T) {
 				},
 			})
 			So(oast, ShouldBeNil)
-			So(err, ShouldEqual, interpreter.ErrorInvalidDecimal)
+			So(err, ShouldEqual, calculator.ErrorInvalidDecimal)
 		})
 
 		Convey("invalid node type", func() {
