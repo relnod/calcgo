@@ -1,8 +1,21 @@
-package interpreter
+package optimizer
 
 import (
+	"errors"
+
 	"github.com/relnod/calcgo/interpreter/calculator"
 	"github.com/relnod/calcgo/parser"
+)
+
+// Errors, that can occur during interpreting
+var (
+	ErrorMissingLeftChild       = errors.New("Error: Missing left child of node")
+	ErrorMissingRightChild      = errors.New("Error: Missing right child of node")
+	ErrorMissingFunctionArguent = errors.New("Error: Missing function argument")
+	ErrorInvalidNodeType        = errors.New("Error: Invalid node type")
+	ErrorInvalidVariable        = errors.New("Error: Invalid Variable")
+	ErrorParserError            = errors.New("Error: Parser error")
+	ErrorVariableNotDefined     = errors.New("Error: A variable was not defined")
 )
 
 // OptimizedAST holds an optimized ast.
@@ -58,9 +71,9 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 
 	switch node.Type {
 	case parser.NInteger:
-		result, err = interpretInteger(node)
+		result, err = calculator.ConvertInteger(node.Value)
 	case parser.NDecimal:
-		result, err = interpretDecimal(node)
+		result, err = calculator.ConvertDecimal(node.Value)
 	case parser.NVariable:
 		return &OptimizedNode{
 			Type:        parser.NVariable,

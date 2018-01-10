@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/relnod/calcgo/interpreter/calculator"
+	"github.com/relnod/calcgo/interpreter/optimizer"
 	"github.com/relnod/calcgo/parser"
 )
 
@@ -22,7 +23,7 @@ var (
 type Interpreter struct {
 	str              string
 	ast              *parser.AST
-	oast             *OptimizedAST
+	oast             *optimizer.OptimizedAST
 	vars             map[string]float64
 	optimizerEnabled bool
 }
@@ -83,7 +84,7 @@ func (i *Interpreter) GetResult() (float64, []error) {
 	var err error
 	if i.optimizerEnabled {
 		if i.oast == nil {
-			oast, err := Optimize(i.ast)
+			oast, err := optimizer.Optimize(i.ast)
 			if err != nil {
 				return 0, []error{err}
 			}
@@ -176,7 +177,7 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 }
 
 // interpretOptimizedNode recursively interprets a given optimized node
-func (i *Interpreter) interpretOptimizedNode(node *OptimizedNode) (float64, error) {
+func (i *Interpreter) interpretOptimizedNode(node *optimizer.OptimizedNode) (float64, error) {
 	if node.IsOptimized {
 		return node.Value, nil
 	}
@@ -218,7 +219,7 @@ func (i *Interpreter) interpretVariable(node *parser.Node) (float64, error) {
 
 // interpretOptimizedVariable interprets an optimized variable node.
 // Returns an error if the variable is not defined.
-func (i *Interpreter) interpretOptimizedVariable(node *OptimizedNode) (float64, error) {
+func (i *Interpreter) interpretOptimizedVariable(node *optimizer.OptimizedNode) (float64, error) {
 	number, ok := i.vars[node.OldValue]
 	if ok {
 		return number, nil
@@ -238,7 +239,7 @@ func (i *Interpreter) interpretOperator(node *parser.Node) (float64, error) {
 }
 
 // interpretOptimizedOperator recursively interprets an optimized operator node.
-func (i *Interpreter) interpretOptimizedOperator(node *OptimizedNode) (float64, error) {
+func (i *Interpreter) interpretOptimizedOperator(node *optimizer.OptimizedNode) (float64, error) {
 	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
 	if err != nil {
 		return 0, err
@@ -258,7 +259,7 @@ func (i *Interpreter) interpretFunction(node *parser.Node) (float64, error) {
 }
 
 // interpretOptimizedFunction interprets a function node
-func (i *Interpreter) interpretOptimizedFunction(node *OptimizedNode) (float64, error) {
+func (i *Interpreter) interpretOptimizedFunction(node *optimizer.OptimizedNode) (float64, error) {
 	left, err := i.interpretOptimizedNode(node.LeftChild)
 	if err != nil {
 		return 0, err
@@ -292,7 +293,7 @@ func (i *Interpreter) getInterpretedNodeChilds(node *parser.Node) (float64, floa
 // getInterpretedOptimizedNodeChilds returns the optimized interpreted child
 // nodes of a given node.
 // Both child nodes have to be defined. Retruns an error otherwise.
-func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *OptimizedNode) (float64, float64, error) {
+func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *optimizer.OptimizedNode) (float64, float64, error) {
 	left, err := i.interpretOptimizedNode(node.LeftChild)
 	if err != nil {
 		return 0, 0, err
