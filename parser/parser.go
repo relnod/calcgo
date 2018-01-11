@@ -20,23 +20,6 @@ type Parser struct {
 	nested    bool
 }
 
-// Node types
-const (
-	NError NodeType = iota
-	NInvalidNumber
-	NInvalidVariable
-	NInvalidOperator
-	NInvalidFunction
-	NInteger
-	NDecimal
-	NVariable
-	NAddition
-	NFuncSqrt
-	NSubtraction
-	NMultiplication
-	NDivision
-)
-
 // Errors, that can occur during parsing
 var (
 	ErrorExpectedNumberOrVariable = errors.New("Error: Expected number or variable got something else")
@@ -272,7 +255,7 @@ func parseStart(p *Parser) parseState {
 		return parseOperatorAfterRightBracket
 	}
 
-	if p.currToken.Type == lexer.TFuncSqrt {
+	if p.currToken.IsFunction() {
 		n := p.newFunctionNode()
 		p.setFirstTopNode(n)
 		p.current = n
@@ -309,7 +292,7 @@ func parseValue(p *Parser) parseState {
 		return parseOperator
 	}
 
-	if p.currToken.Type == lexer.TFuncSqrt {
+	if p.currToken.IsFunction() {
 		n := p.newFunctionNode()
 		p.addNewRightChild(n)
 		p.subParseFunctionArgument(n)

@@ -88,7 +88,10 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 		parser.NMultiplication,
 		parser.NDivision:
 		return optimizeOperator(node)
-	case parser.NFuncSqrt:
+	case parser.NFuncSqrt,
+		parser.NFuncSin,
+		parser.NFuncCos,
+		parser.NFuncTan:
 		return optimizeFunction(node)
 	default:
 		return nil, ErrorInvalidNodeType

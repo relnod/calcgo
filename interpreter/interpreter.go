@@ -169,7 +169,10 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 		parser.NMultiplication,
 		parser.NDivision:
 		return i.interpretOperator(node)
-	case parser.NFuncSqrt:
+	case parser.NFuncSqrt,
+		parser.NFuncSin,
+		parser.NFuncCos,
+		parser.NFuncTan:
 		return i.interpretFunction(node)
 	}
 

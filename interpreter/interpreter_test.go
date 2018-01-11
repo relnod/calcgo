@@ -160,6 +160,30 @@ var testCases = []TestCaseWrapper{
 			{"4 + sqrt(1)", 4 + math.Sqrt(1), nil},
 			{"sqrt(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
 		}, nil},
+		{"sin", []TestCase{
+			{"sin(1)", math.Sin(1), nil},
+			{"sin(1 + 1)", math.Sin(1 + 1), nil},
+			{"sin((1 + 2) * (1 + 3))", math.Sin((1 + 2) * (1 + 3)), nil},
+			{"sin(1) + 4", math.Sin(1) + 4, nil},
+			{"4 + sin(1)", 4 + math.Sin(1), nil},
+			{"sin(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
+		}, nil},
+		{"cos", []TestCase{
+			{"cos(1)", math.Cos(1), nil},
+			{"cos(1 + 1)", math.Cos(1 + 1), nil},
+			{"cos((1 + 2) * (1 + 3))", math.Cos((1 + 2) * (1 + 3)), nil},
+			{"cos(1) + 4", math.Cos(1) + 4, nil},
+			{"4 + cos(1)", 4 + math.Cos(1), nil},
+			{"cos(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
+		}, nil},
+		{"tan", []TestCase{
+			{"tan(1)", math.Tan(1), nil},
+			{"tan(1 + 1)", math.Tan(1 + 1), nil},
+			{"tan((1 + 2) * (1 + 3))", math.Tan((1 + 2) * (1 + 3)), nil},
+			{"tan(1) + 4", math.Tan(1) + 4, nil},
+			{"4 + tan(1)", 4 + math.Tan(1), nil},
+			{"tan(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
+		}, nil},
 	}},
 
 	{"errors", []TestCase{

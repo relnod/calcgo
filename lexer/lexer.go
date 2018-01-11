@@ -213,8 +213,18 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 			l.backup()
 			break
 		} else if b == '(' {
-			if l.stored() == "sqrt(" {
+			switch l.stored() {
+			case "sqrt(":
 				l.emitEmpty(TFuncSqrt)
+				return lexAll
+			case "sin(":
+				l.emitEmpty(TFuncSin)
+				return lexAll
+			case "cos(":
+				l.emitEmpty(TFuncCos)
+				return lexAll
+			case "tan(":
+				l.emitEmpty(TFuncTan)
 				return lexAll
 			}
 		}

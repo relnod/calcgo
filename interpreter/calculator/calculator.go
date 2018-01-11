@@ -63,6 +63,12 @@ func CalculateFunction(arg float64, nodeType parser.NodeType) (float64, error) {
 	switch nodeType {
 	case parser.NFuncSqrt:
 		result = math.Sqrt(arg)
+	case parser.NFuncSin:
+		result = math.Sin(arg)
+	case parser.NFuncCos:
+		result = math.Cos(arg)
+	case parser.NFuncTan:
+		result = math.Tan(arg)
 	}
 
 	return result, nil

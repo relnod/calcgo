@@ -14,6 +14,9 @@ const (
 	TOperatorMult
 	TOperatorDiv
 	TFuncSqrt
+	TFuncSin
+	TFuncCos
+	TFuncTan
 	TLeftBracket
 	TRightBracket
 	TInvalidCharacter
@@ -25,6 +28,14 @@ const (
 type Token struct {
 	Type  TokenType
 	Value string
+}
+
+// IsFunction returns true if the type of t is a function.
+func (t Token) IsFunction() bool {
+	return t.Type == TFuncSqrt ||
+		t.Type == TFuncSin ||
+		t.Type == TFuncCos ||
+		t.Type == TFuncTan
 }
 
 func (t Token) String() string {
@@ -49,6 +60,12 @@ func (t TokenType) String() string {
 		return "Div"
 	case TFuncSqrt:
 		return "Sqrt"
+	case TFuncSin:
+		return "Sin"
+	case TFuncCos:
+		return "Cos"
+	case TFuncTan:
+		return "Tan"
 	case TLeftBracket:
 		return "Left Bracket"
 	case TRightBracket:

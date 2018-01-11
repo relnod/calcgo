@@ -972,7 +972,7 @@ func TestParser(t *testing.T) {
 		})
 
 		Convey("functions", func() {
-			Convey("sqrt", func() {
+			Convey("general", func() {
 				ast, errors := parser.Parse("sqrt(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
@@ -1028,6 +1028,135 @@ func TestParser(t *testing.T) {
 						},
 						RightChild: &parser.Node{
 							Type:  parser.NFuncSqrt,
+							Value: "",
+							LeftChild: &parser.Node{
+								Type:       parser.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+			Convey("sin", func() {
+				ast, errors := parser.Parse("sin(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NFuncSin,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+
+				ast, errors = parser.Parse("1 + sin(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NAddition,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:  parser.NFuncSin,
+							Value: "",
+							LeftChild: &parser.Node{
+								Type:       parser.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+			Convey("cos", func() {
+				ast, errors := parser.Parse("cos(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NFuncCos,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+
+				ast, errors = parser.Parse("1 + cos(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NAddition,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:  parser.NFuncCos,
+							Value: "",
+							LeftChild: &parser.Node{
+								Type:       parser.NInteger,
+								Value:      "1",
+								LeftChild:  nil,
+								RightChild: nil,
+							},
+							RightChild: nil,
+						},
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+			Convey("tan", func() {
+				ast, errors := parser.Parse("tan(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NFuncTan,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+
+				ast, errors = parser.Parse("1 + tan(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NAddition,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInteger,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:  parser.NFuncTan,
 							Value: "",
 							LeftChild: &parser.Node{
 								Type:       parser.NInteger,

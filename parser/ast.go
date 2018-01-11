@@ -2,6 +2,26 @@ package parser
 
 import "github.com/relnod/calcgo/lexer"
 
+// Node types
+const (
+	NError NodeType = iota
+	NInvalidNumber
+	NInvalidVariable
+	NInvalidOperator
+	NInvalidFunction
+	NInteger
+	NDecimal
+	NVariable
+	NAddition
+	NFuncSqrt
+	NFuncSin
+	NFuncCos
+	NFuncTan
+	NSubtraction
+	NMultiplication
+	NDivision
+)
+
 // AST stores the data of the abstract syntax tree.
 // The ast is in the form of a binary tree.
 type AST struct {
@@ -17,6 +37,14 @@ type Node struct {
 	Value      string   `json:"value"`
 	LeftChild  *Node    `json:"left"`
 	RightChild *Node    `json:"right"`
+}
+
+// IsFunction returns true if the type of n is a function.
+func (n *Node) IsFunction() bool {
+	return n.Type == NFuncSqrt ||
+		n.Type == NFuncSin ||
+		n.Type == NFuncCos ||
+		n.Type == NFuncTan
 }
 
 // IsOperator returns true if the type of n is an operator.
@@ -87,5 +115,16 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be a function.
 func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
-	return NFuncSqrt, true
+	switch t.Type {
+	case lexer.TFuncSqrt:
+		return NFuncSqrt, true
+	case lexer.TFuncSin:
+		return NFuncSin, true
+	case lexer.TFuncCos:
+		return NFuncCos, true
+	case lexer.TFuncTan:
+		return NFuncTan, true
+	}
+
+	return NInvalidFunction, false
 }

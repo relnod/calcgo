@@ -218,6 +218,48 @@ func TestOptimizer(t *testing.T) {
 					})
 					So(err, ShouldBeNil)
 				})
+				Convey("sin", func() {
+					oast, err := optimize("sin(1)")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       math.Sin(1),
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+				Convey("cos", func() {
+					oast, err := optimize("cos(1)")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       math.Cos(1),
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+				Convey("tan", func() {
+					oast, err := optimize("tan(1)")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDecimal,
+							Value:       math.Tan(1),
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 		})
 

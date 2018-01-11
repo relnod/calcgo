@@ -371,7 +371,7 @@ func TestLexer(t *testing.T) {
 	})
 
 	Convey("Lexer works with functions", t, func() {
-		Convey("sqrt()", func() {
+		Convey("general", func() {
 			So(lexer.Lex("sqrt"), shouldEqualToken, []lexer.Token{
 				{Value: "sqrt", Type: lexer.TVariable},
 			})
@@ -389,6 +389,26 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: lexer.TFuncSqrt},
 				{Value: "1", Type: lexer.TInteger},
 				{Value: "", Type: lexer.TRightBracket},
+			})
+		})
+		Convey("sqrt()", func() {
+			So(lexer.Lex("sqrt("), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TFuncSqrt},
+			})
+		})
+		Convey("sin()", func() {
+			So(lexer.Lex("sin("), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TFuncSin},
+			})
+		})
+		Convey("cos()", func() {
+			So(lexer.Lex("cos("), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TFuncCos},
+			})
+		})
+		Convey("tan()", func() {
+			So(lexer.Lex("tan("), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TFuncTan},
 			})
 		})
 	})
