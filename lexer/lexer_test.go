@@ -74,75 +74,75 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer works with numbers", t, func() {
 		Convey("single digit", func() {
 			So(lexer.Lex("0"), shouldEqualToken, []lexer.Token{
-				{Value: "0", Type: lexer.TInteger},
+				{Value: "0", Type: lexer.TInt},
 			})
 			So(lexer.Lex("1"), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
 			})
 			So(lexer.Lex("2"), shouldEqualToken, []lexer.Token{
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "2", Type: lexer.TInt},
 			})
 			So(lexer.Lex("3"), shouldEqualToken, []lexer.Token{
-				{Value: "3", Type: lexer.TInteger},
+				{Value: "3", Type: lexer.TInt},
 			})
 			So(lexer.Lex("4"), shouldEqualToken, []lexer.Token{
-				{Value: "4", Type: lexer.TInteger},
+				{Value: "4", Type: lexer.TInt},
 			})
 			So(lexer.Lex("5"), shouldEqualToken, []lexer.Token{
-				{Value: "5", Type: lexer.TInteger},
+				{Value: "5", Type: lexer.TInt},
 			})
 			So(lexer.Lex("6"), shouldEqualToken, []lexer.Token{
-				{Value: "6", Type: lexer.TInteger},
+				{Value: "6", Type: lexer.TInt},
 			})
 			So(lexer.Lex("7"), shouldEqualToken, []lexer.Token{
-				{Value: "7", Type: lexer.TInteger},
+				{Value: "7", Type: lexer.TInt},
 			})
 			So(lexer.Lex("8"), shouldEqualToken, []lexer.Token{
-				{Value: "8", Type: lexer.TInteger},
+				{Value: "8", Type: lexer.TInt},
 			})
 			So(lexer.Lex("9"), shouldEqualToken, []lexer.Token{
-				{Value: "9", Type: lexer.TInteger},
+				{Value: "9", Type: lexer.TInt},
 			})
 		})
 
 		Convey("multiple digits", func() {
 			So(lexer.Lex("10"), shouldEqualToken, []lexer.Token{
-				{Value: "10", Type: lexer.TInteger},
+				{Value: "10", Type: lexer.TInt},
 			})
 			So(lexer.Lex("10123"), shouldEqualToken, []lexer.Token{
-				{Value: "10123", Type: lexer.TInteger},
+				{Value: "10123", Type: lexer.TInt},
 			})
 		})
 
 		Convey("decimals", func() {
 			So(lexer.Lex("1.0"), shouldEqualToken, []lexer.Token{
-				{Value: "1.0", Type: lexer.TDecimal},
+				{Value: "1.0", Type: lexer.TDec},
 			})
 			So(lexer.Lex("10.1"), shouldEqualToken, []lexer.Token{
-				{Value: "10.1", Type: lexer.TDecimal},
+				{Value: "10.1", Type: lexer.TDec},
 			})
 			So(lexer.Lex("12.3456"), shouldEqualToken, []lexer.Token{
-				{Value: "12.3456", Type: lexer.TDecimal},
+				{Value: "12.3456", Type: lexer.TDec},
 			})
 			So(lexer.Lex("0.3456"), shouldEqualToken, []lexer.Token{
-				{Value: "0.3456", Type: lexer.TDecimal},
+				{Value: "0.3456", Type: lexer.TDec},
 			})
 		})
 
 		Convey("negative numbers", func() {
 			So(lexer.Lex("-1"), shouldEqualToken, []lexer.Token{
-				{Value: "-1", Type: lexer.TInteger},
+				{Value: "-1", Type: lexer.TInt},
 			})
 			So(lexer.Lex("-10"), shouldEqualToken, []lexer.Token{
-				{Value: "-10", Type: lexer.TInteger},
+				{Value: "-10", Type: lexer.TInt},
 			})
 			So(lexer.Lex("-10.12"), shouldEqualToken, []lexer.Token{
-				{Value: "-10.12", Type: lexer.TDecimal},
+				{Value: "-10.12", Type: lexer.TDec},
 			})
 			So(lexer.Lex("(-1)"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLeftBracket},
-				{Value: "-1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TRightBracket},
+				{Value: "", Type: lexer.TLParen},
+				{Value: "-1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TRParen},
 			})
 		})
 	})
@@ -150,22 +150,22 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer works with operators", t, func() {
 		Convey("plus", func() {
 			So(lexer.Lex("+"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TOperatorPlus},
+				{Value: "", Type: lexer.TOpPlus},
 			})
 		})
 		Convey("minus", func() {
 			So(lexer.Lex("-"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TOperatorMinus},
+				{Value: "", Type: lexer.TOpMinus},
 			})
 		})
 		Convey("mult", func() {
 			So(lexer.Lex("*"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TOperatorMult},
+				{Value: "", Type: lexer.TOpMult},
 			})
 		})
 		Convey("div", func() {
 			So(lexer.Lex("/"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TOperatorDiv},
+				{Value: "", Type: lexer.TOpDiv},
 			})
 		})
 	})
@@ -173,60 +173,60 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer works with brackets", t, func() {
 		Convey("left bracket", func() {
 			So(lexer.Lex("("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLeftBracket},
+				{Value: "", Type: lexer.TLParen},
 			})
 		})
 		Convey("right bracket", func() {
 			So(lexer.Lex(")"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TRightBracket},
+				{Value: "", Type: lexer.TRParen},
 			})
 		})
 
 		Convey("brackets and numbers", func() {
 			So(lexer.Lex("(1)"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLeftBracket},
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TRightBracket},
+				{Value: "", Type: lexer.TLParen},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TRParen},
 			})
 		})
 	})
 
 	Convey("Lexer works with mixed types", t, func() {
 		So(lexer.Lex("1 + 2"), shouldEqualToken, []lexer.Token{
-			{Value: "1", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "2", Type: lexer.TInteger},
+			{Value: "1", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "2", Type: lexer.TInt},
 		})
 		So(lexer.Lex("1 + 2 + 3 + 4"), shouldEqualToken, []lexer.Token{
-			{Value: "1", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "2", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "3", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "4", Type: lexer.TInteger},
+			{Value: "1", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "2", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "3", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "4", Type: lexer.TInt},
 		})
 		So(lexer.Lex("(1 + 2) * 2"), shouldEqualToken, []lexer.Token{
-			{Value: "", Type: lexer.TLeftBracket},
-			{Value: "1", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "2", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TRightBracket},
-			{Value: "", Type: lexer.TOperatorMult},
-			{Value: "2", Type: lexer.TInteger},
+			{Value: "", Type: lexer.TLParen},
+			{Value: "1", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "2", Type: lexer.TInt},
+			{Value: "", Type: lexer.TRParen},
+			{Value: "", Type: lexer.TOpMult},
+			{Value: "2", Type: lexer.TInt},
 		})
 		So(lexer.Lex("(2 * (1 + 2)) / 2"), shouldEqualToken, []lexer.Token{
-			{Value: "", Type: lexer.TLeftBracket},
-			{Value: "2", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorMult},
-			{Value: "", Type: lexer.TLeftBracket},
-			{Value: "1", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TOperatorPlus},
-			{Value: "2", Type: lexer.TInteger},
-			{Value: "", Type: lexer.TRightBracket},
-			{Value: "", Type: lexer.TRightBracket},
-			{Value: "", Type: lexer.TOperatorDiv},
-			{Value: "2", Type: lexer.TInteger},
+			{Value: "", Type: lexer.TLParen},
+			{Value: "2", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpMult},
+			{Value: "", Type: lexer.TLParen},
+			{Value: "1", Type: lexer.TInt},
+			{Value: "", Type: lexer.TOpPlus},
+			{Value: "2", Type: lexer.TInt},
+			{Value: "", Type: lexer.TRParen},
+			{Value: "", Type: lexer.TRParen},
+			{Value: "", Type: lexer.TOpDiv},
+			{Value: "2", Type: lexer.TInt},
 		})
 	})
 
@@ -255,8 +255,8 @@ func TestLexer(t *testing.T) {
 					{Value: "1", Type: lexer.TInvalidCharacterInVariable},
 				})
 				So(lexer.Lex("1 + ~"), shouldEqualToken, []lexer.Token{
-					{Value: "1", Type: lexer.TInteger},
-					{Value: "", Type: lexer.TOperatorPlus},
+					{Value: "1", Type: lexer.TInt},
+					{Value: "", Type: lexer.TOpPlus},
 					{Value: "~", Type: lexer.TInvalidCharacter},
 				})
 			})
@@ -265,8 +265,8 @@ func TestLexer(t *testing.T) {
 		Convey("doesn't abort after error", func() {
 			So(lexer.Lex("# + 1"), shouldEqualToken, []lexer.Token{
 				{Value: "#", Type: lexer.TInvalidCharacter},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "1", Type: lexer.TInteger},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "1", Type: lexer.TInt},
 			})
 		})
 
@@ -277,7 +277,7 @@ func TestLexer(t *testing.T) {
 			})
 			So(lexer.Lex("# + '"), shouldEqualToken, []lexer.Token{
 				{Value: "#", Type: lexer.TInvalidCharacter},
-				{Value: "", Type: lexer.TOperatorPlus},
+				{Value: "", Type: lexer.TOpPlus},
 				{Value: "'", Type: lexer.TInvalidCharacter},
 			})
 		})
@@ -286,44 +286,44 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer handles whitespace", t, func() {
 		Convey("at the beginning", func() {
 			So(lexer.Lex(" 1 + 2"), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 			So(lexer.Lex("   1 + 2"), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 		})
 
 		Convey("at the end", func() {
 			So(lexer.Lex("1 + 2 "), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 			So(lexer.Lex("1 + 2     "), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 		})
 
 		Convey("multiple whitespace characters", func() {
 			So(lexer.Lex("1  +  2"), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 			So(lexer.Lex("  (  1 +   2 )  * 2 "), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLeftBracket},
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TRightBracket},
-				{Value: "", Type: lexer.TOperatorMult},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "", Type: lexer.TLParen},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
+				{Value: "", Type: lexer.TRParen},
+				{Value: "", Type: lexer.TOpMult},
+				{Value: "2", Type: lexer.TInt},
 			})
 		})
 	})
@@ -331,41 +331,41 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer works with variables", t, func() {
 		Convey("single letter variables", func() {
 			So(lexer.Lex("a"), shouldEqualToken, []lexer.Token{
-				{Value: "a", Type: lexer.TVariable},
+				{Value: "a", Type: lexer.TVar},
 			})
 		})
 
 		Convey("multi letter variables", func() {
 			So(lexer.Lex("ab"), shouldEqualToken, []lexer.Token{
-				{Value: "ab", Type: lexer.TVariable},
+				{Value: "ab", Type: lexer.TVar},
 			})
 
 			So(lexer.Lex("abcdefghiklmnopqrstvxyz"), shouldEqualToken, []lexer.Token{
-				{Value: "abcdefghiklmnopqrstvxyz", Type: lexer.TVariable},
+				{Value: "abcdefghiklmnopqrstvxyz", Type: lexer.TVar},
 			})
 		})
 
 		Convey("variables in combination with operators and brackets", func() {
 			So(lexer.Lex("a  +  2"), shouldEqualToken, []lexer.Token{
-				{Value: "a", Type: lexer.TVariable},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "2", Type: lexer.TInteger},
+				{Value: "a", Type: lexer.TVar},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "2", Type: lexer.TInt},
 			})
 
 			So(lexer.Lex("ab  +  bc"), shouldEqualToken, []lexer.Token{
-				{Value: "ab", Type: lexer.TVariable},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "bc", Type: lexer.TVariable},
+				{Value: "ab", Type: lexer.TVar},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "bc", Type: lexer.TVar},
 			})
 
 			So(lexer.Lex("(a  +  b) - c"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLeftBracket},
-				{Value: "a", Type: lexer.TVariable},
-				{Value: "", Type: lexer.TOperatorPlus},
-				{Value: "b", Type: lexer.TVariable},
-				{Value: "", Type: lexer.TRightBracket},
-				{Value: "", Type: lexer.TOperatorMinus},
-				{Value: "c", Type: lexer.TVariable},
+				{Value: "", Type: lexer.TLParen},
+				{Value: "a", Type: lexer.TVar},
+				{Value: "", Type: lexer.TOpPlus},
+				{Value: "b", Type: lexer.TVar},
+				{Value: "", Type: lexer.TRParen},
+				{Value: "", Type: lexer.TOpMinus},
+				{Value: "c", Type: lexer.TVar},
 			})
 		})
 	})
@@ -373,42 +373,42 @@ func TestLexer(t *testing.T) {
 	Convey("Lexer works with functions", t, func() {
 		Convey("general", func() {
 			So(lexer.Lex("sqrt"), shouldEqualToken, []lexer.Token{
-				{Value: "sqrt", Type: lexer.TVariable},
+				{Value: "sqrt", Type: lexer.TVar},
 			})
 
 			So(lexer.Lex("sqrt("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncSqrt},
+				{Value: "", Type: lexer.TFnSqrt},
 			})
 
 			So(lexer.Lex("sqrt()"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncSqrt},
-				{Value: "", Type: lexer.TRightBracket},
+				{Value: "", Type: lexer.TFnSqrt},
+				{Value: "", Type: lexer.TRParen},
 			})
 
 			So(lexer.Lex("sqrt( 1 )"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncSqrt},
-				{Value: "1", Type: lexer.TInteger},
-				{Value: "", Type: lexer.TRightBracket},
+				{Value: "", Type: lexer.TFnSqrt},
+				{Value: "1", Type: lexer.TInt},
+				{Value: "", Type: lexer.TRParen},
 			})
 		})
 		Convey("sqrt()", func() {
 			So(lexer.Lex("sqrt("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncSqrt},
+				{Value: "", Type: lexer.TFnSqrt},
 			})
 		})
 		Convey("sin()", func() {
 			So(lexer.Lex("sin("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncSin},
+				{Value: "", Type: lexer.TFnSin},
 			})
 		})
 		Convey("cos()", func() {
 			So(lexer.Lex("cos("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncCos},
+				{Value: "", Type: lexer.TFnCos},
 			})
 		})
 		Convey("tan()", func() {
 			So(lexer.Lex("tan("), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TFuncTan},
+				{Value: "", Type: lexer.TFnTan},
 			})
 		})
 	})
@@ -427,7 +427,7 @@ func TestLexer(t *testing.T) {
 		}
 
 		So(tokens, shouldEqualToken, []lexer.Token{
-			{Value: "1", Type: lexer.TInteger},
+			{Value: "1", Type: lexer.TInt},
 		})
 	})
 }

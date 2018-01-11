@@ -151,20 +151,20 @@ func lexAll(l *Lexer) stateFn {
 
 	switch b {
 	case '+':
-		tokenType = TOperatorPlus
+		tokenType = TOpPlus
 	case '-':
 		if b, ok := l.peek(); ok && isDigit(b) {
 			return lexNumber
 		}
-		tokenType = TOperatorMinus
+		tokenType = TOpMinus
 	case '*':
-		tokenType = TOperatorMult
+		tokenType = TOpMult
 	case '/':
-		tokenType = TOperatorDiv
+		tokenType = TOpDiv
 	case '(':
-		tokenType = TLeftBracket
+		tokenType = TLParen
 	case ')':
-		tokenType = TRightBracket
+		tokenType = TRParen
 	default:
 		l.emit(TInvalidCharacter)
 		return lexAll
@@ -175,7 +175,7 @@ func lexAll(l *Lexer) stateFn {
 }
 
 func lexNumber(l *Lexer) stateFn {
-	tokenType := TInteger
+	tokenType := TInt
 
 	for {
 		b, ok := l.next()
@@ -186,7 +186,7 @@ func lexNumber(l *Lexer) stateFn {
 		if isDigit(b) {
 			continue
 		} else if b == '.' {
-			tokenType = TDecimal
+			tokenType = TDec
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
@@ -215,16 +215,16 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 		} else if b == '(' {
 			switch l.stored() {
 			case "sqrt(":
-				l.emitEmpty(TFuncSqrt)
+				l.emitEmpty(TFnSqrt)
 				return lexAll
 			case "sin(":
-				l.emitEmpty(TFuncSin)
+				l.emitEmpty(TFnSin)
 				return lexAll
 			case "cos(":
-				l.emitEmpty(TFuncCos)
+				l.emitEmpty(TFnCos)
 				return lexAll
 			case "tan(":
-				l.emitEmpty(TFuncTan)
+				l.emitEmpty(TFnTan)
 				return lexAll
 			}
 		}
@@ -233,6 +233,6 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 		return lexAll
 	}
 
-	l.emit(TVariable)
+	l.emit(TVar)
 	return lexAll
 }

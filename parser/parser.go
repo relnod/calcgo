@@ -247,7 +247,7 @@ func (p *Parser) addNewRightChild(n *Node) {
 //  - parseOperatorAfterRightBracket
 //
 func parseStart(p *Parser) parseState {
-	if p.currToken.Type == lexer.TLeftBracket {
+	if p.currToken.Type == lexer.TLParen {
 		n, errors := p.subParse()
 		p.setFirstTopNode(n)
 		p.pushErrors(errors)
@@ -284,7 +284,7 @@ func parseStart(p *Parser) parseState {
 //  - parseOperatorAfterRightBracket
 //
 func parseValue(p *Parser) parseState {
-	if p.currToken.Type == lexer.TLeftBracket {
+	if p.currToken.Type == lexer.TLParen {
 		n, errors := p.subParse()
 		p.addNewRightChild(n)
 		p.pushErrors(errors)
@@ -315,7 +315,7 @@ func parseValue(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperator(p *Parser) parseState {
-	if p.currToken.Type == lexer.TRightBracket {
+	if p.currToken.Type == lexer.TRParen {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}
@@ -344,7 +344,7 @@ func parseOperator(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperatorAfterRightBracket(p *Parser) parseState {
-	if p.currToken.Type == lexer.TRightBracket {
+	if p.currToken.Type == lexer.TRParen {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}

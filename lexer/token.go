@@ -6,19 +6,19 @@ type TokenType byte
 // Token types
 const (
 	TEOF TokenType = iota
-	TInteger
-	TDecimal
-	TVariable
-	TOperatorPlus
-	TOperatorMinus
-	TOperatorMult
-	TOperatorDiv
-	TFuncSqrt
-	TFuncSin
-	TFuncCos
-	TFuncTan
-	TLeftBracket
-	TRightBracket
+	TInt
+	TDec
+	TVar
+	TOpPlus
+	TOpMinus
+	TOpMult
+	TOpDiv
+	TFnSqrt
+	TFnSin
+	TFnCos
+	TFnTan
+	TLParen
+	TRParen
 	TInvalidCharacter
 	TInvalidCharacterInNumber
 	TInvalidCharacterInVariable
@@ -32,10 +32,10 @@ type Token struct {
 
 // IsFunction returns true if the type of t is a function.
 func (t Token) IsFunction() bool {
-	return t.Type == TFuncSqrt ||
-		t.Type == TFuncSin ||
-		t.Type == TFuncCos ||
-		t.Type == TFuncTan
+	return t.Type == TFnSqrt ||
+		t.Type == TFnSin ||
+		t.Type == TFnCos ||
+		t.Type == TFnTan
 }
 
 func (t Token) String() string {
@@ -44,31 +44,31 @@ func (t Token) String() string {
 
 func (t TokenType) String() string {
 	switch t {
-	case TInteger:
+	case TInt:
 		return "Integer"
-	case TDecimal:
+	case TDec:
 		return "Decimal"
-	case TVariable:
+	case TVar:
 		return "Variable"
-	case TOperatorPlus:
+	case TOpPlus:
 		return "Plus"
-	case TOperatorMinus:
+	case TOpMinus:
 		return "Minus"
-	case TOperatorMult:
+	case TOpMult:
 		return "Mult"
-	case TOperatorDiv:
+	case TOpDiv:
 		return "Div"
-	case TFuncSqrt:
+	case TFnSqrt:
 		return "Sqrt"
-	case TFuncSin:
+	case TFnSin:
 		return "Sin"
-	case TFuncCos:
+	case TFnCos:
 		return "Cos"
-	case TFuncTan:
+	case TFnTan:
 		return "Tan"
-	case TLeftBracket:
+	case TLParen:
 		return "Left Bracket"
-	case TRightBracket:
+	case TRParen:
 		return "RightBracket"
 	case TInvalidCharacter:
 		return "Invalid Character"

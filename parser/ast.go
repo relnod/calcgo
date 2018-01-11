@@ -76,13 +76,13 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 // otherwise.
 func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TOperatorPlus:
+	case lexer.TOpPlus:
 		return NAddition, true
-	case lexer.TOperatorMinus:
+	case lexer.TOpMinus:
 		return NSubtraction, true
-	case lexer.TOperatorMult:
+	case lexer.TOpMult:
 		return NMultiplication, true
-	case lexer.TOperatorDiv:
+	case lexer.TOpDiv:
 		return NDivision, true
 	}
 
@@ -94,11 +94,11 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 // variable node otherwise.
 func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TInteger:
+	case lexer.TInt:
 		return NInteger, true
-	case lexer.TDecimal:
+	case lexer.TDec:
 		return NDecimal, true
-	case lexer.TVariable:
+	case lexer.TVar:
 		return NVariable, true
 	}
 
@@ -116,13 +116,13 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 // The given token should be a function.
 func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TFuncSqrt:
+	case lexer.TFnSqrt:
 		return NFuncSqrt, true
-	case lexer.TFuncSin:
+	case lexer.TFnSin:
 		return NFuncSin, true
-	case lexer.TFuncCos:
+	case lexer.TFnCos:
 		return NFuncCos, true
-	case lexer.TFuncTan:
+	case lexer.TFnTan:
 		return NFuncTan, true
 	}
 

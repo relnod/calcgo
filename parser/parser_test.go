@@ -1458,9 +1458,9 @@ func TestParser(t *testing.T) {
 		So(e1, ShouldEqualErrors, e2)
 
 		ast1, e1 = parser.ParseTokens([]lexer.Token{
-			{Type: lexer.TInteger, Value: "1"},
-			{Type: lexer.TOperatorPlus, Value: ""},
-			{Type: lexer.TInteger, Value: "1"},
+			{Type: lexer.TInt, Value: "1"},
+			{Type: lexer.TOpPlus, Value: ""},
+			{Type: lexer.TInt, Value: "1"},
 		})
 		ast2, e2 = parser.Parse("1 + 1")
 		So(ast1, shouldEqualAST, ast2)
