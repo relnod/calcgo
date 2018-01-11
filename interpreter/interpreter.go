@@ -157,22 +157,23 @@ func InterpretAST(ast *parser.AST) (float64, error) {
 
 // interpretNode recursively interprets a given node.
 func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
-	switch node.Type {
-	case parser.NInt:
+	if node.Type == parser.NInt {
 		return calculator.ConvertInteger(node.Value)
-	case parser.NDec:
+	}
+
+	if node.Type == parser.NDec {
 		return calculator.ConvertDecimal(node.Value)
-	case parser.NVar:
+	}
+
+	if node.Type == parser.NVar {
 		return i.interpretVariable(node)
-	case parser.NAdd,
-		parser.NSub,
-		parser.NMult,
-		parser.NDiv:
+	}
+
+	if node.IsOperator() {
 		return i.interpretOperator(node)
-	case parser.NFnSqrt,
-		parser.NFnSin,
-		parser.NFnCos,
-		parser.NFnTan:
+	}
+
+	if node.IsFunction() {
 		return i.interpretFunction(node)
 	}
 
@@ -185,10 +186,11 @@ func (i *Interpreter) interpretOptimizedNode(node *optimizer.OptimizedNode) (flo
 		return node.Value, nil
 	}
 
-	switch node.Type {
-	case parser.NVar:
+	if node.Type == parser.NVar {
 		return i.interpretOptimizedVariable(node)
-	case parser.NFnSqrt:
+	}
+
+	if node.IsFunction() {
 		return i.interpretOptimizedFunction(node)
 	}
 

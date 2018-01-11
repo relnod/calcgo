@@ -40,6 +40,22 @@ type AST struct {
 // NodeType defines the type of a node
 type NodeType uint
 
+// IsFunction returns true if the type of n is a function.
+func (n NodeType) IsFunction() bool {
+	return n == NFnSqrt ||
+		n == NFnSin ||
+		n == NFnCos ||
+		n == NFnTan
+}
+
+// IsOperator returns true if the type of n is an operator.
+func (n NodeType) IsOperator() bool {
+	return n == NAdd ||
+		n == NSub ||
+		n == NMult ||
+		n == NDiv
+}
+
 // Node represents a node
 type Node struct {
 	Type       NodeType `json:"type"`
@@ -50,18 +66,12 @@ type Node struct {
 
 // IsFunction returns true if the type of n is a function.
 func (n *Node) IsFunction() bool {
-	return n.Type == NFnSqrt ||
-		n.Type == NFnSin ||
-		n.Type == NFnCos ||
-		n.Type == NFnTan
+	return n.Type.IsFunction()
 }
 
 // IsOperator returns true if the type of n is an operator.
 func (n *Node) IsOperator() bool {
-	return n.Type == NAdd ||
-		n.Type == NSub ||
-		n.Type == NMult ||
-		n.Type == NDiv
+	return n.Type.IsOperator()
 }
 
 // isHigherOperator returns true if operator n is of higher than n2.

@@ -36,6 +36,16 @@ type OptimizedNode struct {
 	RightChild  *OptimizedNode  `json:"right"`
 }
 
+// IsFunction returns true if the type of n is a function.
+func (n *OptimizedNode) IsFunction() bool {
+	return n.Type.IsFunction()
+}
+
+// IsOperator returns true if the type of n is an operator.
+func (n *OptimizedNode) IsOperator() bool {
+	return n.Type.IsFunction()
+}
+
 // newOptimizedNode returns a new optimized node.
 func newOptimizedNode(value float64) *OptimizedNode {
 	return &OptimizedNode{
@@ -69,12 +79,25 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 	var result float64
 	var err error
 
-	switch node.Type {
-	case parser.NInt:
+	if node.Type == parser.NInt {
 		result, err = calculator.ConvertInteger(node.Value)
-	case parser.NDec:
+		if err != nil {
+			return nil, err
+		}
+
+		return newOptimizedNode(result), nil
+	}
+
+	if node.Type == parser.NDec {
 		result, err = calculator.ConvertDecimal(node.Value)
-	case parser.NVar:
+		if err != nil {
+			return nil, err
+		}
+
+		return newOptimizedNode(result), nil
+	}
+
+	if node.Type == parser.NVar {
 		return &OptimizedNode{
 			Type:        parser.NVar,
 			Value:       0,
@@ -83,25 +106,17 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 			LeftChild:   nil,
 			RightChild:  nil,
 		}, nil
-	case parser.NAdd,
-		parser.NSub,
-		parser.NMult,
-		parser.NDiv:
+	}
+
+	if node.IsOperator() {
 		return optimizeOperator(node)
-	case parser.NFnSqrt,
-		parser.NFnSin,
-		parser.NFnCos,
-		parser.NFnTan:
+	}
+
+	if node.IsFunction() {
 		return optimizeFunction(node)
-	default:
-		return nil, ErrorInvalidNodeType
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return newOptimizedNode(result), nil
+	return nil, ErrorInvalidNodeType
 }
 
 // optimizeOperator recursively optimizes an operator node and its child nodes.
