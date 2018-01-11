@@ -6,19 +6,31 @@ type TokenType byte
 // Token types
 const (
 	TEOF TokenType = iota
-	TInt
-	TDec
-	TVar
-	TOpPlus
-	TOpMinus
-	TOpMult
-	TOpDiv
-	TFnSqrt
-	TFnSin
-	TFnCos
-	TFnTan
-	TLParen
-	TRParen
+
+	// Numbers
+	TInt // [0-9]+
+	TDec // [0-9]+\.[0-9]+
+
+	// Variable
+	TVar // [a-zA-Z]+
+
+	// Operators
+	TOpPlus  // "+"
+	TOpMinus // "-"
+	TOpMult  // "*"
+	TOpDiv   // "/"
+
+	// Functions
+	TFnSqrt // "sqrt("
+	TFnSin  // "sin("
+	TFnCos  // "cos("
+	TFnTan  // "tan("
+
+	// Parens
+	TLParen // "("
+	TRParen // ")"
+
+	// Errors
 	TInvalidCharacter
 	TInvalidCharacterInNumber
 	TInvalidCharacterInVariable
