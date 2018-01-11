@@ -12,14 +12,14 @@ func TestAST(t *testing.T) {
 		nt         parser.NodeType
 		isOperator bool
 	}{
-		{parser.NDecimal, false},
-		{parser.NInteger, false},
-		{parser.NVariable, false},
+		{parser.NDec, false},
+		{parser.NInt, false},
+		{parser.NVar, false},
 		{parser.NError, false},
-		{parser.NAddition, true},
-		{parser.NSubtraction, true},
-		{parser.NMultiplication, true},
-		{parser.NDivision, true},
+		{parser.NAdd, true},
+		{parser.NSub, true},
+		{parser.NMult, true},
+		{parser.NDiv, true},
 	}
 
 	Convey("IsOperator works", t, func() {

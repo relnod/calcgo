@@ -114,7 +114,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -129,7 +129,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1.3")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       1.3,
 							OldValue:    "",
 							IsOptimized: true,
@@ -146,7 +146,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 + 1")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       2.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -161,7 +161,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 - 1")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       0.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -176,7 +176,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 * 1")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -191,7 +191,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 / 1")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       1.0,
 							OldValue:    "",
 							IsOptimized: true,
@@ -208,7 +208,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("sqrt(1)")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       math.Sqrt(1),
 							OldValue:    "",
 							IsOptimized: true,
@@ -222,7 +222,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("sin(1)")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       math.Sin(1),
 							OldValue:    "",
 							IsOptimized: true,
@@ -236,7 +236,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("cos(1)")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       math.Cos(1),
 							OldValue:    "",
 							IsOptimized: true,
@@ -250,7 +250,7 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("tan(1)")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDecimal,
+							Type:        parser.NDec,
 							Value:       math.Tan(1),
 							OldValue:    "",
 							IsOptimized: true,
@@ -268,7 +268,7 @@ func TestOptimizer(t *testing.T) {
 				oast, err := optimize("a")
 				So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 					Node: &optimizer.OptimizedNode{
-						Type:        parser.NVariable,
+						Type:        parser.NVar,
 						Value:       0,
 						OldValue:    "a",
 						IsOptimized: false,
@@ -284,12 +284,12 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 + a")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NAddition,
+							Type:        parser.NAdd,
 							Value:       0,
 							OldValue:    "",
 							IsOptimized: false,
 							LeftChild: &optimizer.OptimizedNode{
-								Type:        parser.NDecimal,
+								Type:        parser.NDec,
 								Value:       1.0,
 								OldValue:    "",
 								IsOptimized: true,
@@ -297,7 +297,7 @@ func TestOptimizer(t *testing.T) {
 								RightChild:  nil,
 							},
 							RightChild: &optimizer.OptimizedNode{
-								Type:        parser.NVariable,
+								Type:        parser.NVar,
 								Value:       0,
 								OldValue:    "a",
 								IsOptimized: false,
@@ -313,12 +313,12 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 - a")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NSubtraction,
+							Type:        parser.NSub,
 							Value:       0,
 							OldValue:    "",
 							IsOptimized: false,
 							LeftChild: &optimizer.OptimizedNode{
-								Type:        parser.NDecimal,
+								Type:        parser.NDec,
 								Value:       1.0,
 								OldValue:    "",
 								IsOptimized: true,
@@ -326,7 +326,7 @@ func TestOptimizer(t *testing.T) {
 								RightChild:  nil,
 							},
 							RightChild: &optimizer.OptimizedNode{
-								Type:        parser.NVariable,
+								Type:        parser.NVar,
 								Value:       0,
 								OldValue:    "a",
 								IsOptimized: false,
@@ -342,12 +342,12 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 - a")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NSubtraction,
+							Type:        parser.NSub,
 							Value:       0,
 							OldValue:    "",
 							IsOptimized: false,
 							LeftChild: &optimizer.OptimizedNode{
-								Type:        parser.NDecimal,
+								Type:        parser.NDec,
 								Value:       1.0,
 								OldValue:    "",
 								IsOptimized: true,
@@ -355,7 +355,7 @@ func TestOptimizer(t *testing.T) {
 								RightChild:  nil,
 							},
 							RightChild: &optimizer.OptimizedNode{
-								Type:        parser.NVariable,
+								Type:        parser.NVar,
 								Value:       0,
 								OldValue:    "a",
 								IsOptimized: false,
@@ -371,12 +371,12 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("1 / a")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NDivision,
+							Type:        parser.NDiv,
 							Value:       0,
 							OldValue:    "",
 							IsOptimized: false,
 							LeftChild: &optimizer.OptimizedNode{
-								Type:        parser.NDecimal,
+								Type:        parser.NDec,
 								Value:       1.0,
 								OldValue:    "",
 								IsOptimized: true,
@@ -384,7 +384,7 @@ func TestOptimizer(t *testing.T) {
 								RightChild:  nil,
 							},
 							RightChild: &optimizer.OptimizedNode{
-								Type:        parser.NVariable,
+								Type:        parser.NVar,
 								Value:       0,
 								OldValue:    "a",
 								IsOptimized: false,
@@ -402,12 +402,12 @@ func TestOptimizer(t *testing.T) {
 					oast, err := optimize("sqrt(a)")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
-							Type:        parser.NFuncSqrt,
+							Type:        parser.NFnSqrt,
 							Value:       0,
 							OldValue:    "",
 							IsOptimized: false,
 							LeftChild: &optimizer.OptimizedNode{
-								Type:        parser.NVariable,
+								Type:        parser.NVar,
 								Value:       0,
 								OldValue:    "a",
 								IsOptimized: false,
@@ -433,7 +433,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("interpreting wrong number", func() {
 			oast, err := optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -444,7 +444,7 @@ func TestOptimizer(t *testing.T) {
 
 			oast, err = optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NDecimal,
+					Type:       parser.NDec,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -470,7 +470,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("left child is missing", func() {
 			oast, err := optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:      parser.NAddition,
+					Type:      parser.NAdd,
 					Value:     "",
 					LeftChild: nil,
 					RightChild: &parser.Node{
@@ -488,7 +488,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("right child is missing", func() {
 			oast, err := optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       3000,
@@ -506,7 +506,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("error happens in function", func() {
 			oast, err := optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NFuncSqrt,
+					Type:  parser.NFnSqrt,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       3000,
@@ -524,7 +524,7 @@ func TestOptimizer(t *testing.T) {
 		Convey("error happens in nested node", func() {
 			oast, err := optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       3000,
@@ -545,10 +545,10 @@ func TestOptimizer(t *testing.T) {
 
 			oast, err = optimizer.Optimize(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,

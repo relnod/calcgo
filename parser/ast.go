@@ -4,22 +4,31 @@ import "github.com/relnod/calcgo/lexer"
 
 // Node types
 const (
+	// Errors
 	NError NodeType = iota
 	NInvalidNumber
 	NInvalidVariable
 	NInvalidOperator
 	NInvalidFunction
-	NInteger
-	NDecimal
-	NVariable
-	NAddition
-	NFuncSqrt
-	NFuncSin
-	NFuncCos
-	NFuncTan
-	NSubtraction
-	NMultiplication
-	NDivision
+
+	// Numbers
+	NInt
+	NDec
+
+	// Variable
+	NVar
+
+	// Operators
+	NAdd
+	NSub
+	NMult
+	NDiv
+
+	// Functions
+	NFnSqrt
+	NFnSin
+	NFnCos
+	NFnTan
 )
 
 // AST stores the data of the abstract syntax tree.
@@ -41,18 +50,18 @@ type Node struct {
 
 // IsFunction returns true if the type of n is a function.
 func (n *Node) IsFunction() bool {
-	return n.Type == NFuncSqrt ||
-		n.Type == NFuncSin ||
-		n.Type == NFuncCos ||
-		n.Type == NFuncTan
+	return n.Type == NFnSqrt ||
+		n.Type == NFnSin ||
+		n.Type == NFnCos ||
+		n.Type == NFnTan
 }
 
 // IsOperator returns true if the type of n is an operator.
 func (n *Node) IsOperator() bool {
-	return n.Type == NAddition ||
-		n.Type == NSubtraction ||
-		n.Type == NMultiplication ||
-		n.Type == NDivision
+	return n.Type == NAdd ||
+		n.Type == NSub ||
+		n.Type == NMult ||
+		n.Type == NDiv
 }
 
 // isHigherOperator returns true if operator n is of higher than n2.
@@ -60,11 +69,11 @@ func (n *Node) IsOperator() bool {
 // NAddition, NSubtraction = 0
 // NMultiplication, NDivision = 1
 func (n *Node) isHigherOperator(n2 *Node) bool {
-	if n.Type <= NSubtraction && n2.Type <= NSubtraction {
+	if n.Type <= NSub && n2.Type <= NSub {
 		return false
 	}
 
-	if n.Type > NSubtraction && n2.Type > NSubtraction {
+	if n.Type > NSub && n2.Type > NSub {
 		return false
 	}
 
@@ -77,13 +86,13 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
 	case lexer.TOpPlus:
-		return NAddition, true
+		return NAdd, true
 	case lexer.TOpMinus:
-		return NSubtraction, true
+		return NSub, true
 	case lexer.TOpMult:
-		return NMultiplication, true
+		return NMult, true
 	case lexer.TOpDiv:
-		return NDivision, true
+		return NDiv, true
 	}
 
 	return NInvalidOperator, false
@@ -95,11 +104,11 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
 	case lexer.TInt:
-		return NInteger, true
+		return NInt, true
 	case lexer.TDec:
-		return NDecimal, true
+		return NDec, true
 	case lexer.TVar:
-		return NVariable, true
+		return NVar, true
 	}
 
 	switch t.Type {
@@ -117,13 +126,13 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
 	switch t.Type {
 	case lexer.TFnSqrt:
-		return NFuncSqrt, true
+		return NFnSqrt, true
 	case lexer.TFnSin:
-		return NFuncSin, true
+		return NFnSin, true
 	case lexer.TFnCos:
-		return NFuncCos, true
+		return NFnCos, true
 	case lexer.TFnTan:
-		return NFuncTan, true
+		return NFnTan, true
 	}
 
 	return NInvalidFunction, false

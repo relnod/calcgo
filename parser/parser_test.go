@@ -82,7 +82,7 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("20")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "20",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -94,7 +94,7 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("20.23")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NDecimal,
+					Type:       parser.NDec,
 					Value:      "20.23",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -108,7 +108,7 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("-1")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "-1",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -119,7 +119,7 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("-123.45")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NDecimal,
+					Type:       parser.NDec,
 					Value:      "-123.45",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -132,7 +132,7 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("a")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NVariable,
+					Type:       parser.NVar,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -144,7 +144,7 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("abcdef")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NVariable,
+					Type:       parser.NVar,
 					Value:      "abcdef",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -158,16 +158,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 + 2")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -179,26 +179,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 + 2 + 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -212,16 +212,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1.2 + 2.4")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NDecimal,
+						Type:       parser.NDec,
 						Value:      "1.2",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NDecimal,
+						Type:       parser.NDec,
 						Value:      "2.4",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -235,16 +235,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 - 2")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -256,26 +256,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 - 2 - 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NSubtraction,
+						Type:  parser.NSub,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -289,16 +289,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 * 2")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -310,26 +310,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 * 2 * 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -343,16 +343,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 / 2")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NDivision,
+					Type:  parser.NDiv,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -364,26 +364,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 / 2 / 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NDivision,
+					Type:  parser.NDiv,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NDivision,
+						Type:  parser.NDiv,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -397,16 +397,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("a + 2")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NVariable,
+						Type:       parser.NVar,
 						Value:      "a",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -418,16 +418,16 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("a - b")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NVariable,
+						Type:       parser.NVar,
 						Value:      "a",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NVariable,
+						Type:       parser.NVar,
 						Value:      "b",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -441,25 +441,25 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 + 2 * 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "3",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -472,25 +472,25 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 - 2 / 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NDivision,
+						Type:  parser.NDiv,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "3",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -503,26 +503,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("2 * 3 + 1")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "3",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -536,7 +536,7 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("(1)")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "1",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -547,16 +547,16 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(1 - 2)")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -568,26 +568,26 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(1 - 2) * 3")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NSubtraction,
+						Type:  parser.NSub,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -599,25 +599,25 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("3 * (1 - 2)")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NSubtraction,
+						Type:  parser.NSub,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -630,28 +630,28 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("3 * (1 - 2) / 4")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NDivision,
+					Type:  parser.NDiv,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "3",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NSubtraction,
+							Type:  parser.NSub,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -659,7 +659,7 @@ func TestParser(t *testing.T) {
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "4",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -673,7 +673,7 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("((1))")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "1",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -684,16 +684,16 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("((1 - 2))")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -705,25 +705,25 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(3 * (1 - 2))")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NSubtraction,
+						Type:  parser.NSub,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "2",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -738,35 +738,35 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("3 + (1 - 2) / 4")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NDivision,
+						Type:  parser.NDiv,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:  parser.NSubtraction,
+							Type:  parser.NSub,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "4",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -779,35 +779,35 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("3 + (1 + 2) * 4")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "3",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:  parser.NAddition,
+							Type:  parser.NAdd,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "4",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -820,36 +820,36 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(1 + 2) * 4 + 1")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:  parser.NAddition,
+							Type:  parser.NAdd,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "4",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -861,34 +861,34 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("4 - 6 / (5 + 2)")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "4",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NDivision,
+						Type:  parser.NDiv,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "6",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NAddition,
+							Type:  parser.NAdd,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "5",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -902,63 +902,63 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(1 + 2) * 3 + (4 - 6 / (5 + 2))")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:  parser.NMultiplication,
+						Type:  parser.NMult,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:  parser.NAddition,
+							Type:  parser.NAdd,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "2",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "3",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 					},
 					RightChild: &parser.Node{
-						Type:  parser.NSubtraction,
+						Type:  parser.NSub,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "4",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NDivision,
+							Type:  parser.NDiv,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "6",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:  parser.NAddition,
+								Type:  parser.NAdd,
 								Value: "",
 								LeftChild: &parser.Node{
-									Type:       parser.NInteger,
+									Type:       parser.NInt,
 									Value:      "5",
 									LeftChild:  nil,
 									RightChild: nil,
 								},
 								RightChild: &parser.Node{
-									Type:       parser.NInteger,
+									Type:       parser.NInt,
 									Value:      "2",
 									LeftChild:  nil,
 									RightChild: nil,
@@ -976,10 +976,10 @@ func TestParser(t *testing.T) {
 				ast, errors := parser.Parse("sqrt(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NFuncSqrt,
+						Type:  parser.NFnSqrt,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -992,19 +992,19 @@ func TestParser(t *testing.T) {
 				ast, errors = parser.Parse("sqrt(1 + 1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NFuncSqrt,
+						Type:  parser.NFnSqrt,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:  parser.NAddition,
+							Type:  parser.NAdd,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -1018,19 +1018,19 @@ func TestParser(t *testing.T) {
 				ast, errors = parser.Parse("1 + sqrt(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NFuncSqrt,
+							Type:  parser.NFnSqrt,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -1045,10 +1045,10 @@ func TestParser(t *testing.T) {
 				ast, errors := parser.Parse("sin(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NFuncSin,
+						Type:  parser.NFnSin,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -1061,19 +1061,19 @@ func TestParser(t *testing.T) {
 				ast, errors = parser.Parse("1 + sin(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NFuncSin,
+							Type:  parser.NFnSin,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -1088,10 +1088,10 @@ func TestParser(t *testing.T) {
 				ast, errors := parser.Parse("cos(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NFuncCos,
+						Type:  parser.NFnCos,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -1104,19 +1104,19 @@ func TestParser(t *testing.T) {
 				ast, errors = parser.Parse("1 + cos(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NFuncCos,
+							Type:  parser.NFnCos,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -1131,10 +1131,10 @@ func TestParser(t *testing.T) {
 				ast, errors := parser.Parse("tan(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NFuncTan,
+						Type:  parser.NFnTan,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -1147,19 +1147,19 @@ func TestParser(t *testing.T) {
 				ast, errors = parser.Parse("1 + tan(1)")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
 						},
 						RightChild: &parser.Node{
-							Type:  parser.NFuncTan,
+							Type:  parser.NFnTan,
 							Value: "",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
@@ -1191,10 +1191,10 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("1 + 3#")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -1215,7 +1215,7 @@ func TestParser(t *testing.T) {
 				ast, errors := parser.Parse("2# + 3'")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:  parser.NAddition,
+						Type:  parser.NAdd,
 						Value: "",
 						LeftChild: &parser.Node{
 							Type:       parser.NInvalidNumber,
@@ -1275,13 +1275,13 @@ func TestParser(t *testing.T) {
 					Type:  parser.NInvalidOperator,
 					Value: "$",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -1302,20 +1302,20 @@ func TestParser(t *testing.T) {
 							Type:  parser.NInvalidOperator,
 							Value: "$",
 							LeftChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 							RightChild: &parser.Node{
-								Type:       parser.NInteger,
+								Type:       parser.NInt,
 								Value:      "1",
 								LeftChild:  nil,
 								RightChild: nil,
 							},
 						},
 						RightChild: &parser.Node{
-							Type:       parser.NInteger,
+							Type:       parser.NInt,
 							Value:      "1",
 							LeftChild:  nil,
 							RightChild: nil,
@@ -1360,16 +1360,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("(1 + 1")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -1385,10 +1385,10 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("sqrt(1")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NFuncSqrt,
+					Type:  parser.NFnSqrt,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -1406,16 +1406,16 @@ func TestParser(t *testing.T) {
 			ast, errors := parser.Parse("1 + 1)")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -1429,16 +1429,16 @@ func TestParser(t *testing.T) {
 			ast, errors = parser.Parse("(1 + 1))")
 			So(ast, shouldEqualAST, parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,

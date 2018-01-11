@@ -39,7 +39,7 @@ type OptimizedNode struct {
 // newOptimizedNode returns a new optimized node.
 func newOptimizedNode(value float64) *OptimizedNode {
 	return &OptimizedNode{
-		Type:        parser.NDecimal,
+		Type:        parser.NDec,
 		Value:       value,
 		OldValue:    "",
 		IsOptimized: true,
@@ -70,28 +70,28 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 	var err error
 
 	switch node.Type {
-	case parser.NInteger:
+	case parser.NInt:
 		result, err = calculator.ConvertInteger(node.Value)
-	case parser.NDecimal:
+	case parser.NDec:
 		result, err = calculator.ConvertDecimal(node.Value)
-	case parser.NVariable:
+	case parser.NVar:
 		return &OptimizedNode{
-			Type:        parser.NVariable,
+			Type:        parser.NVar,
 			Value:       0,
 			OldValue:    node.Value,
 			IsOptimized: false,
 			LeftChild:   nil,
 			RightChild:  nil,
 		}, nil
-	case parser.NAddition,
-		parser.NSubtraction,
-		parser.NMultiplication,
-		parser.NDivision:
+	case parser.NAdd,
+		parser.NSub,
+		parser.NMult,
+		parser.NDiv:
 		return optimizeOperator(node)
-	case parser.NFuncSqrt,
-		parser.NFuncSin,
-		parser.NFuncCos,
-		parser.NFuncTan:
+	case parser.NFnSqrt,
+		parser.NFnSin,
+		parser.NFnCos,
+		parser.NFnTan:
 		return optimizeFunction(node)
 	default:
 		return nil, ErrorInvalidNodeType

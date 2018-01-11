@@ -296,16 +296,16 @@ func testInterpretAST() {
 		result1, errors1 := interpreter.Interpret("1 + 2")
 		result2, err := interpreter.InterpretAST(&parser.AST{
 			Node: &parser.Node{
-				Type:  parser.NAddition,
+				Type:  parser.NAdd,
 				Value: "",
 				LeftChild: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "1",
 					LeftChild:  nil,
 					RightChild: nil,
 				},
 				RightChild: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "2",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -324,11 +324,11 @@ func testInterpretAST() {
 		Convey("a node child is missing", func() {
 			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:      parser.NAddition,
+					Type:      parser.NAdd,
 					Value:     "",
 					LeftChild: nil,
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -340,10 +340,10 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "2",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -358,7 +358,7 @@ func testInterpretAST() {
 		Convey("a wrong number is given", func() {
 			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NInteger,
+					Type:       parser.NInt,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -369,7 +369,7 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:       parser.NDecimal,
+					Type:       parser.NDec,
 					Value:      "a",
 					LeftChild:  nil,
 					RightChild: nil,
@@ -382,7 +382,7 @@ func testInterpretAST() {
 		Convey("an invalid node type is given", func() {
 			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       30000,
@@ -391,7 +391,7 @@ func testInterpretAST() {
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -403,7 +403,7 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NSubtraction,
+					Type:  parser.NSub,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       30000,
@@ -412,7 +412,7 @@ func testInterpretAST() {
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -424,7 +424,7 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NMultiplication,
+					Type:  parser.NMult,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       30000,
@@ -433,7 +433,7 @@ func testInterpretAST() {
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -445,7 +445,7 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NDivision,
+					Type:  parser.NDiv,
 					Value: "",
 					LeftChild: &parser.Node{
 						Type:       30000,
@@ -454,7 +454,7 @@ func testInterpretAST() {
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -468,16 +468,16 @@ func testInterpretAST() {
 		Convey("the error doesn't happen on the first node", func() {
 			result, errors := interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "a",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
@@ -489,16 +489,16 @@ func testInterpretAST() {
 
 			result, errors = interpreter.InterpretAST(&parser.AST{
 				Node: &parser.Node{
-					Type:  parser.NAddition,
+					Type:  parser.NAdd,
 					Value: "",
 					LeftChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "1",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
 					RightChild: &parser.Node{
-						Type:       parser.NInteger,
+						Type:       parser.NInt,
 						Value:      "a",
 						LeftChild:  nil,
 						RightChild: nil,

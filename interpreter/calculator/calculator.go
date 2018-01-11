@@ -40,13 +40,13 @@ func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, 
 	var result float64
 
 	switch nodeType {
-	case parser.NAddition:
+	case parser.NAdd:
 		result = left + right
-	case parser.NSubtraction:
+	case parser.NSub:
 		result = left - right
-	case parser.NMultiplication:
+	case parser.NMult:
 		result = left * right
-	case parser.NDivision:
+	case parser.NDiv:
 		if right == 0 {
 			return 0, ErrorDivisionByZero
 		}
@@ -61,13 +61,13 @@ func CalculateFunction(arg float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
 
 	switch nodeType {
-	case parser.NFuncSqrt:
+	case parser.NFnSqrt:
 		result = math.Sqrt(arg)
-	case parser.NFuncSin:
+	case parser.NFnSin:
 		result = math.Sin(arg)
-	case parser.NFuncCos:
+	case parser.NFnCos:
 		result = math.Cos(arg)
-	case parser.NFuncTan:
+	case parser.NFnTan:
 		result = math.Tan(arg)
 	}
 
