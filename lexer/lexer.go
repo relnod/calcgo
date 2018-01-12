@@ -1,32 +1,6 @@
-package calcgo
+package lexer
 
 type stateFn func(*Lexer) stateFn
-
-// TokenType describes the type of a token
-type TokenType byte
-
-// Token types
-const (
-	TEOF TokenType = iota
-	TInteger
-	TDecimal
-	TVariable
-	TOperatorPlus
-	TOperatorMinus
-	TOperatorMult
-	TOperatorDiv
-	TLeftBracket
-	TRightBracket
-	TInvalidCharacter
-	TInvalidCharacterInNumber
-	TInvalidCharacterInVariable
-)
-
-// Token represents a token returned by the lexer
-type Token struct {
-	Type  TokenType
-	Value string
-}
 
 // Lexer holds the state of the lexer
 type Lexer struct {
@@ -96,6 +70,10 @@ func (l *Lexer) current() byte {
 	return l.str[l.pos]
 }
 
+func (l *Lexer) stored() string {
+	return l.str[l.lastPos+1 : l.pos+1]
+}
+
 func (l *Lexer) next() (byte, bool) {
 	if l.pos+1 >= len(l.str) {
 		return 0, false
@@ -121,11 +99,16 @@ func (l *Lexer) peek() (byte, bool) {
 }
 
 func (l *Lexer) emit(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: l.str[l.lastPos+1 : l.pos+1]}
+	l.token <- Token{Type: tokenType, Value: l.stored()}
 }
 
 func (l *Lexer) emitEmpty(tokenType TokenType) {
 	l.token <- Token{Type: tokenType, Value: ""}
+}
+
+func (l *Lexer) emitSingle(tokenType TokenType) {
+	l.lastPos = l.pos - 1
+	l.token <- Token{Type: tokenType, Value: l.stored()}
 }
 
 func (l *Lexer) run() {
@@ -160,7 +143,7 @@ func lexAll(l *Lexer) stateFn {
 		return lexNumber
 	}
 	if isLetter(b) {
-		return lexVariable
+		return lexVariableOrFunction
 	}
 	if isWhiteSpace(b) {
 		return lexAll
@@ -168,20 +151,20 @@ func lexAll(l *Lexer) stateFn {
 
 	switch b {
 	case '+':
-		tokenType = TOperatorPlus
+		tokenType = TOpPlus
 	case '-':
 		if b, ok := l.peek(); ok && isDigit(b) {
 			return lexNumber
 		}
-		tokenType = TOperatorMinus
+		tokenType = TOpMinus
 	case '*':
-		tokenType = TOperatorMult
+		tokenType = TOpMult
 	case '/':
-		tokenType = TOperatorDiv
+		tokenType = TOpDiv
 	case '(':
-		tokenType = TLeftBracket
+		tokenType = TLParen
 	case ')':
-		tokenType = TRightBracket
+		tokenType = TRParen
 	default:
 		l.emit(TInvalidCharacter)
 		return lexAll
@@ -192,7 +175,8 @@ func lexAll(l *Lexer) stateFn {
 }
 
 func lexNumber(l *Lexer) stateFn {
-	tokenType := TInteger
+	tokenType := TInt
+	special := false
 
 	for {
 		b, ok := l.next()
@@ -202,14 +186,17 @@ func lexNumber(l *Lexer) stateFn {
 
 		if isDigit(b) {
 			continue
-		} else if b == '.' {
-			tokenType = TDecimal
+		} else if b == '.' && !special {
+			special = true
+			tokenType = TDec
+		} else if b == '^' && !special {
+			special = true
+			tokenType = TExp
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
 		} else {
-			l.lastPos = l.pos - 1
-			l.emit(TInvalidCharacterInNumber)
+			l.emitSingle(TInvalidCharacterInNumber)
 			return lexAll
 		}
 	}
@@ -218,7 +205,7 @@ func lexNumber(l *Lexer) stateFn {
 	return lexAll
 }
 
-func lexVariable(l *Lexer) stateFn {
+func lexVariableOrFunction(l *Lexer) stateFn {
 	for {
 		b, ok := l.next()
 		if !ok {
@@ -230,13 +217,27 @@ func lexVariable(l *Lexer) stateFn {
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
-		} else {
-			l.lastPos = l.pos - 1
-			l.emit(TInvalidCharacterInVariable)
-			return lexAll
+		} else if b == '(' {
+			switch l.stored() {
+			case "sqrt(":
+				l.emitEmpty(TFnSqrt)
+				return lexAll
+			case "sin(":
+				l.emitEmpty(TFnSin)
+				return lexAll
+			case "cos(":
+				l.emitEmpty(TFnCos)
+				return lexAll
+			case "tan(":
+				l.emitEmpty(TFnTan)
+				return lexAll
+			}
 		}
+
+		l.emitSingle(TInvalidCharacterInVariable)
+		return lexAll
 	}
 
-	l.emit(TVariable)
+	l.emit(TVar)
 	return lexAll
 }

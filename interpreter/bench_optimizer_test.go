@@ -1,9 +1,9 @@
-package calcgo_test
+package interpreter_test
 
 import (
 	"testing"
 
-	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/interpreter"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 
 func BenchmarkInterpreterNoOptimizer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		interpreter := calcgo.NewInterpreter(str)
+		interpreter := interpreter.NewInterpreter(str)
 		for i := 0; i < calculations; i++ {
 			interpreter.SetVar("a", 5.0)
 			interpreter.GetResult()
@@ -23,7 +23,7 @@ func BenchmarkInterpreterNoOptimizer(b *testing.B) {
 
 func BenchmarkInterpreterOptimizer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		interpreter := calcgo.NewInterpreter(str)
+		interpreter := interpreter.NewInterpreter(str)
 		interpreter.EnableOptimizer()
 		for i := 0; i < calculations; i++ {
 			interpreter.SetVar("a", 5.0)

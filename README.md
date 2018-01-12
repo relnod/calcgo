@@ -111,12 +111,14 @@ T = {n, o, l, r}
 
 P contains the following rules:
 
-S → SoS | lSr | n
+S → SoS | lSr | fSr | n
 
 #### Terminals
 n ∈ { TInteger, TDecimal, TVariable }
 
 o ∈ { TOperatorPlus, TOperatorMinus, TOperatorMult, TOperatorDiv }
+
+f ∈ { TFuncSqrt }
 
 l ∈ { TLeftBracket }
 
