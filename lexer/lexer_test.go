@@ -145,6 +145,21 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: lexer.TRParen},
 			})
 		})
+
+		Convey("exponential numbers", func() {
+			So(lexer.Lex("1^1"), shouldEqualToken, []lexer.Token{
+				{Value: "1^1", Type: lexer.TExp},
+			})
+			So(lexer.Lex("10^1"), shouldEqualToken, []lexer.Token{
+				{Value: "10^1", Type: lexer.TExp},
+			})
+			So(lexer.Lex("1^10"), shouldEqualToken, []lexer.Token{
+				{Value: "1^10", Type: lexer.TExp},
+			})
+			So(lexer.Lex("10^10"), shouldEqualToken, []lexer.Token{
+				{Value: "10^10", Type: lexer.TExp},
+			})
+		})
 	})
 
 	Convey("Lexer works with operators", t, func() {

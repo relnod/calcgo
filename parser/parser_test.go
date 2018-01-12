@@ -78,54 +78,86 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
-		Convey("simple numbers", func() {
-			ast, errors := parser.Parse("20")
-			So(ast, shouldEqualAST, parser.AST{
-				Node: &parser.Node{
-					Type:       parser.NInt,
-					Value:      "20",
-					LeftChild:  nil,
-					RightChild: nil,
-				},
+		Convey("positive numbers", func() {
+			Convey("integer", func() {
+				ast, errors := parser.Parse("20")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "20",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
 			})
 
-			So(errors, ShouldBeNil)
-
-			ast, errors = parser.Parse("20.23")
-			So(ast, shouldEqualAST, parser.AST{
-				Node: &parser.Node{
-					Type:       parser.NDec,
-					Value:      "20.23",
-					LeftChild:  nil,
-					RightChild: nil,
-				},
+			Convey("decimal", func() {
+				ast, errors := parser.Parse("20.23")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NDec,
+						Value:      "20.23",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
 			})
-			So(errors, ShouldBeNil)
 
+			Convey("exponential", func() {
+				ast, errors := parser.Parse("20^23")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NExp,
+						Value:      "20^23",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
 		})
 
 		Convey("negativ numbers", func() {
-			ast, errors := parser.Parse("-1")
-			So(ast, shouldEqualAST, parser.AST{
-				Node: &parser.Node{
-					Type:       parser.NInt,
-					Value:      "-1",
-					LeftChild:  nil,
-					RightChild: nil,
-				},
+			Convey("integer", func() {
+				ast, errors := parser.Parse("-1")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "-1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
 			})
-			So(errors, ShouldBeNil)
 
-			ast, errors = parser.Parse("-123.45")
-			So(ast, shouldEqualAST, parser.AST{
-				Node: &parser.Node{
-					Type:       parser.NDec,
-					Value:      "-123.45",
-					LeftChild:  nil,
-					RightChild: nil,
-				},
+			Convey("decimal", func() {
+				ast, errors := parser.Parse("-123.45")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NDec,
+						Value:      "-123.45",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
 			})
-			So(errors, ShouldBeNil)
+
+			Convey("exponential", func() {
+				ast, errors := parser.Parse("-20^23")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NExp,
+						Value:      "-20^23",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
 		})
 
 		Convey("variables", func() {

@@ -66,6 +66,11 @@ var testCases = []TestCaseWrapper{
 			{"12345.67890", 12345.67890, nil},
 		}, nil},
 
+		{"posititve exponentials", []TestCase{
+			{"1^1", 1, nil},
+			{"2^2", 4, nil},
+		}, nil},
+
 		{"negativ integers", []TestCase{
 			{"-1", -1, nil},
 			{"-123456789", -123456789, nil},
@@ -74,6 +79,12 @@ var testCases = []TestCaseWrapper{
 		{"negativ decimals", []TestCase{
 			{"-2.0", -2, nil},
 			{"-23456.123", -23456.123, nil},
+		}, nil},
+
+		{"negativ exponentials", []TestCase{
+			{"-1^1", -1, nil},
+			{"-2^2", 4, nil},
+			{"-2^3", -8, nil},
 		}, nil},
 	}},
 

@@ -187,6 +187,8 @@ func lexNumber(l *Lexer) stateFn {
 			continue
 		} else if b == '.' {
 			tokenType = TDec
+		} else if b == '^' {
+			tokenType = TExp
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break

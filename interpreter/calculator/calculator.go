@@ -4,18 +4,20 @@ import (
 	"errors"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/relnod/calcgo/parser"
 )
 
 // Errors that can occur during calculation or conversion.
 var (
-	ErrorInvalidInteger = errors.New("Invalid Integer")
-	ErrorInvalidDecimal = errors.New("Invalid Decimal")
-	ErrorDivisionByZero = errors.New("Division by zero")
+	ErrorInvalidInteger     = errors.New("Invalid Integer")
+	ErrorInvalidDecimal     = errors.New("Invalid Decimal")
+	ErrorInvalidExponential = errors.New("Invalid Exponential")
+	ErrorDivisionByZero     = errors.New("Division by zero")
 )
 
-// ConvertInteger converts a string to a float64.
+// ConvertInteger converts an integer string to a float64.
 // Returns an error if conversion failed.
 func ConvertInteger(value string) (float64, error) {
 	integer, err := strconv.Atoi(value)
@@ -25,7 +27,7 @@ func ConvertInteger(value string) (float64, error) {
 	return float64(integer), nil
 }
 
-// ConvertDecimal converts a string to a float64.
+// ConvertDecimal converts a decimal string to a float64.
 // Returns an error if conversion failed.
 func ConvertDecimal(value string) (float64, error) {
 	decimal, err := strconv.ParseFloat(value, 64)
@@ -33,6 +35,27 @@ func ConvertDecimal(value string) (float64, error) {
 		return 0, ErrorInvalidDecimal
 	}
 	return decimal, nil
+}
+
+// ConvertExponential converts an exponential string to a float64.
+// Returns an error if conversion failed.
+func ConvertExponential(value string) (float64, error) {
+	splitted := strings.Split(value, "^")
+	if len(splitted) != 2 {
+		return 0, ErrorInvalidExponential
+	}
+
+	base, err := strconv.Atoi(splitted[0])
+	if err != nil {
+		return 0, ErrorInvalidExponential
+	}
+
+	exponent, err := strconv.Atoi(splitted[1])
+	if err != nil {
+		return 0, ErrorInvalidExponential
+	}
+
+	return math.Pow(float64(base), float64(exponent)), nil
 }
 
 // CalculateOperator calculates the result of an operator.

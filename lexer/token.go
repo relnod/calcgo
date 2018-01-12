@@ -10,6 +10,7 @@ const (
 	// Numbers
 	TInt // [0-9]+
 	TDec // [0-9]+\.[0-9]+
+	TExp // [0-9]+\^[0-9]+
 
 	// Variable
 	TVar // [a-zA-Z]+

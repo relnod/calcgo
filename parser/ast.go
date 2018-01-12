@@ -14,6 +14,7 @@ const (
 	// Numbers
 	NInt
 	NDec
+	NExp
 
 	// Variable
 	NVar
@@ -117,6 +118,8 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 		return NInt, true
 	case lexer.TDec:
 		return NDec, true
+	case lexer.TExp:
+		return NExp, true
 	case lexer.TVar:
 		return NVar, true
 	}
