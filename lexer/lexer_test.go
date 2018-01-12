@@ -257,6 +257,14 @@ func TestLexer(t *testing.T) {
 				So(lexer.Lex("10123? "), shouldEqualToken, []lexer.Token{
 					{Value: "?", Type: lexer.TInvalidCharacterInNumber},
 				})
+				So(lexer.Lex("1.1.1"), shouldEqualToken, []lexer.Token{
+					{Value: ".", Type: lexer.TInvalidCharacterInNumber},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("1^1^1"), shouldEqualToken, []lexer.Token{
+					{Value: "^", Type: lexer.TInvalidCharacterInNumber},
+					{Value: "1", Type: lexer.TInt},
+				})
 			})
 
 			Convey("invalid characters", func() {

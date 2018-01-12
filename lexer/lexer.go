@@ -176,6 +176,7 @@ func lexAll(l *Lexer) stateFn {
 
 func lexNumber(l *Lexer) stateFn {
 	tokenType := TInt
+	special := false
 
 	for {
 		b, ok := l.next()
@@ -185,9 +186,11 @@ func lexNumber(l *Lexer) stateFn {
 
 		if isDigit(b) {
 			continue
-		} else if b == '.' {
+		} else if b == '.' && !special {
+			special = true
 			tokenType = TDec
-		} else if b == '^' {
+		} else if b == '^' && !special {
+			special = true
 			tokenType = TExp
 		} else if isWhiteSpace(b) || b == ')' {
 			l.backup()
