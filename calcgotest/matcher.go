@@ -1,5 +1,17 @@
 package calcgotest
 
+// ShouldEqualErrors checks if actual and expected errors are equal.
+func ShouldEqualErrors(actual interface{}, expected ...interface{}) string {
+	e1 := actual.([]error)
+	e2 := expected[0].([]error)
+
+	if eqErrors(e1, e2) {
+		return ""
+	}
+
+	return errorsError(e1, e2) + "(Should be Equal)"
+}
+
 func errorsToString(errors []error) string {
 	var str string
 
@@ -34,15 +46,4 @@ func eqErrors(e1 []error, e2 []error) bool {
 	}
 
 	return true
-}
-
-func ShouldEqualErrors(actual interface{}, expected ...interface{}) string {
-	e1 := actual.([]error)
-	e2 := expected[0].([]error)
-
-	if eqErrors(e1, e2) {
-		return ""
-	}
-
-	return errorsError(e1, e2) + "(Should be Equal)"
 }
