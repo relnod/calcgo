@@ -11,7 +11,7 @@ const (
 	NInvalidOperator
 	NInvalidFunction
 
-	literal_beg
+	literalBeg
 	// Numbers
 	NInt
 	NDec
@@ -21,23 +21,23 @@ const (
 
 	// Variable
 	NVar
-	literal_end
+	literalEnd
 
-	operator_beg
+	operatorBeg
 	// Operators
 	NAdd
 	NSub
 	NMult
 	NDiv
-	operator_end
+	operatorEnd
 
-	function_beg
+	functionBeg
 	// Functions
 	NFnSqrt
 	NFnSin
 	NFnCos
 	NFnTan
-	function_end
+	functionEnd
 )
 
 // AST stores the data of the abstract syntax tree.
@@ -51,17 +51,17 @@ type NodeType uint
 
 // IsLiteral returns true if t is a literal.
 func (t NodeType) IsLiteral() bool {
-	return literal_beg < t && t < literal_end
+	return literalBeg < t && t < literalEnd
 }
 
 // IsOperator returns true if t is an operator.
 func (t NodeType) IsOperator() bool {
-	return operator_beg < t && t < operator_end
+	return operatorBeg < t && t < operatorEnd
 }
 
 // IsFunction returns true if t is a function.
 func (t NodeType) IsFunction() bool {
-	return function_beg < t && t < function_end
+	return functionBeg < t && t < functionEnd
 }
 
 // Node represents a node

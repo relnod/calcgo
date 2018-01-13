@@ -7,7 +7,7 @@ type TokenType byte
 const (
 	TEOF TokenType = iota
 
-	literal_beg
+	literalBeg
 	// Numbers
 	TInt // [0-9]+
 	TDec // [0-9]+\.[0-9]+
@@ -17,23 +17,23 @@ const (
 
 	// Variable
 	TVar // [a-zA-Z]+
-	literal_end
+	literalEnd
 
-	operator_beg
+	operatorBeg
 	// Operators
 	TOpPlus  // "+"
 	TOpMinus // "-"
 	TOpMult  // "*"
 	TOpDiv   // "/"
-	operator_end
+	operatorEnd
 
-	function_beg
+	functionBeg
 	// Functions
 	TFnSqrt // "sqrt("
 	TFnSin  // "sin("
 	TFnCos  // "cos("
 	TFnTan  // "tan("
-	function_end
+	functionEnd
 
 	// Parens
 	TLParen // "("
@@ -80,19 +80,19 @@ type Token struct {
 	Value string
 }
 
-// IsLitereal returns true if the type of t is a literal.
+// IsLiteral returns true if the type of t is a literal.
 func (t Token) IsLiteral() bool {
-	return literal_beg < t.Type && t.Type < literal_end
+	return literalBeg < t.Type && t.Type < literalEnd
 }
 
 // IsOperator returns true if the type of t is a operator.
 func (t Token) IsOperator() bool {
-	return operator_beg < t.Type && t.Type < operator_end
+	return operatorBeg < t.Type && t.Type < operatorEnd
 }
 
 // IsFunction returns true if the type of t is a function.
 func (t Token) IsFunction() bool {
-	return function_beg < t.Type && t.Type < function_end
+	return functionBeg < t.Type && t.Type < functionEnd
 }
 
 // String converts a token to a string.
