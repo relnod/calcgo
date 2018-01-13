@@ -29,6 +29,7 @@ const (
 	NSub
 	NMult
 	NDiv
+	NMod
 	operatorEnd
 
 	functionBeg
@@ -116,6 +117,8 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 		return NMult, true
 	case lexer.TOpDiv:
 		return NDiv, true
+	case lexer.TOpMod:
+		return NMod, true
 	}
 
 	return NInvalidOperator, false

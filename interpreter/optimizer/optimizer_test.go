@@ -230,6 +230,21 @@ func TestOptimizer(t *testing.T) {
 					})
 					So(err, ShouldBeNil)
 				})
+
+				Convey("modulo", func() {
+					oast, err := optimize("1 % 1")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDec,
+							Value:       0.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
 			Convey("functions", func() {

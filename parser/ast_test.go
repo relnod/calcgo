@@ -30,14 +30,13 @@ func TestAST(t *testing.T) {
 				nt         parser.NodeType
 				isOperator bool
 			}{
-				{parser.NDec, false},
-				{parser.NInt, false},
 				{parser.NVar, false},
-				{parser.NError, false},
 				{parser.NAdd, true},
 				{parser.NSub, true},
 				{parser.NMult, true},
+				{parser.NMod, true},
 				{parser.NDiv, true},
+				{parser.NFnSqrt, false},
 			}
 
 			for _, c := range cases {

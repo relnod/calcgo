@@ -478,6 +478,60 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
+		Convey("Modulo", func() {
+			ast, errors := parser.Parse("1 % 2")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NMod,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+
+			ast, errors = parser.Parse("1 % 2 % 3")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NMod,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:  parser.NMod,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+		})
+
 		Convey("variables and operators", func() {
 			ast, errors := parser.Parse("a + 2")
 			So(ast, shouldEqualAST, parser.AST{

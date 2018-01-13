@@ -25,6 +25,7 @@ const (
 	TOpMinus // "-"
 	TOpMult  // "*"
 	TOpDiv   // "/"
+	TOpMod   // "%"
 	operatorEnd
 
 	functionBeg

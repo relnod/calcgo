@@ -135,6 +135,13 @@ var testCases = []TestCaseWrapper{
 			{"1 / 1", 1 / 1, nil},
 			{"1 / 2 / 3", 1.0 / 2.0 / 3.0, nil},
 		}, nil},
+
+		{"modulo", []TestCase{
+			{"1 % 1", 0, nil},
+			{"5 % 6", 5, nil},
+			{"12 % 6", 0, nil},
+			{"13 % 6", 1, nil},
+		}, nil},
 	}},
 
 	{"operations with negative numbers", nil, []TestCaseWrapper{

@@ -118,6 +118,15 @@ func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, 
 			return 0, ErrorDivisionByZero
 		}
 		result = left / right
+	case parser.NMod:
+		for {
+			if left < right {
+				break
+			}
+
+			left -= right
+		}
+		result = float64(left)
 	}
 
 	return result, nil

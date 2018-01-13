@@ -158,6 +158,8 @@ func lexAll(l *Lexer) stateFn {
 		tokenType = TOpMult
 	case '/':
 		tokenType = TOpDiv
+	case '%':
+		tokenType = TOpMod
 	case '(':
 		tokenType = TLParen
 	case ')':

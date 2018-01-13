@@ -261,6 +261,11 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: lexer.TOpDiv},
 			})
 		})
+		Convey("modulo", func() {
+			So(lexer.Lex("%"), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TOpMod},
+			})
+		})
 	})
 
 	Convey("Lexer works with brackets", t, func() {
@@ -346,8 +351,8 @@ func TestLexer(t *testing.T) {
 			})
 
 			Convey("invalid characters", func() {
-				So(lexer.Lex("%"), shouldEqualToken, []lexer.Token{
-					{Value: "%", Type: lexer.TInvalidCharacter},
+				So(lexer.Lex("$"), shouldEqualToken, []lexer.Token{
+					{Value: "$", Type: lexer.TInvalidCharacter},
 				})
 				So(lexer.Lex("a$"), shouldEqualToken, []lexer.Token{
 					{Value: "$", Type: lexer.TInvalidCharacterInVariable},
