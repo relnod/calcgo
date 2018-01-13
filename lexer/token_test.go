@@ -18,6 +18,7 @@ func TestToken(t *testing.T) {
 				{lexer.TInt, true},
 				{lexer.TDec, true},
 				{lexer.THex, true},
+				{lexer.TBin, true},
 				{lexer.TExp, true},
 				{lexer.TVar, true},
 				{lexer.TOpPlus, false},

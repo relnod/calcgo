@@ -97,8 +97,8 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 		return newOptimizedNode(result), nil
 	}
 
-	if node.Type == parser.NExp {
-		result, err = calculator.ConvertExponential(node.Value)
+	if node.Type == parser.NBin {
+		result, err = calculator.ConvertBin(node.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -108,6 +108,15 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 
 	if node.Type == parser.NHex {
 		result, err = calculator.ConvertHex(node.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		return newOptimizedNode(result), nil
+	}
+
+	if node.Type == parser.NExp {
+		result, err = calculator.ConvertExponential(node.Value)
 		if err != nil {
 			return nil, err
 		}

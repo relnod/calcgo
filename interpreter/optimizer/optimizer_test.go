@@ -140,12 +140,12 @@ func TestOptimizer(t *testing.T) {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("exponential number", func() {
-					oast, err := optimize("2^3")
+				Convey("binary number", func() {
+					oast, err := optimize("0b10")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
 							Type:        parser.NDec,
-							Value:       8,
+							Value:       2,
 							OldValue:    "",
 							IsOptimized: true,
 							LeftChild:   nil,
@@ -154,13 +154,12 @@ func TestOptimizer(t *testing.T) {
 					})
 					So(err, ShouldBeNil)
 				})
-
-				Convey("hex number", func() {
-					oast, err := optimize("0x1A")
+				Convey("exponential number", func() {
+					oast, err := optimize("2^3")
 					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
 						Node: &optimizer.OptimizedNode{
 							Type:        parser.NDec,
-							Value:       26,
+							Value:       8,
 							OldValue:    "",
 							IsOptimized: true,
 							LeftChild:   nil,

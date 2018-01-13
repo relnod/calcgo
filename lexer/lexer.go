@@ -119,6 +119,10 @@ func isHexDigit(b byte) bool {
 	return isDigit(b) || b >= 'A' && b <= 'F'
 }
 
+func isBinDigit(b byte) bool {
+	return b == '0' || b == '1'
+}
+
 func isLetter(b byte) bool {
 	return b >= 'a' && b <= 'z'
 }
@@ -169,8 +173,14 @@ func lexAll(l *Lexer) stateFn {
 
 func lexNumber(l *Lexer) stateFn {
 	if l.current() == '0' {
-		if b, ok := l.next(); ok && b == 'x' {
-			return lexHex
+		b, ok := l.next()
+		if ok {
+			if b == 'x' {
+				return lexHex
+			}
+			if b == 'b' {
+				return lexBin
+			}
 		}
 		l.backup()
 	}
@@ -230,30 +240,6 @@ func lexDecimal(l *Lexer) stateFn {
 	return lexAll
 }
 
-func lexExponential(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isDigit(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(TExp)
-	return lexAll
-}
-
 func lexHex(l *Lexer) stateFn {
 	for {
 		b, ok := l.next()
@@ -275,6 +261,53 @@ func lexHex(l *Lexer) stateFn {
 	}
 
 	l.emit(THex)
+	return lexAll
+}
+
+func lexBin(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isBinDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
+	}
+
+	l.emit(TBin)
+	return lexAll
+}
+func lexExponential(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
+	}
+
+	l.emit(TExp)
 	return lexAll
 }
 

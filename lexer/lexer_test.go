@@ -140,6 +140,41 @@ func TestLexer(t *testing.T) {
 				})
 			})
 
+			Convey("binary", func() {
+				So(lexer.Lex("0b1"), shouldEqualToken, []lexer.Token{
+					{Value: "0b1", Type: lexer.TBin},
+				})
+				So(lexer.Lex("0b0101"), shouldEqualToken, []lexer.Token{
+					{Value: "0b0101", Type: lexer.TBin},
+				})
+				So(lexer.Lex("0b1 1"), shouldEqualToken, []lexer.Token{
+					{Value: "0b1", Type: lexer.TBin},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("0b012"), shouldEqualToken, []lexer.Token{
+					{Value: "2", Type: lexer.TInvalidCharacterInNumber},
+				})
+			})
+
+			Convey("hex", func() {
+				So(lexer.Lex("0x1"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1", Type: lexer.THex},
+				})
+				So(lexer.Lex("0xA"), shouldEqualToken, []lexer.Token{
+					{Value: "0xA", Type: lexer.THex},
+				})
+				So(lexer.Lex("0x1A"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1A", Type: lexer.THex},
+				})
+				So(lexer.Lex("0x1A 1"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1A", Type: lexer.THex},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("0xN"), shouldEqualToken, []lexer.Token{
+					{Value: "N", Type: lexer.TInvalidCharacterInNumber},
+				})
+			})
+
 			Convey("exponential", func() {
 				So(lexer.Lex("1^1"), shouldEqualToken, []lexer.Token{
 					{Value: "1^1", Type: lexer.TExp},
@@ -162,24 +197,6 @@ func TestLexer(t *testing.T) {
 				})
 			})
 
-			Convey("hex", func() {
-				So(lexer.Lex("0x1"), shouldEqualToken, []lexer.Token{
-					{Value: "0x1", Type: lexer.THex},
-				})
-				So(lexer.Lex("0xA"), shouldEqualToken, []lexer.Token{
-					{Value: "0xA", Type: lexer.THex},
-				})
-				So(lexer.Lex("0x1A"), shouldEqualToken, []lexer.Token{
-					{Value: "0x1A", Type: lexer.THex},
-				})
-				So(lexer.Lex("0x1A 1"), shouldEqualToken, []lexer.Token{
-					{Value: "0x1A", Type: lexer.THex},
-					{Value: "1", Type: lexer.TInt},
-				})
-				So(lexer.Lex("0xN"), shouldEqualToken, []lexer.Token{
-					{Value: "N", Type: lexer.TInvalidCharacterInNumber},
-				})
-			})
 		})
 
 		Convey("negative", func() {
@@ -204,14 +221,19 @@ func TestLexer(t *testing.T) {
 					{Value: "-0.12", Type: lexer.TDec},
 				})
 			})
-			Convey("exponential", func() {
-				So(lexer.Lex("-12^14"), shouldEqualToken, []lexer.Token{
-					{Value: "-12^14", Type: lexer.TExp},
-				})
-			})
 			Convey("hex", func() {
 				So(lexer.Lex("-0x1B"), shouldEqualToken, []lexer.Token{
 					{Value: "-0x1B", Type: lexer.THex},
+				})
+			})
+			Convey("binary", func() {
+				So(lexer.Lex("-0b1"), shouldEqualToken, []lexer.Token{
+					{Value: "-0b1", Type: lexer.TBin},
+				})
+			})
+			Convey("exponential", func() {
+				So(lexer.Lex("-12^14"), shouldEqualToken, []lexer.Token{
+					{Value: "-12^14", Type: lexer.TExp},
 				})
 			})
 		})

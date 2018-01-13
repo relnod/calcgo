@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -13,8 +14,9 @@ import (
 var (
 	ErrorInvalidInteger     = errors.New("Invalid Integer")
 	ErrorInvalidDecimal     = errors.New("Invalid Decimal")
-	ErrorInvalidExponential = errors.New("Invalid Exponential")
+	ErrorInvalidBinary      = errors.New("Invalid Binary")
 	ErrorInvalidHexadecimal = errors.New("Invalid Hexadecimal")
+	ErrorInvalidExponential = errors.New("Invalid Exponential")
 	ErrorDivisionByZero     = errors.New("Division by zero")
 )
 
@@ -38,6 +40,31 @@ func ConvertDecimal(value string) (float64, error) {
 	return decimal, nil
 }
 
+// ConvertBin converts a binary string to a float64.
+// Returns an error if conversion failed.
+func ConvertBin(value string) (float64, error) {
+	val := strings.Replace(value, "0b", "", 1)
+
+	bin, err := strconv.ParseInt(val, 2, 64)
+	if err != nil {
+		fmt.Println(value, bin, err)
+		return 0, ErrorInvalidBinary
+	}
+
+	return float64(bin), nil
+}
+
+// ConvertHex converts a hex string to a float64.
+// Returns an error if conversion failed.
+func ConvertHex(value string) (float64, error) {
+	hexa, err := strconv.ParseInt(value, 0, 64)
+	if err != nil {
+		return 0, ErrorInvalidHexadecimal
+	}
+
+	return float64(hexa), nil
+}
+
 // ConvertExponential converts an exponential string to a float64.
 // Returns an error if conversion failed.
 func ConvertExponential(value string) (float64, error) {
@@ -57,17 +84,6 @@ func ConvertExponential(value string) (float64, error) {
 	}
 
 	return math.Pow(float64(base), float64(exponent)), nil
-}
-
-// ConvertHex converts a hex string to a float64.
-// Returns an error if conversion failed.
-func ConvertHex(value string) (float64, error) {
-	hexa, err := strconv.ParseInt(value, 0, 64)
-	if err != nil {
-		return 0, ErrorInvalidHexadecimal
-	}
-
-	return float64(hexa), nil
 }
 
 // CalculateOperator calculates the result of an operator.

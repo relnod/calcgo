@@ -165,12 +165,16 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 		return calculator.ConvertDecimal(node.Value)
 	}
 
-	if node.Type == parser.NExp {
-		return calculator.ConvertExponential(node.Value)
+	if node.Type == parser.NBin {
+		return calculator.ConvertBin(node.Value)
 	}
 
 	if node.Type == parser.NHex {
 		return calculator.ConvertHex(node.Value)
+	}
+
+	if node.Type == parser.NExp {
+		return calculator.ConvertExponential(node.Value)
 	}
 
 	if node.Type == parser.NVar {

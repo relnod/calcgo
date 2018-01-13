@@ -67,15 +67,21 @@ var testCases = []TestCaseWrapper{
 				{"12345.67890", 12345.67890, nil},
 			}, nil},
 
-			{"exponentials", []TestCase{
-				{"1^1", 1, nil},
-				{"2^2", 4, nil},
+			{"binary", []TestCase{
+				{"0b0", 0, nil},
+				{"0b1", 1, nil},
+				{"0b11", 3, nil},
 			}, nil},
 
 			{"hex", []TestCase{
 				{"0x1", 1, nil},
 				{"0xA", 10, nil},
 				{"0x1A", 26, nil},
+			}, nil},
+
+			{"exponentials", []TestCase{
+				{"1^1", 1, nil},
+				{"2^2", 4, nil},
 			}, nil},
 		}},
 
@@ -90,16 +96,21 @@ var testCases = []TestCaseWrapper{
 				{"-23456.123", -23456.123, nil},
 			}, nil},
 
-			{"exponentials", []TestCase{
-				{"-1^1", -1, nil},
-				{"-2^2", 4, nil},
-				{"-2^3", -8, nil},
+			{"binary", []TestCase{
+				{"-0b1", -1, nil},
+				{"-0b10", -2, nil},
 			}, nil},
 
 			{"hex", []TestCase{
 				{"-0x1", -1, nil},
 				{"-0xA", -10, nil},
 				{"-0x1A", -26, nil},
+			}, nil},
+
+			{"exponentials", []TestCase{
+				{"-1^1", -1, nil},
+				{"-2^2", 4, nil},
+				{"-2^3", -8, nil},
 			}, nil},
 		}},
 	}},

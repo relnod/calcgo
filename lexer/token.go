@@ -11,6 +11,7 @@ const (
 	// Numbers
 	TInt // [0-9]+
 	TDec // [0-9]+\.[0-9]+
+	TBin // 0b[01]+
 	THex // 0x[0-9A-F]+
 	TExp // [0-9]+\^[0-9]+
 
@@ -49,6 +50,7 @@ var tokens = [...]string{
 
 	TInt: "Integer",
 	TDec: "Decimal",
+	TBin: "Binary",
 	THex: "HexaDecimal",
 	TExp: "Exponential",
 

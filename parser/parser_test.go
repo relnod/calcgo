@@ -105,12 +105,12 @@ func TestParser(t *testing.T) {
 				So(errors, ShouldBeNil)
 			})
 
-			Convey("exponential", func() {
-				ast, errors := parser.Parse("20^23")
+			Convey("binary", func() {
+				ast, errors := parser.Parse("0b101")
 				So(ast, shouldEqualAST, parser.AST{
 					Node: &parser.Node{
-						Type:       parser.NExp,
-						Value:      "20^23",
+						Type:       parser.NBin,
+						Value:      "0b101",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
@@ -130,6 +130,20 @@ func TestParser(t *testing.T) {
 				})
 				So(errors, ShouldBeNil)
 			})
+
+			Convey("exponential", func() {
+				ast, errors := parser.Parse("20^23")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NExp,
+						Value:      "20^23",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+
 		})
 
 		Convey("negativ numbers", func() {
@@ -152,6 +166,32 @@ func TestParser(t *testing.T) {
 					Node: &parser.Node{
 						Type:       parser.NDec,
 						Value:      "-123.45",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+
+			Convey("binary", func() {
+				ast, errors := parser.Parse("-0b101")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NBin,
+						Value:      "-0b101",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
+
+			Convey("hexadecimal", func() {
+				ast, errors := parser.Parse("-0x1AB")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NHex,
+						Value:      "-0x1AB",
 						LeftChild:  nil,
 						RightChild: nil,
 					},
