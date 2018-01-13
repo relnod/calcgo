@@ -11,6 +11,7 @@ const (
 	NInvalidOperator
 	NInvalidFunction
 
+	literal_beg
 	// Numbers
 	NInt
 	NDec
@@ -20,18 +21,23 @@ const (
 
 	// Variable
 	NVar
+	literal_end
 
+	operator_beg
 	// Operators
 	NAdd
 	NSub
 	NMult
 	NDiv
+	operator_end
 
+	function_beg
 	// Functions
 	NFnSqrt
 	NFnSin
 	NFnCos
 	NFnTan
+	function_end
 )
 
 // AST stores the data of the abstract syntax tree.
@@ -43,20 +49,19 @@ type AST struct {
 // NodeType defines the type of a node
 type NodeType uint
 
-// IsFunction returns true if the type of n is a function.
-func (n NodeType) IsFunction() bool {
-	return n == NFnSqrt ||
-		n == NFnSin ||
-		n == NFnCos ||
-		n == NFnTan
+// IsLiteral returns true if t is a literal.
+func (t NodeType) IsLiteral() bool {
+	return literal_beg < t && t < literal_end
 }
 
-// IsOperator returns true if the type of n is an operator.
-func (n NodeType) IsOperator() bool {
-	return n == NAdd ||
-		n == NSub ||
-		n == NMult ||
-		n == NDiv
+// IsOperator returns true if t is an operator.
+func (t NodeType) IsOperator() bool {
+	return operator_beg < t && t < operator_end
+}
+
+// IsFunction returns true if t is a function.
+func (t NodeType) IsFunction() bool {
+	return function_beg < t && t < function_end
 }
 
 // Node represents a node
@@ -67,14 +72,19 @@ type Node struct {
 	RightChild *Node    `json:"right"`
 }
 
-// IsFunction returns true if the type of n is a function.
-func (n *Node) IsFunction() bool {
-	return n.Type.IsFunction()
+// IsLiteral returns true if n is literal node.
+func (n *Node) IsLiteral() bool {
+	return n.Type.IsLiteral()
 }
 
-// IsOperator returns true if the type of n is an operator.
+// IsOperator returns true if n is an operator node.
 func (n *Node) IsOperator() bool {
 	return n.Type.IsOperator()
+}
+
+// IsFunction returns true if n is a function node.
+func (n *Node) IsFunction() bool {
+	return n.Type.IsFunction()
 }
 
 // isHigherOperator returns true if operator n is of higher than n2.

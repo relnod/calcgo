@@ -157,28 +157,11 @@ func InterpretAST(ast *parser.AST) (float64, error) {
 
 // interpretNode recursively interprets a given node.
 func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
-	if node.Type == parser.NInt {
-		return calculator.ConvertInteger(node.Value)
-	}
-
-	if node.Type == parser.NDec {
-		return calculator.ConvertDecimal(node.Value)
-	}
-
-	if node.Type == parser.NBin {
-		return calculator.ConvertBin(node.Value)
-	}
-
-	if node.Type == parser.NHex {
-		return calculator.ConvertHex(node.Value)
-	}
-
-	if node.Type == parser.NExp {
-		return calculator.ConvertExponential(node.Value)
-	}
-
 	if node.Type == parser.NVar {
 		return i.interpretVariable(node)
+	}
+	if node.IsLiteral() {
+		return calculator.ConvertLiteral(node)
 	}
 
 	if node.IsOperator() {

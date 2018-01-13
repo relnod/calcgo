@@ -86,6 +86,22 @@ func ConvertExponential(value string) (float64, error) {
 	return math.Pow(float64(base), float64(exponent)), nil
 }
 
+// ConvertLiteral converts a atring literal to a float.
+func ConvertLiteral(node *parser.Node) (float64, error) {
+	switch node.Type {
+	case parser.NInt:
+		return ConvertInteger(node.Value)
+	case parser.NDec:
+		return ConvertDecimal(node.Value)
+	case parser.NBin:
+		return ConvertBin(node.Value)
+	case parser.NHex:
+		return ConvertHex(node.Value)
+	}
+
+	return ConvertExponential(node.Value)
+}
+
 // CalculateOperator calculates the result of an operator.
 func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, error) {
 	var result float64

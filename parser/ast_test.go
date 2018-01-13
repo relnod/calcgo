@@ -8,24 +8,57 @@ import (
 )
 
 func TestAST(t *testing.T) {
-	var cases = []struct {
-		nt         parser.NodeType
-		isOperator bool
-	}{
-		{parser.NDec, false},
-		{parser.NInt, false},
-		{parser.NVar, false},
-		{parser.NError, false},
-		{parser.NAdd, true},
-		{parser.NSub, true},
-		{parser.NMult, true},
-		{parser.NDiv, true},
-	}
+	Convey("AST spec", t, func() {
+		Convey("IsLiteral()", func() {
+			var cases = []struct {
+				nt         parser.NodeType
+				isOperator bool
+			}{
+				{parser.NError, false},
+				{parser.NInt, true},
+				{parser.NVar, true},
+				{parser.NAdd, false},
+			}
 
-	Convey("IsOperator works", t, func() {
-		for _, c := range cases {
-			n := parser.Node{Type: c.nt}
-			So(n.IsOperator(), ShouldEqual, c.isOperator)
-		}
+			for _, c := range cases {
+				n := parser.Node{Type: c.nt}
+				So(n.IsLiteral(), ShouldEqual, c.isOperator)
+			}
+		})
+		Convey("IsOperator()", func() {
+			var cases = []struct {
+				nt         parser.NodeType
+				isOperator bool
+			}{
+				{parser.NDec, false},
+				{parser.NInt, false},
+				{parser.NVar, false},
+				{parser.NError, false},
+				{parser.NAdd, true},
+				{parser.NSub, true},
+				{parser.NMult, true},
+				{parser.NDiv, true},
+			}
+
+			for _, c := range cases {
+				n := parser.Node{Type: c.nt}
+				So(n.IsOperator(), ShouldEqual, c.isOperator)
+			}
+		})
+		Convey("IsFunction()", func() {
+			var cases = []struct {
+				nt         parser.NodeType
+				isOperator bool
+			}{
+				{parser.NDiv, false},
+				{parser.NFnCos, true},
+				{parser.NFnSin, true},
+			}
+
+			for _, c := range cases {
+				n := parser.Node{Type: c.nt}
+				So(n.IsFunction(), ShouldEqual, c.isOperator)
+			}
+		})
 	})
 }
