@@ -113,6 +113,9 @@ func TestLexer(t *testing.T) {
 				So(lexer.Lex("10123"), shouldEqualToken, []lexer.Token{
 					{Value: "10123", Type: lexer.TInt},
 				})
+				So(lexer.Lex("1A"), shouldEqualToken, []lexer.Token{
+					{Value: "A", Type: lexer.TInvalidCharacterInNumber},
+				})
 			})
 
 			Convey("decimals", func() {
@@ -127,6 +130,13 @@ func TestLexer(t *testing.T) {
 				})
 				So(lexer.Lex("0.3456"), shouldEqualToken, []lexer.Token{
 					{Value: "0.3456", Type: lexer.TDec},
+				})
+				So(lexer.Lex("0.1 1"), shouldEqualToken, []lexer.Token{
+					{Value: "0.1", Type: lexer.TDec},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("0.1A"), shouldEqualToken, []lexer.Token{
+					{Value: "A", Type: lexer.TInvalidCharacterInNumber},
 				})
 			})
 
@@ -143,6 +153,13 @@ func TestLexer(t *testing.T) {
 				So(lexer.Lex("10^10"), shouldEqualToken, []lexer.Token{
 					{Value: "10^10", Type: lexer.TExp},
 				})
+				So(lexer.Lex("10^10 1"), shouldEqualToken, []lexer.Token{
+					{Value: "10^10", Type: lexer.TExp},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("1^A"), shouldEqualToken, []lexer.Token{
+					{Value: "A", Type: lexer.TInvalidCharacterInNumber},
+				})
 			})
 
 			Convey("hex", func() {
@@ -154,6 +171,13 @@ func TestLexer(t *testing.T) {
 				})
 				So(lexer.Lex("0x1A"), shouldEqualToken, []lexer.Token{
 					{Value: "0x1A", Type: lexer.THex},
+				})
+				So(lexer.Lex("0x1A 1"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1A", Type: lexer.THex},
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("0xN"), shouldEqualToken, []lexer.Token{
+					{Value: "N", Type: lexer.TInvalidCharacterInNumber},
 				})
 			})
 		})
@@ -175,6 +199,9 @@ func TestLexer(t *testing.T) {
 			Convey("decimals", func() {
 				So(lexer.Lex("-10.12"), shouldEqualToken, []lexer.Token{
 					{Value: "-10.12", Type: lexer.TDec},
+				})
+				So(lexer.Lex("-0.12"), shouldEqualToken, []lexer.Token{
+					{Value: "-0.12", Type: lexer.TDec},
 				})
 			})
 			Convey("exponential", func() {

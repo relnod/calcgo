@@ -87,17 +87,6 @@ func (l *Lexer) backup() {
 	l.pos--
 }
 
-func (l *Lexer) peek() (byte, bool) {
-	s, ok := l.next()
-
-	if !ok {
-		return 0, false
-	}
-
-	l.backup()
-	return s, true
-}
-
 func (l *Lexer) emit(tokenType TokenType) {
 	l.token <- Token{Type: tokenType, Value: l.stored()}
 }
@@ -143,13 +132,6 @@ func lexAll(l *Lexer) stateFn {
 	if !ok {
 		return nil
 	}
-	if b == '0' {
-		if bn, ok := l.next(); ok && bn == 'x' {
-			return lexHex
-		}
-		l.backup()
-		return lexNumber
-	}
 	if isDigit(b) {
 		return lexNumber
 	}
@@ -164,18 +146,8 @@ func lexAll(l *Lexer) stateFn {
 	case '+':
 		tokenType = TOpPlus
 	case '-':
-		b, ok := l.next()
-		if ok {
-			if b == '0' {
-				if bn, ok := l.next(); ok && bn == 'x' {
-					return lexHex
-				}
-				l.backup()
-				return lexNumber
-			}
-			if isDigit(b) {
-				return lexNumber
-			}
+		if b, ok := l.next(); ok && isDigit(b) {
+			return lexNumber
 		}
 		tokenType = TOpMinus
 	case '*':
@@ -196,6 +168,13 @@ func lexAll(l *Lexer) stateFn {
 }
 
 func lexNumber(l *Lexer) stateFn {
+	if l.current() == '0' {
+		if b, ok := l.next(); ok && b == 'x' {
+			return lexHex
+		}
+		l.backup()
+	}
+
 	for {
 		b, ok := l.next()
 		if !ok {
