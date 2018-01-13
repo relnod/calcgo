@@ -72,94 +72,123 @@ func TestLexer(t *testing.T) {
 	})
 
 	Convey("Lexer works with numbers", t, func() {
-		Convey("single digit", func() {
-			So(lexer.Lex("0"), shouldEqualToken, []lexer.Token{
-				{Value: "0", Type: lexer.TInt},
+		Convey("positive", func() {
+			Convey("single digit", func() {
+				So(lexer.Lex("0"), shouldEqualToken, []lexer.Token{
+					{Value: "0", Type: lexer.TInt},
+				})
+				So(lexer.Lex("1"), shouldEqualToken, []lexer.Token{
+					{Value: "1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("2"), shouldEqualToken, []lexer.Token{
+					{Value: "2", Type: lexer.TInt},
+				})
+				So(lexer.Lex("3"), shouldEqualToken, []lexer.Token{
+					{Value: "3", Type: lexer.TInt},
+				})
+				So(lexer.Lex("4"), shouldEqualToken, []lexer.Token{
+					{Value: "4", Type: lexer.TInt},
+				})
+				So(lexer.Lex("5"), shouldEqualToken, []lexer.Token{
+					{Value: "5", Type: lexer.TInt},
+				})
+				So(lexer.Lex("6"), shouldEqualToken, []lexer.Token{
+					{Value: "6", Type: lexer.TInt},
+				})
+				So(lexer.Lex("7"), shouldEqualToken, []lexer.Token{
+					{Value: "7", Type: lexer.TInt},
+				})
+				So(lexer.Lex("8"), shouldEqualToken, []lexer.Token{
+					{Value: "8", Type: lexer.TInt},
+				})
+				So(lexer.Lex("9"), shouldEqualToken, []lexer.Token{
+					{Value: "9", Type: lexer.TInt},
+				})
 			})
-			So(lexer.Lex("1"), shouldEqualToken, []lexer.Token{
-				{Value: "1", Type: lexer.TInt},
+
+			Convey("multiple digits", func() {
+				So(lexer.Lex("10"), shouldEqualToken, []lexer.Token{
+					{Value: "10", Type: lexer.TInt},
+				})
+				So(lexer.Lex("10123"), shouldEqualToken, []lexer.Token{
+					{Value: "10123", Type: lexer.TInt},
+				})
 			})
-			So(lexer.Lex("2"), shouldEqualToken, []lexer.Token{
-				{Value: "2", Type: lexer.TInt},
+
+			Convey("decimals", func() {
+				So(lexer.Lex("1.0"), shouldEqualToken, []lexer.Token{
+					{Value: "1.0", Type: lexer.TDec},
+				})
+				So(lexer.Lex("10.1"), shouldEqualToken, []lexer.Token{
+					{Value: "10.1", Type: lexer.TDec},
+				})
+				So(lexer.Lex("12.3456"), shouldEqualToken, []lexer.Token{
+					{Value: "12.3456", Type: lexer.TDec},
+				})
+				So(lexer.Lex("0.3456"), shouldEqualToken, []lexer.Token{
+					{Value: "0.3456", Type: lexer.TDec},
+				})
 			})
-			So(lexer.Lex("3"), shouldEqualToken, []lexer.Token{
-				{Value: "3", Type: lexer.TInt},
+
+			Convey("exponential", func() {
+				So(lexer.Lex("1^1"), shouldEqualToken, []lexer.Token{
+					{Value: "1^1", Type: lexer.TExp},
+				})
+				So(lexer.Lex("10^1"), shouldEqualToken, []lexer.Token{
+					{Value: "10^1", Type: lexer.TExp},
+				})
+				So(lexer.Lex("1^10"), shouldEqualToken, []lexer.Token{
+					{Value: "1^10", Type: lexer.TExp},
+				})
+				So(lexer.Lex("10^10"), shouldEqualToken, []lexer.Token{
+					{Value: "10^10", Type: lexer.TExp},
+				})
 			})
-			So(lexer.Lex("4"), shouldEqualToken, []lexer.Token{
-				{Value: "4", Type: lexer.TInt},
-			})
-			So(lexer.Lex("5"), shouldEqualToken, []lexer.Token{
-				{Value: "5", Type: lexer.TInt},
-			})
-			So(lexer.Lex("6"), shouldEqualToken, []lexer.Token{
-				{Value: "6", Type: lexer.TInt},
-			})
-			So(lexer.Lex("7"), shouldEqualToken, []lexer.Token{
-				{Value: "7", Type: lexer.TInt},
-			})
-			So(lexer.Lex("8"), shouldEqualToken, []lexer.Token{
-				{Value: "8", Type: lexer.TInt},
-			})
-			So(lexer.Lex("9"), shouldEqualToken, []lexer.Token{
-				{Value: "9", Type: lexer.TInt},
+
+			Convey("hex", func() {
+				So(lexer.Lex("0x1"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1", Type: lexer.THex},
+				})
+				So(lexer.Lex("0xA"), shouldEqualToken, []lexer.Token{
+					{Value: "0xA", Type: lexer.THex},
+				})
+				So(lexer.Lex("0x1A"), shouldEqualToken, []lexer.Token{
+					{Value: "0x1A", Type: lexer.THex},
+				})
 			})
 		})
 
-		Convey("multiple digits", func() {
-			So(lexer.Lex("10"), shouldEqualToken, []lexer.Token{
-				{Value: "10", Type: lexer.TInt},
+		Convey("negative", func() {
+			Convey("integers", func() {
+				So(lexer.Lex("-1"), shouldEqualToken, []lexer.Token{
+					{Value: "-1", Type: lexer.TInt},
+				})
+				So(lexer.Lex("-10"), shouldEqualToken, []lexer.Token{
+					{Value: "-10", Type: lexer.TInt},
+				})
+				So(lexer.Lex("(-1)"), shouldEqualToken, []lexer.Token{
+					{Value: "", Type: lexer.TLParen},
+					{Value: "-1", Type: lexer.TInt},
+					{Value: "", Type: lexer.TRParen},
+				})
 			})
-			So(lexer.Lex("10123"), shouldEqualToken, []lexer.Token{
-				{Value: "10123", Type: lexer.TInt},
+			Convey("decimals", func() {
+				So(lexer.Lex("-10.12"), shouldEqualToken, []lexer.Token{
+					{Value: "-10.12", Type: lexer.TDec},
+				})
 			})
-		})
-
-		Convey("decimals", func() {
-			So(lexer.Lex("1.0"), shouldEqualToken, []lexer.Token{
-				{Value: "1.0", Type: lexer.TDec},
+			Convey("exponential", func() {
+				So(lexer.Lex("-12^14"), shouldEqualToken, []lexer.Token{
+					{Value: "-12^14", Type: lexer.TExp},
+				})
 			})
-			So(lexer.Lex("10.1"), shouldEqualToken, []lexer.Token{
-				{Value: "10.1", Type: lexer.TDec},
-			})
-			So(lexer.Lex("12.3456"), shouldEqualToken, []lexer.Token{
-				{Value: "12.3456", Type: lexer.TDec},
-			})
-			So(lexer.Lex("0.3456"), shouldEqualToken, []lexer.Token{
-				{Value: "0.3456", Type: lexer.TDec},
-			})
-		})
-
-		Convey("negative numbers", func() {
-			So(lexer.Lex("-1"), shouldEqualToken, []lexer.Token{
-				{Value: "-1", Type: lexer.TInt},
-			})
-			So(lexer.Lex("-10"), shouldEqualToken, []lexer.Token{
-				{Value: "-10", Type: lexer.TInt},
-			})
-			So(lexer.Lex("-10.12"), shouldEqualToken, []lexer.Token{
-				{Value: "-10.12", Type: lexer.TDec},
-			})
-			So(lexer.Lex("(-1)"), shouldEqualToken, []lexer.Token{
-				{Value: "", Type: lexer.TLParen},
-				{Value: "-1", Type: lexer.TInt},
-				{Value: "", Type: lexer.TRParen},
+			Convey("hex", func() {
+				So(lexer.Lex("-0x1B"), shouldEqualToken, []lexer.Token{
+					{Value: "-0x1B", Type: lexer.THex},
+				})
 			})
 		})
 
-		Convey("exponential numbers", func() {
-			So(lexer.Lex("1^1"), shouldEqualToken, []lexer.Token{
-				{Value: "1^1", Type: lexer.TExp},
-			})
-			So(lexer.Lex("10^1"), shouldEqualToken, []lexer.Token{
-				{Value: "10^1", Type: lexer.TExp},
-			})
-			So(lexer.Lex("1^10"), shouldEqualToken, []lexer.Token{
-				{Value: "1^10", Type: lexer.TExp},
-			})
-			So(lexer.Lex("10^10"), shouldEqualToken, []lexer.Token{
-				{Value: "10^10", Type: lexer.TExp},
-			})
-		})
 	})
 
 	Convey("Lexer works with operators", t, func() {

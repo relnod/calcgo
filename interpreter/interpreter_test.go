@@ -56,36 +56,52 @@ var testCases = []TestCaseWrapper{
 	{"no input", []TestCase{{"", 0, nil}}, nil},
 
 	{"numbers", nil, []TestCaseWrapper{
-		{"positive integer", []TestCase{
-			{"1", 1, nil},
-			{"123456789", 123456789, nil},
-		}, nil},
+		{"positive", nil, []TestCaseWrapper{
+			{"integer", []TestCase{
+				{"1", 1, nil},
+				{"123456789", 123456789, nil},
+			}, nil},
 
-		{"positive decimals", []TestCase{
-			{"1.0", 1, nil},
-			{"12345.67890", 12345.67890, nil},
-		}, nil},
+			{"decimals", []TestCase{
+				{"1.0", 1, nil},
+				{"12345.67890", 12345.67890, nil},
+			}, nil},
 
-		{"posititve exponentials", []TestCase{
-			{"1^1", 1, nil},
-			{"2^2", 4, nil},
-		}, nil},
+			{"exponentials", []TestCase{
+				{"1^1", 1, nil},
+				{"2^2", 4, nil},
+			}, nil},
 
-		{"negativ integers", []TestCase{
-			{"-1", -1, nil},
-			{"-123456789", -123456789, nil},
-		}, nil},
+			{"hex", []TestCase{
+				{"0x1", 1, nil},
+				{"0xA", 10, nil},
+				{"0x1A", 26, nil},
+			}, nil},
+		}},
 
-		{"negativ decimals", []TestCase{
-			{"-2.0", -2, nil},
-			{"-23456.123", -23456.123, nil},
-		}, nil},
+		{"negative", nil, []TestCaseWrapper{
+			{"integers", []TestCase{
+				{"-1", -1, nil},
+				{"-123456789", -123456789, nil},
+			}, nil},
 
-		{"negativ exponentials", []TestCase{
-			{"-1^1", -1, nil},
-			{"-2^2", 4, nil},
-			{"-2^3", -8, nil},
-		}, nil},
+			{"decimals", []TestCase{
+				{"-2.0", -2, nil},
+				{"-23456.123", -23456.123, nil},
+			}, nil},
+
+			{"exponentials", []TestCase{
+				{"-1^1", -1, nil},
+				{"-2^2", 4, nil},
+				{"-2^3", -8, nil},
+			}, nil},
+
+			{"hex", []TestCase{
+				{"-0x1", -1, nil},
+				{"-0xA", -10, nil},
+				{"-0x1A", -26, nil},
+			}, nil},
+		}},
 	}},
 
 	{"operators", nil, []TestCaseWrapper{

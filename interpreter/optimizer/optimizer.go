@@ -106,6 +106,15 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 		return newOptimizedNode(result), nil
 	}
 
+	if node.Type == parser.NHex {
+		result, err = calculator.ConvertHex(node.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		return newOptimizedNode(result), nil
+	}
+
 	if node.Type == parser.NVar {
 		return &OptimizedNode{
 			Type:        parser.NVar,

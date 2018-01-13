@@ -154,6 +154,21 @@ func TestOptimizer(t *testing.T) {
 					})
 					So(err, ShouldBeNil)
 				})
+
+				Convey("hex number", func() {
+					oast, err := optimize("0x1A")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDec,
+							Value:       26,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
 			Convey("operators", func() {

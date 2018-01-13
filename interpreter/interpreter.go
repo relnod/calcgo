@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/relnod/calcgo/interpreter/calculator"
 	"github.com/relnod/calcgo/interpreter/optimizer"
@@ -167,6 +168,11 @@ func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
 
 	if node.Type == parser.NExp {
 		return calculator.ConvertExponential(node.Value)
+	}
+
+	if node.Type == parser.NHex {
+		fmt.Println("sfsdf")
+		return calculator.ConvertHex(node.Value)
 	}
 
 	if node.Type == parser.NVar {

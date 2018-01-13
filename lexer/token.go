@@ -11,6 +11,7 @@ const (
 	TInt // [0-9]+
 	TDec // [0-9]+\.[0-9]+
 	TExp // [0-9]+\^[0-9]+
+	THex // 0x[0-9A-F]+
 
 	// Variable
 	TVar // [a-zA-Z]+
@@ -61,6 +62,8 @@ func (t TokenType) String() string {
 		return "Integer"
 	case TDec:
 		return "Decimal"
+	case THex:
+		return "Hex Number"
 	case TVar:
 		return "Variable"
 	case TOpPlus:

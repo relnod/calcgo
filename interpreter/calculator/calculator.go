@@ -14,6 +14,7 @@ var (
 	ErrorInvalidInteger     = errors.New("Invalid Integer")
 	ErrorInvalidDecimal     = errors.New("Invalid Decimal")
 	ErrorInvalidExponential = errors.New("Invalid Exponential")
+	ErrorInvalidHexadecimal = errors.New("Invalid Hexadecimal")
 	ErrorDivisionByZero     = errors.New("Division by zero")
 )
 
@@ -56,6 +57,17 @@ func ConvertExponential(value string) (float64, error) {
 	}
 
 	return math.Pow(float64(base), float64(exponent)), nil
+}
+
+// ConvertHex converts a hex string to a float64.
+// Returns an error if conversion failed.
+func ConvertHex(value string) (float64, error) {
+	hexa, err := strconv.ParseInt(value, 0, 64)
+	if err != nil {
+		return 0, ErrorInvalidHexadecimal
+	}
+
+	return float64(hexa), nil
 }
 
 // CalculateOperator calculates the result of an operator.

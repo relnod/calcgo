@@ -126,6 +126,10 @@ func isDigit(b byte) bool {
 	return b >= '0' && b <= '9'
 }
 
+func isHexDigit(b byte) bool {
+	return isDigit(b) || b >= 'A' && b <= 'F'
+}
+
 func isLetter(b byte) bool {
 	return b >= 'a' && b <= 'z'
 }
@@ -138,6 +142,13 @@ func lexAll(l *Lexer) stateFn {
 	b, ok := l.next()
 	if !ok {
 		return nil
+	}
+	if b == '0' {
+		if bn, ok := l.next(); ok && bn == 'x' {
+			return lexHex
+		}
+		l.backup()
+		return lexNumber
 	}
 	if isDigit(b) {
 		return lexNumber
@@ -153,8 +164,18 @@ func lexAll(l *Lexer) stateFn {
 	case '+':
 		tokenType = TOpPlus
 	case '-':
-		if b, ok := l.peek(); ok && isDigit(b) {
-			return lexNumber
+		b, ok := l.next()
+		if ok {
+			if b == '0' {
+				if bn, ok := l.next(); ok && bn == 'x' {
+					return lexHex
+				}
+				l.backup()
+				return lexNumber
+			}
+			if isDigit(b) {
+				return lexNumber
+			}
 		}
 		tokenType = TOpMinus
 	case '*':
@@ -175,9 +196,6 @@ func lexAll(l *Lexer) stateFn {
 }
 
 func lexNumber(l *Lexer) stateFn {
-	tokenType := TInt
-	special := false
-
 	for {
 		b, ok := l.next()
 		if !ok {
@@ -186,22 +204,98 @@ func lexNumber(l *Lexer) stateFn {
 
 		if isDigit(b) {
 			continue
-		} else if b == '.' && !special {
-			special = true
-			tokenType = TDec
-		} else if b == '^' && !special {
-			special = true
-			tokenType = TExp
-		} else if isWhiteSpace(b) || b == ')' {
+		}
+
+		if b == '.' {
+			return lexDecimal
+		}
+
+		if b == '^' {
+			return lexExponential
+		}
+
+		if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
-		} else {
-			l.emitSingle(TInvalidCharacterInNumber)
-			return lexAll
 		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
 	}
 
-	l.emit(tokenType)
+	l.emit(TInt)
+	return lexAll
+}
+
+func lexDecimal(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
+	}
+
+	l.emit(TDec)
+	return lexAll
+}
+
+func lexExponential(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
+	}
+
+	l.emit(TExp)
+	return lexAll
+}
+
+func lexHex(l *Lexer) stateFn {
+	for {
+		b, ok := l.next()
+		if !ok {
+			break
+		}
+
+		if isHexDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.backup()
+			break
+		}
+
+		l.emitSingle(TInvalidCharacterInNumber)
+		return lexAll
+	}
+
+	l.emit(THex)
 	return lexAll
 }
 
@@ -214,10 +308,14 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 
 		if isLetter(b) {
 			continue
-		} else if isWhiteSpace(b) || b == ')' {
+		}
+
+		if isWhiteSpace(b) || b == ')' {
 			l.backup()
 			break
-		} else if b == '(' {
+		}
+
+		if b == '(' {
 			switch l.stored() {
 			case "sqrt(":
 				l.emitEmpty(TFnSqrt)

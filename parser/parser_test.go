@@ -117,6 +117,19 @@ func TestParser(t *testing.T) {
 				})
 				So(errors, ShouldBeNil)
 			})
+
+			Convey("hexadecimal", func() {
+				ast, errors := parser.Parse("0x1AB")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:       parser.NHex,
+						Value:      "0x1AB",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldBeNil)
+			})
 		})
 
 		Convey("negativ numbers", func() {
