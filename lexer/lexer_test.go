@@ -266,6 +266,21 @@ func TestLexer(t *testing.T) {
 				{Value: "", Type: lexer.TOpMod},
 			})
 		})
+		Convey("or", func() {
+			So(lexer.Lex("|"), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TOpOr},
+			})
+		})
+		Convey("xor", func() {
+			So(lexer.Lex("^"), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TOpXor},
+			})
+		})
+		Convey("and", func() {
+			So(lexer.Lex("&"), shouldEqualToken, []lexer.Token{
+				{Value: "", Type: lexer.TOpAnd},
+			})
+		})
 	})
 
 	Convey("Lexer works with brackets", t, func() {
@@ -377,9 +392,9 @@ func TestLexer(t *testing.T) {
 		})
 
 		Convey("handles multiple errors", func() {
-			So(lexer.Lex("' &"), shouldEqualToken, []lexer.Token{
+			So(lexer.Lex("' $"), shouldEqualToken, []lexer.Token{
 				{Value: "'", Type: lexer.TInvalidCharacter},
-				{Value: "&", Type: lexer.TInvalidCharacter},
+				{Value: "$", Type: lexer.TInvalidCharacter},
 			})
 			So(lexer.Lex("# + '"), shouldEqualToken, []lexer.Token{
 				{Value: "#", Type: lexer.TInvalidCharacter},

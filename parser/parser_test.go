@@ -532,6 +532,168 @@ func TestParser(t *testing.T) {
 			So(errors, ShouldBeNil)
 		})
 
+		Convey("Binary OR", func() {
+			ast, errors := parser.Parse("1 | 2")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NOr,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+
+			ast, errors = parser.Parse("1 | 2 | 3")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NOr,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:  parser.NOr,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("Binary XOR", func() {
+			ast, errors := parser.Parse("1 ^ 2")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NXor,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+
+			ast, errors = parser.Parse("1 ^ 2 ^ 3")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NXor,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:  parser.NXor,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+		})
+
+		Convey("Binary AND", func() {
+			ast, errors := parser.Parse("1 & 2")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NAnd,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "1",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "2",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+
+			ast, errors = parser.Parse("1 & 2 & 3")
+			So(ast, shouldEqualAST, parser.AST{
+				Node: &parser.Node{
+					Type:  parser.NAnd,
+					Value: "",
+					LeftChild: &parser.Node{
+						Type:  parser.NAnd,
+						Value: "",
+						LeftChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "2",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+					},
+					RightChild: &parser.Node{
+						Type:       parser.NInt,
+						Value:      "3",
+						LeftChild:  nil,
+						RightChild: nil,
+					},
+				},
+			})
+			So(errors, ShouldBeNil)
+		})
+
 		Convey("variables and operators", func() {
 			ast, errors := parser.Parse("a + 2")
 			So(ast, shouldEqualAST, parser.AST{

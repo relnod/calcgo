@@ -125,6 +125,12 @@ func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, 
 			left -= right
 		}
 		result = float64(left)
+	case parser.NOr:
+		result = float64(int(left) | int(right))
+	case parser.NXor:
+		result = float64(int(left) ^ int(right))
+	case parser.NAnd:
+		result = float64(int(left) & int(right))
 	}
 
 	return result, nil

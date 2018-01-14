@@ -34,8 +34,11 @@ func TestAST(t *testing.T) {
 				{parser.NAdd, true},
 				{parser.NSub, true},
 				{parser.NMult, true},
-				{parser.NMod, true},
 				{parser.NDiv, true},
+				{parser.NMod, true},
+				{parser.NOr, true},
+				{parser.NXor, true},
+				{parser.NAnd, true},
 				{parser.NFnSqrt, false},
 			}
 

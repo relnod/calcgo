@@ -40,6 +40,9 @@ func TestToken(t *testing.T) {
 				{lexer.TOpMinus, true},
 				{lexer.TOpMult, true},
 				{lexer.TOpDiv, true},
+				{lexer.TOpOr, true},
+				{lexer.TOpXor, true},
+				{lexer.TOpAnd, true},
 				{lexer.TLParen, false},
 			}
 

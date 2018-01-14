@@ -142,6 +142,21 @@ var testCases = []TestCaseWrapper{
 			{"12 % 6", 0, nil},
 			{"13 % 6", 1, nil},
 		}, nil},
+
+		{"or", []TestCase{
+			{"1 | 0", 1, nil},
+			{"5 | 1", 5, nil},
+		}, nil},
+
+		{"xor", []TestCase{
+			{"1 ^ 0", 1, nil},
+			{"5 ^ 1", 4, nil},
+		}, nil},
+
+		{"and", []TestCase{
+			{"1 & 1", 1, nil},
+			{"5 & 1", 1, nil},
+		}, nil},
 	}},
 
 	{"operations with negative numbers", nil, []TestCaseWrapper{

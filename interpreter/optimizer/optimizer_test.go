@@ -245,6 +245,51 @@ func TestOptimizer(t *testing.T) {
 					})
 					So(err, ShouldBeNil)
 				})
+
+				Convey("or", func() {
+					oast, err := optimize("1 | 1")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDec,
+							Value:       1.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("xor", func() {
+					oast, err := optimize("1 ^ 1")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDec,
+							Value:       0.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
+
+				Convey("and", func() {
+					oast, err := optimize("1 & 1")
+					So(oast, ShouldEqualOptimizedAST, &optimizer.OptimizedAST{
+						Node: &optimizer.OptimizedNode{
+							Type:        parser.NDec,
+							Value:       1.0,
+							OldValue:    "",
+							IsOptimized: true,
+							LeftChild:   nil,
+							RightChild:  nil,
+						},
+					})
+					So(err, ShouldBeNil)
+				})
 			})
 
 			Convey("functions", func() {

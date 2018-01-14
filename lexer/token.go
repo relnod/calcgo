@@ -26,6 +26,9 @@ const (
 	TOpMult  // "*"
 	TOpDiv   // "/"
 	TOpMod   // "%"
+	TOpOr    // "|"
+	TOpXor   // "^"
+	TOpAnd   // "&"
 	operatorEnd
 
 	functionBeg
@@ -61,6 +64,10 @@ var tokens = [...]string{
 	TOpMinus: "-",
 	TOpMult:  "*",
 	TOpDiv:   "/",
+	TOpMod:   "%",
+	TOpOr:    "|",
+	TOpXor:   "^",
+	TOpAnd:   "&",
 
 	TFnSqrt: "sqrt",
 	TFnSin:  "sin",
