@@ -2,7 +2,6 @@ package calculator
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -23,7 +22,7 @@ var (
 // ConvertInteger converts an integer string to a float64.
 // Returns an error if conversion failed.
 func ConvertInteger(value string) (float64, error) {
-	integer, err := strconv.Atoi(value)
+	integer, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return 0, ErrorInvalidInteger
 	}
@@ -47,7 +46,6 @@ func ConvertBin(value string) (float64, error) {
 
 	bin, err := strconv.ParseInt(val, 2, 64)
 	if err != nil {
-		fmt.Println(value, bin, err)
 		return 0, ErrorInvalidBinary
 	}
 
