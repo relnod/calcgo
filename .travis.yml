@@ -22,8 +22,8 @@ jobs:
       script:
         - go test -v -race ./...
       after_success:
-        - go test -v -race ./... -coverprofile=profile.out
-        - mv profile.out coverage.txt
+        - ./scripts/coverage.sh
+        - mv profile.cov coverage.txt
         - bash <(curl -s https://codecov.io/bash)
     - go: tip
       install:
