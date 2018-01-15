@@ -47,6 +47,7 @@ const (
 	TInvalidCharacter
 	TInvalidCharacterInNumber
 	TInvalidCharacterInVariable
+	TUnkownFunction
 )
 
 var tokens = [...]string{
@@ -80,6 +81,7 @@ var tokens = [...]string{
 	TInvalidCharacter:           "Invalid Character",
 	TInvalidCharacterInNumber:   "Invalid character in number",
 	TInvalidCharacterInVariable: "Invalid character in Variabl",
+	TUnkownFunction:             "Unkown function",
 }
 
 // Token represents a token returned by the lexer
