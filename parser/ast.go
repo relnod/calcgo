@@ -11,25 +11,37 @@ const (
 	NInvalidOperator
 	NInvalidFunction
 
+	literalBeg
 	// Numbers
 	NInt
 	NDec
+	NBin
+	NHex
 	NExp
 
 	// Variable
 	NVar
+	literalEnd
 
+	operatorBeg
 	// Operators
 	NAdd
 	NSub
 	NMult
 	NDiv
+	NMod
+	NOr
+	NXor
+	NAnd
+	operatorEnd
 
+	functionBeg
 	// Functions
 	NFnSqrt
 	NFnSin
 	NFnCos
 	NFnTan
+	functionEnd
 )
 
 // AST stores the data of the abstract syntax tree.
@@ -41,20 +53,19 @@ type AST struct {
 // NodeType defines the type of a node
 type NodeType uint
 
-// IsFunction returns true if the type of n is a function.
-func (n NodeType) IsFunction() bool {
-	return n == NFnSqrt ||
-		n == NFnSin ||
-		n == NFnCos ||
-		n == NFnTan
+// IsLiteral returns true if t is a literal.
+func (t NodeType) IsLiteral() bool {
+	return literalBeg < t && t < literalEnd
 }
 
-// IsOperator returns true if the type of n is an operator.
-func (n NodeType) IsOperator() bool {
-	return n == NAdd ||
-		n == NSub ||
-		n == NMult ||
-		n == NDiv
+// IsOperator returns true if t is an operator.
+func (t NodeType) IsOperator() bool {
+	return operatorBeg < t && t < operatorEnd
+}
+
+// IsFunction returns true if t is a function.
+func (t NodeType) IsFunction() bool {
+	return functionBeg < t && t < functionEnd
 }
 
 // Node represents a node
@@ -65,14 +76,19 @@ type Node struct {
 	RightChild *Node    `json:"right"`
 }
 
-// IsFunction returns true if the type of n is a function.
-func (n *Node) IsFunction() bool {
-	return n.Type.IsFunction()
+// IsLiteral returns true if n is literal node.
+func (n *Node) IsLiteral() bool {
+	return n.Type.IsLiteral()
 }
 
-// IsOperator returns true if the type of n is an operator.
+// IsOperator returns true if n is an operator node.
 func (n *Node) IsOperator() bool {
 	return n.Type.IsOperator()
+}
+
+// IsFunction returns true if n is a function node.
+func (n *Node) IsFunction() bool {
+	return n.Type.IsFunction()
 }
 
 // isHigherOperator returns true if operator n is of higher than n2.
@@ -104,6 +120,14 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 		return NMult, true
 	case lexer.TOpDiv:
 		return NDiv, true
+	case lexer.TOpMod:
+		return NMod, true
+	case lexer.TOpOr:
+		return NOr, true
+	case lexer.TOpXor:
+		return NXor, true
+	case lexer.TOpAnd:
+		return NAnd, true
 	}
 
 	return NInvalidOperator, false
@@ -118,6 +142,10 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 		return NInt, true
 	case lexer.TDec:
 		return NDec, true
+	case lexer.TBin:
+		return NBin, true
+	case lexer.THex:
+		return NHex, true
 	case lexer.TExp:
 		return NExp, true
 	case lexer.TVar:

@@ -13,6 +13,8 @@ import (
 var (
 	ErrorInvalidInteger     = errors.New("Invalid Integer")
 	ErrorInvalidDecimal     = errors.New("Invalid Decimal")
+	ErrorInvalidBinary      = errors.New("Invalid Binary")
+	ErrorInvalidHexadecimal = errors.New("Invalid Hexadecimal")
 	ErrorInvalidExponential = errors.New("Invalid Exponential")
 	ErrorDivisionByZero     = errors.New("Division by zero")
 )
@@ -20,7 +22,7 @@ var (
 // ConvertInteger converts an integer string to a float64.
 // Returns an error if conversion failed.
 func ConvertInteger(value string) (float64, error) {
-	integer, err := strconv.Atoi(value)
+	integer, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return 0, ErrorInvalidInteger
 	}
@@ -35,6 +37,30 @@ func ConvertDecimal(value string) (float64, error) {
 		return 0, ErrorInvalidDecimal
 	}
 	return decimal, nil
+}
+
+// ConvertBin converts a binary string to a float64.
+// Returns an error if conversion failed.
+func ConvertBin(value string) (float64, error) {
+	val := strings.Replace(value, "0b", "", 1)
+
+	bin, err := strconv.ParseInt(val, 2, 64)
+	if err != nil {
+		return 0, ErrorInvalidBinary
+	}
+
+	return float64(bin), nil
+}
+
+// ConvertHex converts a hex string to a float64.
+// Returns an error if conversion failed.
+func ConvertHex(value string) (float64, error) {
+	hexa, err := strconv.ParseInt(value, 0, 64)
+	if err != nil {
+		return 0, ErrorInvalidHexadecimal
+	}
+
+	return float64(hexa), nil
 }
 
 // ConvertExponential converts an exponential string to a float64.
@@ -58,6 +84,22 @@ func ConvertExponential(value string) (float64, error) {
 	return math.Pow(float64(base), float64(exponent)), nil
 }
 
+// ConvertLiteral converts a atring literal to a float.
+func ConvertLiteral(node *parser.Node) (float64, error) {
+	switch node.Type {
+	case parser.NInt:
+		return ConvertInteger(node.Value)
+	case parser.NDec:
+		return ConvertDecimal(node.Value)
+	case parser.NBin:
+		return ConvertBin(node.Value)
+	case parser.NHex:
+		return ConvertHex(node.Value)
+	}
+
+	return ConvertExponential(node.Value)
+}
+
 // CalculateOperator calculates the result of an operator.
 func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, error) {
 	var result float64
@@ -74,6 +116,21 @@ func CalculateOperator(left, right float64, nodeType parser.NodeType) (float64, 
 			return 0, ErrorDivisionByZero
 		}
 		result = left / right
+	case parser.NMod:
+		for {
+			if left < right {
+				break
+			}
+
+			left -= right
+		}
+		result = float64(left)
+	case parser.NOr:
+		result = float64(int(left) | int(right))
+	case parser.NXor:
+		result = float64(int(left) ^ int(right))
+	case parser.NAnd:
+		result = float64(int(left) & int(right))
 	}
 
 	return result, nil

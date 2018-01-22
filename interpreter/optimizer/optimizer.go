@@ -43,7 +43,7 @@ func (n *OptimizedNode) IsFunction() bool {
 
 // IsOperator returns true if the type of n is an operator.
 func (n *OptimizedNode) IsOperator() bool {
-	return n.Type.IsFunction()
+	return n.Type.IsOperator()
 }
 
 // newOptimizedNode returns a new optimized node.
@@ -76,36 +76,21 @@ func Optimize(ast *parser.AST) (*OptimizedAST, error) {
 
 // optimizeNode recursively optimizes all nodes, that can be optimized.
 func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
-	var result float64
-	var err error
-
-	if node.Type == parser.NInt {
-		result, err = calculator.ConvertInteger(node.Value)
-		if err != nil {
-			return nil, err
-		}
-
-		return newOptimizedNode(result), nil
+	if node.IsLiteral() {
+		return optimizeLiteral(node)
+	}
+	if node.IsOperator() {
+		return optimizeOperator(node)
 	}
 
-	if node.Type == parser.NDec {
-		result, err = calculator.ConvertDecimal(node.Value)
-		if err != nil {
-			return nil, err
-		}
-
-		return newOptimizedNode(result), nil
+	if node.IsFunction() {
+		return optimizeFunction(node)
 	}
 
-	if node.Type == parser.NExp {
-		result, err = calculator.ConvertExponential(node.Value)
-		if err != nil {
-			return nil, err
-		}
+	return nil, ErrorInvalidNodeType
+}
 
-		return newOptimizedNode(result), nil
-	}
-
+func optimizeLiteral(node *parser.Node) (*OptimizedNode, error) {
 	if node.Type == parser.NVar {
 		return &OptimizedNode{
 			Type:        parser.NVar,
@@ -117,15 +102,15 @@ func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
 		}, nil
 	}
 
-	if node.IsOperator() {
-		return optimizeOperator(node)
+	var result float64
+	var err error
+
+	result, err = calculator.ConvertLiteral(node)
+	if err != nil {
+		return nil, err
 	}
 
-	if node.IsFunction() {
-		return optimizeFunction(node)
-	}
-
-	return nil, ErrorInvalidNodeType
+	return newOptimizedNode(result), nil
 }
 
 // optimizeOperator recursively optimizes an operator node and its child nodes.
