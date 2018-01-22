@@ -244,6 +244,9 @@ var testCases = []TestCaseWrapper{
 			{"4 + tan(1)", 4 + math.Tan(1), nil},
 			{"tan(1 / 0)", 0, []error{calculator.ErrorDivisionByZero}},
 		}, nil},
+		{"undefined function", []TestCase{
+			{"bla(1)", 0, []error{parser.ErrorUnkownFunction}},
+		}, nil},
 	}},
 
 	{"errors", []TestCase{

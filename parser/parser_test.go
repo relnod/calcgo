@@ -1471,6 +1471,26 @@ func TestParser(t *testing.T) {
 				})
 				So(errors, ShouldBeNil)
 			})
+
+			Convey("Unkown function", func() {
+				ast, errors := parser.Parse("bla(1)")
+				So(ast, shouldEqualAST, parser.AST{
+					Node: &parser.Node{
+						Type:  parser.NInvalidFunction,
+						Value: "bla(",
+						LeftChild: &parser.Node{
+							Type:       parser.NInt,
+							Value:      "1",
+							LeftChild:  nil,
+							RightChild: nil,
+						},
+						RightChild: nil,
+					},
+				})
+				So(errors, ShouldEqualErrors, []error{
+					parser.ErrorUnkownFunction,
+				})
+			})
 		})
 	})
 

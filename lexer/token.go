@@ -37,6 +37,7 @@ const (
 	TFnSin  // "sin("
 	TFnCos  // "cos("
 	TFnTan  // "tan("
+	TFnUnkown
 	functionEnd
 
 	// Parens
@@ -47,7 +48,6 @@ const (
 	TInvalidCharacter
 	TInvalidCharacterInNumber
 	TInvalidCharacterInVariable
-	TUnkownFunction
 )
 
 var tokens = [...]string{
@@ -81,7 +81,7 @@ var tokens = [...]string{
 	TInvalidCharacter:           "Invalid Character",
 	TInvalidCharacterInNumber:   "Invalid character in number",
 	TInvalidCharacterInVariable: "Invalid character in Variabl",
-	TUnkownFunction:             "Unkown function",
+	TFnUnkown:                   "Unkown function",
 }
 
 // Token represents a token returned by the lexer

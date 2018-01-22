@@ -381,6 +381,12 @@ func TestLexer(t *testing.T) {
 					{Value: "~", Type: lexer.TInvalidCharacter},
 				})
 			})
+
+			Convey("unkown function", func() {
+				So(lexer.Lex("abcdef("), shouldEqualToken, []lexer.Token{
+					{Value: "abcdef(", Type: lexer.TFnUnkown},
+				})
+			})
 		})
 
 		Convey("doesn't abort after error", func() {

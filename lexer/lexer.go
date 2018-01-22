@@ -394,7 +394,7 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 			case "tan(":
 				l.emitEmpty(TFnTan)
 			default:
-				l.emit(TUnkownFunction)
+				l.emit(TFnUnkown)
 			}
 			return lexAll
 		}
