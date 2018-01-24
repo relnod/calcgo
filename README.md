@@ -66,6 +66,105 @@ func main() {
 ## Grammar
 
 ### Lexer:
+
+|         | in       |          | out      |
+|---------|----------|----------|----------|
+| START   | 0        | NUMBER   |          |
+| START   | 1-9      | INT      |          |
+| START   | (        | START    | TLPAREN  |
+| START   | )        | START    | TRPAREN  |
+| START   | +        | START    | TOpPlus  |
+| START   | -        | START    | TOpMinus |
+| START   | *        | START    | TOpMult  |
+| START   | /        | START    | TOpDiv   |
+| START   | %        | START    | TOpMod   |
+| START   | |        | START    | TOpOr    |
+| START   | ^        | START    | TOpXor   |
+| START   | &        | START    | TOpAnd   |
+| START   | s        | S        |          |
+| START   | c        | C        |          |
+| START   | t        | T        |          |
+| START   | a-z      | VAR      |          |
+|         |          |          |          |
+| NUMBER  | b        | BYTE     |          |
+| NUMBER  | x        | HEX      |          |
+| NUMBER  | .        | DEC      |          |
+|         |          |          |          |
+| BIN     | 0,1      | BIN2     |          |
+|         |          |          |          |
+| BIN2    | 0,1      | BIN2     |          |
+| BIN2    | " "      | START    | TBin     |
+|         |          |          |          |
+| HEX     | 1-9, A-F | HEX2     |          |
+|         |          |          |          |
+| HEX2    | 1-0, A-F | HEX2     |          |
+| HEX2    | " "      | START    | THex     |
+|         |          |          |          |
+| INT     | 1-9      | INT      |          |
+| INT     | .        | DEC      |          |
+| INT     | ^        | EXP      |          |
+| INT     | " "      | START    | TInt     |
+|         |          |          |          |
+| DEC     | 1-9      | DEC      |          |
+| DEC     | " "      | START    | TDec     |
+|         |          |          |          |
+| Exp     | 1-9      | Exp      |          |
+| Exp     | " "      | START    | TExp     |
+|         |          |          |          |
+| S       | q        | SQ       |          |
+| S       | i        | SI       |          |
+| S       | a-z      | VAR      |          |
+| S       | " "      | STAR     | TVar     |
+|         |          |          |          |
+| SQ      | r        | SQR      |          |
+| SQ      | a-z      | VAR      |          |
+| SQ      | " "      | STAR     | TVar     |
+|         |          |          |          |
+| SQR     | t        | SQRT     |          |
+| SQR     | a-z      | VAR      |          |
+| SQR     | " "      | STAR     | TVar     |
+|         |          |          |          |
+| SQRT    | (        | START    | TFnSqrt  |
+| SQRT    | a-z      | VAR      |          |
+| SQRT    | " "      | STAR     | TVar     |
+|         |          |          |          |
+| SI      | n        | SIN      |          |
+| SI      | a-z      | VAR      |          |
+| SI      | " "      | STAR     | TVar     |
+|         |          |          |          |
+| SIN     | (        | START    | TFnSin   |
+| SIN     | a-z      | VAR      |          |
+| SIN     | " "      | STAR     | TVar     |
+|         |          |          |          |
+| C       | o        | CO       |          |
+| C       | a-z      | VAR      |          |
+| C       | " "      | STAR     | TVar     |
+|         |          |          |          |
+| CO      | s        | COS      |          |
+| CO      | a-z      | VAR      |          |
+| CO      | " "      | STAR     | TVar     |
+|         |          |          |          |
+| Cos     | (        | START    | TFnCos   |
+| COS     | a-z      | VAR      |          |
+| COS     | " "      | STAR     | TVar     |
+|         |          |          |          |
+| T       | a        | TA       |          |
+| T       | a-z      | VAR      |          |
+| T       | " "      | STAR     | TVar     |
+|         |          |          |          |
+| TA      | n        | TAN      |          |
+| TA      | a-z      | VAR      |          |
+| TA      | " "      | STAR     | TVar     |
+|         |          |          |          |
+| TAN     | (        | START    | TFnTan   |
+| TAN     | a-z      | VAR      |          |
+| TAN     | " "      | STAR     | TVar     |
+|         |          |          |          |
+| VAR     | a-z      | VAR      |          |
+| VAR     | " "      | START    | TVar     |
+
+
+### Lexer:
 The lexer accepts the language L(G), where G is the following grammar:
 
 G = (N,T,P,S)
