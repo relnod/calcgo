@@ -26,18 +26,28 @@ func tokenError(actual Tokens, expected Tokens) string {
 		actual.String()
 }
 
-func eq(t1 Tokens, t2 Tokens) bool {
-	if len(t1) != len(t2) {
+func eq(actual Tokens, expected Tokens, checkPosition bool) bool {
+	if len(actual) != len(expected) {
 		return false
 	}
 
-	for i := 0; i < len(t1); i++ {
-		if t1[i].Value != t2[i].Value {
+	for i := 0; i < len(actual); i++ {
+		if actual[i].Value != expected[i].Value {
 			return false
 		}
 
-		if t1[i].Type != t2[i].Type {
+		if actual[i].Type != expected[i].Type {
 			return false
+		}
+
+		if checkPosition {
+			if actual[i].Start != expected[i].Start {
+				return false
+			}
+
+			if actual[i].End != expected[i].End {
+				return false
+			}
 		}
 	}
 
@@ -45,25 +55,18 @@ func eq(t1 Tokens, t2 Tokens) bool {
 }
 
 func shouldEqualToken(actual interface{}, expected ...interface{}) string {
-	t1 := actual.([]lexer.Token)
-	t2 := expected[0].([]lexer.Token)
+	act := actual.([]lexer.Token)
+	exp := expected[0].([]lexer.Token)
+	checkPosition := false
+	if len(expected) == 2 {
+		checkPosition = expected[1].(bool)
+	}
 
-	if eq(t1, t2) {
+	if eq(act, exp, checkPosition) {
 		return ""
 	}
 
-	return tokenError(t1, t2) + "(Should be Equal)"
-}
-
-func shouldNotEqualToken(actual interface{}, expected ...interface{}) string {
-	t1 := actual.([]lexer.Token)
-	t2 := expected[0].([]lexer.Token)
-
-	if !eq(t1, t2) {
-		return ""
-	}
-
-	return tokenError(t1, t2) + "(Should not be Equal)"
+	return tokenError(act, exp) + "(Should be Equal)"
 }
 
 func TestLexer(t *testing.T) {
@@ -75,8 +78,8 @@ func TestLexer(t *testing.T) {
 		Convey("positive", func() {
 			Convey("single digit", func() {
 				So(lexer.Lex("0"), shouldEqualToken, []lexer.Token{
-					{Value: "0", Type: lexer.TInt},
-				})
+					{Value: "0", Type: lexer.TInt, Start: 0, End: 1},
+				}, true)
 				So(lexer.Lex("1"), shouldEqualToken, []lexer.Token{
 					{Value: "1", Type: lexer.TInt},
 				})
@@ -554,7 +557,7 @@ func TestLexer(t *testing.T) {
 		}
 
 		So(tokens, shouldEqualToken, []lexer.Token{
-			{Value: "1", Type: lexer.TInt},
-		})
+			{Value: "1", Type: lexer.TInt, Start: 0, End: 1},
+		}, true)
 	})
 }

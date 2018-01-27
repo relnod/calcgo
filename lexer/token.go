@@ -1,5 +1,7 @@
 package lexer
 
+import "strconv"
+
 // TokenType describes the type of a token
 type TokenType byte
 
@@ -88,6 +90,8 @@ var tokens = [...]string{
 type Token struct {
 	Type  TokenType
 	Value string
+	Start int
+	End   int
 }
 
 // IsLiteral returns true if the type of t is a literal.
@@ -107,7 +111,12 @@ func (t Token) IsFunction() bool {
 
 // String converts a token to a string.
 func (t Token) String() string {
-	return "{\"" + t.Value + "\", " + t.Type.String() + "}"
+	return "{" +
+		"Value: '" + t.Value + "', " +
+		"Type: '" + t.Type.String() + "', " +
+		"Start: '" + strconv.Itoa(t.Start) + "', " +
+		"End: '" + strconv.Itoa(t.End) + "', " +
+		"}"
 }
 
 // String converts a token type to a string.

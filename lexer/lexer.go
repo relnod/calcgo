@@ -92,19 +92,30 @@ func (l *Lexer) backup() {
 	l.pos--
 }
 
+// emitInternal takes a tokentype and a value to create a token, which it then
+// emits.
+func (l *Lexer) emitInternal(tokenType TokenType, value string) {
+	l.token <- Token{
+		Type:  tokenType,
+		Value: value,
+		Start: l.lastPos + 1,
+		End:   l.pos + 1,
+	}
+}
+
 // emit emits a new token with type tokenType and the currently stored value.
 func (l *Lexer) emit(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: l.stored()}
+	l.emitInternal(tokenType, l.stored())
 }
 
 // emitEmpty emits a new token with type tokenType and an empty value.
 func (l *Lexer) emitEmpty(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: ""}
+	l.emitInternal(tokenType, "")
 }
 
 // emitEmpty emits a new token with type tokenType and the current character.
 func (l *Lexer) emitSingle(tokenType TokenType) {
-	l.token <- Token{Type: tokenType, Value: string(l.current())}
+	l.emitInternal(tokenType, string(l.current()))
 }
 
 // run runs the lexer state machine.
