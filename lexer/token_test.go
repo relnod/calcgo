@@ -78,8 +78,8 @@ func TestToken(t *testing.T) {
 
 				r string
 			}{
-				{lexer.TOpDiv, "/", `{"/", /}`},
-				{255, "bla", `{"bla", Unknown token}`},
+				{lexer.TOpDiv, "/", `{Value: '/', Type: '/', Start: '0', End: '0', }`},
+				{255, "bla", `{Value: 'bla', Type: 'Unknown token', Start: '0', End: '0', }`},
 			}
 
 			for _, c := range cases {
