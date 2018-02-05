@@ -4,7 +4,6 @@
 [![codecov](https://codecov.io/gh/relnod/calcgo/branch/master/graph/badge.svg)](https://codecov.io/gh/relnod/calcgo)
 [![Godoc](https://godoc.org/github.com/relnod/calcgo?status.svg)](https://godoc.org/github.com/relnod/calcgo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/relnod/calcgo)](https://goreportcard.com/report/github.com/relnod/calcgo)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/faa47f159bbb47a497f602b6e8037c0d)](https://www.codacy.com/app/relnod/calcgo?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=relnod/calcgo&amp;utm_campaign=Badge_Grade)
 
 This is an experimental learning project, to better understand the process of
 lexing and parsing.
@@ -15,7 +14,7 @@ result of a basic mathematical calculation. All three functions accept a
 language L(G) defined [here](#grammar).
 
 The calculations follow basic math rules, like "multiplication and division
-frist, then addition and subtraction" rule. To break this rule it is possible
+first, then addition and subtraction" rule. To break this rule it is possible
 to use brackets.
 There needs to be at least one whitespace character between an operator an a
 number. All other whitespace character get ignored by the lexer.
@@ -23,27 +22,27 @@ number. All other whitespace character get ignored by the lexer.
 
 #### Lexer:
 ``` go
-calcgo.Lex("(1 + 2) * 3")
+lexer.Lex("(1 + 2) * 3")
 ```
 #### Parser:
 ``` go
-calcgo.Parse("(1 + 2) * 3")
+parser.Parse("(1 + 2) * 3")
 ```
 #### Interpreter:
 ``` go
-calcgo.Interpret("1 + 2 * 3")   // Result: 7
-calcgo.Interpret("(1 + 2) * 3") // Result: 9
+interpreter.Interpret("1 + 2 * 3")   // Result: 7
+interpreter.Interpret("(1 + 2) * 3") // Result: 9
 ```
 
 #### Interpreter with variable:
-Calcgo supports variables. An instantiation of all variables have to be supplied
+Calcgo supports variables. An instantiation of all variables has to be supplied
 before interpreting.
 ```go
-interpreter := calcgo.NewInterpreter("1 + a")
-interpreter.SetVar("a", 1.0)
-interpreter.GetResult() // Result: 2
-interpreter.SetVar("a", 2.0)
-interpreter.GetResult() // Result: 3
+i := interpreter.NewInterpreter("1 + a")
+i.SetVar("a", 1.0)
+i.GetResult() // Result: 2
+i.SetVar("a", 2.0)
+i.GetResult() // Result: 3
 ```
 
 ## Example
@@ -53,11 +52,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/relnod/calcgo"
+	"github.com/relnod/calcgo/interpreter"
 )
 
 func main() {
-	number, _ := calcgo.Interpret("1 + 1")
+	number, _ := interpreter.Interpret("1 + 1")
 
 	fmt.Println(number)
 }
