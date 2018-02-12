@@ -6,10 +6,10 @@ type stateFn func(*Lexer) stateFn
 
 // Lexer holds the state of the lexer.
 type Lexer struct {
-	token   chan token.Token
-	str     string
-	pos     int
-	lastPos int
+	token    chan token.Token
+	str      string
+	pos      int
+	startPos int
 }
 
 // Lex takes a string as input and returns a list of tokens.
@@ -50,7 +50,7 @@ func Lex(str string) []token.Token {
 
 // NewLexer returns a new lexer object.
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, token: make(chan token.Token, len(str)/3), pos: -1}
+	return &Lexer{str: str, token: make(chan token.Token, len(str)/3), pos: 0}
 }
 
 // Start runs the lexer in a go routine.
@@ -65,20 +65,21 @@ func (l *Lexer) Read() token.Token {
 
 // current returns the character at the current postion.
 func (l *Lexer) current() byte {
-	return l.str[l.pos]
+	return l.str[l.pos-1]
 }
 
 // stored returnes the string, that is currently stored.
 func (l *Lexer) stored() string {
-	return l.str[l.lastPos+1 : l.pos+1]
+	return l.str[l.startPos:l.pos]
 }
 
 // next procedes to the next character and returns it. Also returns indicator,
 // wether there is a next character.
 func (l *Lexer) next() (byte, bool) {
-	if l.pos+1 >= len(l.str) {
+	if l.pos >= len(l.str) {
 		return 0, false
 	}
+
 	l.pos++
 
 	return l.current(), true
@@ -95,8 +96,8 @@ func (l *Lexer) emitInternal(tokenType token.Type, value string) {
 	l.token <- token.Token{
 		Type:  tokenType,
 		Value: value,
-		Start: l.lastPos + 1,
-		End:   l.pos + 1,
+		Start: l.startPos,
+		End:   l.pos,
 	}
 }
 
@@ -157,7 +158,7 @@ func isLetter(b byte) bool {
 func lexAll(l *Lexer) stateFn {
 	var tokenType token.Type
 
-	l.lastPos = l.pos
+	l.startPos = l.pos
 
 	b, ok := l.next()
 	if !ok {
