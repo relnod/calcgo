@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/relnod/calcgo/lexer"
+	"github.com/relnod/calcgo/token"
 )
 
 // parseState defines a state function of the parser machine.
@@ -12,8 +13,8 @@ type parseState func(*Parser) parseState
 
 // Parser holds state of parser
 type Parser struct {
-	tokens    chan lexer.Token
-	currToken lexer.Token
+	tokens    chan token.Token
+	currToken token.Token
 	topNode   *Node
 	current   *Node
 	errors    []error
@@ -68,19 +69,19 @@ func Parse(str string) (AST, []error) {
 		return AST{}, nil
 	}
 
-	lexer := lexer.NewLexer(str)
-	lexer.Start()
+	l := lexer.NewLexer(str)
+	l.Start()
 
-	return ParseTokenStream(lexer.GetChanel())
+	return ParseTokenStream(l.GetChanel())
 }
 
 // ParseTokens parses a list of tokens to an ast
-func ParseTokens(tokens []lexer.Token) (AST, []error) {
+func ParseTokens(tokens []token.Token) (AST, []error) {
 	if tokens == nil {
 		return AST{}, nil
 	}
 
-	c := make(chan lexer.Token, len(tokens))
+	c := make(chan token.Token, len(tokens))
 	for _, token := range tokens {
 		c <- token
 	}
@@ -90,7 +91,7 @@ func ParseTokens(tokens []lexer.Token) (AST, []error) {
 }
 
 // ParseTokenStream parses a stream of tokens
-func ParseTokenStream(c chan lexer.Token) (AST, []error) {
+func ParseTokenStream(c chan token.Token) (AST, []error) {
 	p := &Parser{tokens: c}
 	p.run()
 
@@ -109,12 +110,12 @@ func (p *Parser) run() {
 	}
 }
 
-// next retrieves the next token from the lexer. If the lexer is finished next
+// next retrieves the next token from the token. If the lexer is finished next
 // returns false. Otherwise returns true.
 func (p *Parser) next() bool {
 	p.currToken = <-p.tokens
 
-	if p.currToken.Type == lexer.TEOF {
+	if p.currToken.Type == token.TEOF {
 		if p.nested {
 			p.pushError(ErrorMissingClosingBracket)
 		}
@@ -170,7 +171,7 @@ func (p *Parser) newFunctionNode() *Node {
 func (p *Parser) subParse() (*Node, []error) {
 	p2 := &Parser{
 		tokens:    p.tokens,
-		currToken: lexer.Token{},
+		currToken: token.Token{},
 		topNode:   p.topNode,
 		current:   nil,
 		errors:    nil,
@@ -250,7 +251,7 @@ func (p *Parser) addNewRightChild(n *Node) {
 //  - parseOperatorAfterRightBracket
 //
 func parseStart(p *Parser) parseState {
-	if p.currToken.Type == lexer.TLParen {
+	if p.currToken.Type == token.TLParen {
 		n, errors := p.subParse()
 		p.setFirstTopNode(n)
 		p.pushErrors(errors)
@@ -287,7 +288,7 @@ func parseStart(p *Parser) parseState {
 //  - parseOperatorAfterRightBracket
 //
 func parseValue(p *Parser) parseState {
-	if p.currToken.Type == lexer.TLParen {
+	if p.currToken.Type == token.TLParen {
 		n, errors := p.subParse()
 		p.addNewRightChild(n)
 		p.pushErrors(errors)
@@ -318,7 +319,7 @@ func parseValue(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperator(p *Parser) parseState {
-	if p.currToken.Type == lexer.TRParen {
+	if p.currToken.Type == token.TRParen {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}
@@ -347,7 +348,7 @@ func parseOperator(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperatorAfterRightBracket(p *Parser) parseState {
-	if p.currToken.Type == lexer.TRParen {
+	if p.currToken.Type == token.TRParen {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}

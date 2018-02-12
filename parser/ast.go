@@ -1,6 +1,6 @@
 package parser
 
-import "github.com/relnod/calcgo/lexer"
+import "github.com/relnod/calcgo/token"
 
 // Node types
 const (
@@ -110,23 +110,23 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be an operator. Returns an invalid operator node
 // otherwise.
-func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
+func getOperatorNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TOpPlus:
+	case token.TOpPlus:
 		return NAdd, true
-	case lexer.TOpMinus:
+	case token.TOpMinus:
 		return NSub, true
-	case lexer.TOpMult:
+	case token.TOpMult:
 		return NMult, true
-	case lexer.TOpDiv:
+	case token.TOpDiv:
 		return NDiv, true
-	case lexer.TOpMod:
+	case token.TOpMod:
 		return NMod, true
-	case lexer.TOpOr:
+	case token.TOpOr:
 		return NOr, true
-	case lexer.TOpXor:
+	case token.TOpXor:
 		return NXor, true
-	case lexer.TOpAnd:
+	case token.TOpAnd:
 		return NAnd, true
 	}
 
@@ -136,26 +136,26 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be a number or variable. Returns an invalid number or
 // variable node otherwise.
-func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
+func getNumberOrVariableNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TInt:
+	case token.TInt:
 		return NInt, true
-	case lexer.TDec:
+	case token.TDec:
 		return NDec, true
-	case lexer.TBin:
+	case token.TBin:
 		return NBin, true
-	case lexer.THex:
+	case token.THex:
 		return NHex, true
-	case lexer.TExp:
+	case token.TExp:
 		return NExp, true
-	case lexer.TVar:
+	case token.TVar:
 		return NVar, true
 	}
 
 	switch t.Type {
-	case lexer.TInvalidCharacterInNumber:
+	case token.TInvalidCharacterInNumber:
 		return NInvalidNumber, false
-	case lexer.TInvalidCharacterInVariable:
+	case token.TInvalidCharacterInVariable:
 		return NInvalidVariable, false
 	}
 
@@ -164,15 +164,15 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be a function.
-func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
+func getFunctionNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TFnSqrt:
+	case token.TFnSqrt:
 		return NFnSqrt, true
-	case lexer.TFnSin:
+	case token.TFnSin:
 		return NFnSin, true
-	case lexer.TFnCos:
+	case token.TFnCos:
 		return NFnCos, true
-	case lexer.TFnTan:
+	case token.TFnTan:
 		return NFnTan, true
 	}
 

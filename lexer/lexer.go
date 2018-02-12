@@ -1,10 +1,12 @@
 package lexer
 
+import "github.com/relnod/calcgo/token"
+
 type stateFn func(*Lexer) stateFn
 
 // Lexer holds the state of the lexer.
 type Lexer struct {
-	token   chan Token
+	token   chan token.Token
 	str     string
 	pos     int
 	lastPos int
@@ -25,22 +27,22 @@ type Lexer struct {
 //    {Value: "",  Type: calcgo.TOperatorMult},
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
-func Lex(str string) []Token {
+func Lex(str string) []token.Token {
 	if len(str) == 0 {
 		return nil
 	}
 
-	tokens := make([]Token, 0, len(str)/2)
+	tokens := make([]token.Token, 0, len(str)/2)
 
 	lexer := NewLexer(str)
 	lexer.Start()
 
 	for {
-		token := lexer.NextToken()
-		if token.Type == TEOF {
+		t := lexer.NextToken()
+		if t.Type == token.TEOF {
 			break
 		}
-		tokens = append(tokens, token)
+		tokens = append(tokens, t)
 	}
 
 	return tokens
@@ -48,7 +50,7 @@ func Lex(str string) []Token {
 
 // NewLexer returns a new lexer object.
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, token: make(chan Token, len(str)/3), pos: -1}
+	return &Lexer{str: str, token: make(chan token.Token, len(str)/3), pos: -1}
 }
 
 // Start runs the lexer in a go routine.
@@ -57,12 +59,12 @@ func (l *Lexer) Start() {
 }
 
 // NextToken returns the next token from the token chanel.
-func (l *Lexer) NextToken() Token {
+func (l *Lexer) NextToken() token.Token {
 	return <-l.token
 }
 
 // GetChanel returns the token chanel.
-func (l *Lexer) GetChanel() chan Token {
+func (l *Lexer) GetChanel() chan token.Token {
 	return l.token
 }
 
@@ -94,8 +96,8 @@ func (l *Lexer) backup() {
 
 // emitInternal takes a tokentype and a value to create a token, which it then
 // emits.
-func (l *Lexer) emitInternal(tokenType TokenType, value string) {
-	l.token <- Token{
+func (l *Lexer) emitInternal(tokenType token.TokenType, value string) {
+	l.token <- token.Token{
 		Type:  tokenType,
 		Value: value,
 		Start: l.lastPos + 1,
@@ -104,17 +106,17 @@ func (l *Lexer) emitInternal(tokenType TokenType, value string) {
 }
 
 // emit emits a new token with type tokenType and the currently stored value.
-func (l *Lexer) emit(tokenType TokenType) {
+func (l *Lexer) emit(tokenType token.TokenType) {
 	l.emitInternal(tokenType, l.stored())
 }
 
 // emitEmpty emits a new token with type tokenType and an empty value.
-func (l *Lexer) emitEmpty(tokenType TokenType) {
+func (l *Lexer) emitEmpty(tokenType token.TokenType) {
 	l.emitInternal(tokenType, "")
 }
 
 // emitEmpty emits a new token with type tokenType and the current character.
-func (l *Lexer) emitSingle(tokenType TokenType) {
+func (l *Lexer) emitSingle(tokenType token.TokenType) {
 	l.emitInternal(tokenType, string(l.current()))
 }
 
@@ -158,7 +160,7 @@ func isLetter(b byte) bool {
 //  - [a-z] -> lexVariableOrFunction
 //  - rest  -> lexAll
 func lexAll(l *Lexer) stateFn {
-	var tokenType TokenType
+	var tokenType token.TokenType
 
 	l.lastPos = l.pos
 
@@ -178,30 +180,30 @@ func lexAll(l *Lexer) stateFn {
 
 	switch b {
 	case '+':
-		tokenType = TOpPlus
+		tokenType = token.TOpPlus
 	case '-':
 		if b, ok := l.next(); ok && isDigit(b) {
 			return lexNumber
 		}
-		tokenType = TOpMinus
+		tokenType = token.TOpMinus
 	case '*':
-		tokenType = TOpMult
+		tokenType = token.TOpMult
 	case '/':
-		tokenType = TOpDiv
+		tokenType = token.TOpDiv
 	case '%':
-		tokenType = TOpMod
+		tokenType = token.TOpMod
 	case '|':
-		tokenType = TOpOr
+		tokenType = token.TOpOr
 	case '^':
-		tokenType = TOpXor
+		tokenType = token.TOpXor
 	case '&':
-		tokenType = TOpAnd
+		tokenType = token.TOpAnd
 	case '(':
-		tokenType = TLParen
+		tokenType = token.TLParen
 	case ')':
-		tokenType = TRParen
+		tokenType = token.TRParen
 	default:
-		l.emit(TInvalidCharacter)
+		l.emit(token.TInvalidCharacter)
 		return lexAll
 	}
 
@@ -254,11 +256,11 @@ func lexNumber(l *Lexer) stateFn {
 			break
 		}
 
-		l.emitSingle(TInvalidCharacterInNumber)
+		l.emitSingle(token.TInvalidCharacterInNumber)
 		return lexAll
 	}
 
-	l.emit(TInt)
+	l.emit(token.TInt)
 	return lexAll
 }
 
@@ -282,11 +284,11 @@ func lexDecimal(l *Lexer) stateFn {
 			break
 		}
 
-		l.emitSingle(TInvalidCharacterInNumber)
+		l.emitSingle(token.TInvalidCharacterInNumber)
 		return lexAll
 	}
 
-	l.emit(TDec)
+	l.emit(token.TDec)
 	return lexAll
 }
 
@@ -310,11 +312,11 @@ func lexHex(l *Lexer) stateFn {
 			break
 		}
 
-		l.emitSingle(TInvalidCharacterInNumber)
+		l.emitSingle(token.TInvalidCharacterInNumber)
 		return lexAll
 	}
 
-	l.emit(THex)
+	l.emit(token.THex)
 	return lexAll
 }
 
@@ -338,11 +340,11 @@ func lexBin(l *Lexer) stateFn {
 			break
 		}
 
-		l.emitSingle(TInvalidCharacterInNumber)
+		l.emitSingle(token.TInvalidCharacterInNumber)
 		return lexAll
 	}
 
-	l.emit(TBin)
+	l.emit(token.TBin)
 	return lexAll
 }
 
@@ -366,11 +368,11 @@ func lexExponential(l *Lexer) stateFn {
 			break
 		}
 
-		l.emitSingle(TInvalidCharacterInNumber)
+		l.emitSingle(token.TInvalidCharacterInNumber)
 		return lexAll
 	}
 
-	l.emit(TExp)
+	l.emit(token.TExp)
 	return lexAll
 }
 
@@ -397,23 +399,23 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 		if b == '(' {
 			switch l.stored() {
 			case "sqrt(":
-				l.emitEmpty(TFnSqrt)
+				l.emitEmpty(token.TFnSqrt)
 			case "sin(":
-				l.emitEmpty(TFnSin)
+				l.emitEmpty(token.TFnSin)
 			case "cos(":
-				l.emitEmpty(TFnCos)
+				l.emitEmpty(token.TFnCos)
 			case "tan(":
-				l.emitEmpty(TFnTan)
+				l.emitEmpty(token.TFnTan)
 			default:
-				l.emit(TFnUnkown)
+				l.emit(token.TFnUnkown)
 			}
 			return lexAll
 		}
 
-		l.emitSingle(TInvalidCharacterInVariable)
+		l.emitSingle(token.TInvalidCharacterInVariable)
 		return lexAll
 	}
 
-	l.emit(TVar)
+	l.emit(token.TVar)
 	return lexAll
 }

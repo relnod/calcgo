@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	. "github.com/relnod/calcgo/calcgotest"
-	"github.com/relnod/calcgo/lexer"
 	"github.com/relnod/calcgo/parser"
+	"github.com/relnod/calcgo/token"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -1778,10 +1778,10 @@ func TestParser(t *testing.T) {
 		So(ast1, shouldEqualAST, ast2)
 		So(e1, ShouldEqualErrors, e2)
 
-		ast1, e1 = parser.ParseTokens([]lexer.Token{
-			{Type: lexer.TInt, Value: "1"},
-			{Type: lexer.TOpPlus, Value: ""},
-			{Type: lexer.TInt, Value: "1"},
+		ast1, e1 = parser.ParseTokens([]token.Token{
+			{Type: token.TInt, Value: "1"},
+			{Type: token.TOpPlus, Value: ""},
+			{Type: token.TInt, Value: "1"},
 		})
 		ast2, e2 = parser.Parse("1 + 1")
 		So(ast1, shouldEqualAST, ast2)
