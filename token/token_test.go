@@ -11,17 +11,17 @@ func TestToken(t *testing.T) {
 	Convey("Token Spec", t, func() {
 		Convey("IsLiteral()", func() {
 			var cases = []struct {
-				t token.TokenType
+				t token.Type
 				r bool
 			}{
-				{token.TEOF, false},
-				{token.TInt, true},
-				{token.TDec, true},
-				{token.THex, true},
-				{token.TBin, true},
-				{token.TExp, true},
-				{token.TVar, true},
-				{token.TOpPlus, false},
+				{token.EOF, false},
+				{token.Int, true},
+				{token.Dec, true},
+				{token.Hex, true},
+				{token.Bin, true},
+				{token.Exp, true},
+				{token.Var, true},
+				{token.Plus, false},
 			}
 
 			for _, c := range cases {
@@ -32,18 +32,18 @@ func TestToken(t *testing.T) {
 
 		Convey("IsOperator()", func() {
 			var cases = []struct {
-				t token.TokenType
+				t token.Type
 				r bool
 			}{
-				{token.TVar, false},
-				{token.TOpPlus, true},
-				{token.TOpMinus, true},
-				{token.TOpMult, true},
-				{token.TOpDiv, true},
-				{token.TOpOr, true},
-				{token.TOpXor, true},
-				{token.TOpAnd, true},
-				{token.TLParen, false},
+				{token.Var, false},
+				{token.Plus, true},
+				{token.Minus, true},
+				{token.Mult, true},
+				{token.Div, true},
+				{token.Or, true},
+				{token.Xor, true},
+				{token.And, true},
+				{token.ParenL, false},
 			}
 
 			for _, c := range cases {
@@ -54,15 +54,15 @@ func TestToken(t *testing.T) {
 
 		Convey("IsFunction()", func() {
 			var cases = []struct {
-				t token.TokenType
+				t token.Type
 				r bool
 			}{
-				{token.TOpDiv, false},
-				{token.TFnSqrt, true},
-				{token.TFnSin, true},
-				{token.TFnCos, true},
-				{token.TFnTan, true},
-				{token.TLParen, false},
+				{token.Div, false},
+				{token.Sqrt, true},
+				{token.Sin, true},
+				{token.Cos, true},
+				{token.Tan, true},
+				{token.ParenL, false},
 			}
 
 			for _, c := range cases {
@@ -73,12 +73,12 @@ func TestToken(t *testing.T) {
 
 		Convey("String()", func() {
 			var cases = []struct {
-				t token.TokenType
+				t token.Type
 				v string
 
 				r string
 			}{
-				{token.TOpDiv, "/", `{Value: '/', Type: '/', Start: '0', End: '0', }`},
+				{token.Div, "/", `{Value: '/', Type: '/', Start: '0', End: '0', }`},
 				{255, "bla", `{Value: 'bla', Type: 'Unknown token', Start: '0', End: '0', }`},
 			}
 

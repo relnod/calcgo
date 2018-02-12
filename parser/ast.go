@@ -112,21 +112,21 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 // otherwise.
 func getOperatorNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case token.TOpPlus:
+	case token.Plus:
 		return NAdd, true
-	case token.TOpMinus:
+	case token.Minus:
 		return NSub, true
-	case token.TOpMult:
+	case token.Mult:
 		return NMult, true
-	case token.TOpDiv:
+	case token.Div:
 		return NDiv, true
-	case token.TOpMod:
+	case token.Mod:
 		return NMod, true
-	case token.TOpOr:
+	case token.Or:
 		return NOr, true
-	case token.TOpXor:
+	case token.Xor:
 		return NXor, true
-	case token.TOpAnd:
+	case token.And:
 		return NAnd, true
 	}
 
@@ -138,24 +138,24 @@ func getOperatorNodeType(t token.Token) (NodeType, bool) {
 // variable node otherwise.
 func getNumberOrVariableNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case token.TInt:
+	case token.Int:
 		return NInt, true
-	case token.TDec:
+	case token.Dec:
 		return NDec, true
-	case token.TBin:
+	case token.Bin:
 		return NBin, true
-	case token.THex:
+	case token.Hex:
 		return NHex, true
-	case token.TExp:
+	case token.Exp:
 		return NExp, true
-	case token.TVar:
+	case token.Var:
 		return NVar, true
 	}
 
 	switch t.Type {
-	case token.TInvalidCharacterInNumber:
+	case token.InvalidCharacterInNumber:
 		return NInvalidNumber, false
-	case token.TInvalidCharacterInVariable:
+	case token.InvalidCharacterInVariable:
 		return NInvalidVariable, false
 	}
 
@@ -166,13 +166,13 @@ func getNumberOrVariableNodeType(t token.Token) (NodeType, bool) {
 // The given token should be a function.
 func getFunctionNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case token.TFnSqrt:
+	case token.Sqrt:
 		return NFnSqrt, true
-	case token.TFnSin:
+	case token.Sin:
 		return NFnSin, true
-	case token.TFnCos:
+	case token.Cos:
 		return NFnCos, true
-	case token.TFnTan:
+	case token.Tan:
 		return NFnTan, true
 	}
 

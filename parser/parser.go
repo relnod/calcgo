@@ -115,7 +115,7 @@ func (p *Parser) run() {
 func (p *Parser) next() bool {
 	p.currToken = <-p.tokens
 
-	if p.currToken.Type == token.TEOF {
+	if p.currToken.Type == token.EOF {
 		if p.nested {
 			p.pushError(ErrorMissingClosingBracket)
 		}
@@ -251,7 +251,7 @@ func (p *Parser) addNewRightChild(n *Node) {
 //  - parseOperatorAfterRightBracket
 //
 func parseStart(p *Parser) parseState {
-	if p.currToken.Type == token.TLParen {
+	if p.currToken.Type == token.ParenL {
 		n, errors := p.subParse()
 		p.setFirstTopNode(n)
 		p.pushErrors(errors)
@@ -288,7 +288,7 @@ func parseStart(p *Parser) parseState {
 //  - parseOperatorAfterRightBracket
 //
 func parseValue(p *Parser) parseState {
-	if p.currToken.Type == token.TLParen {
+	if p.currToken.Type == token.ParenL {
 		n, errors := p.subParse()
 		p.addNewRightChild(n)
 		p.pushErrors(errors)
@@ -319,7 +319,7 @@ func parseValue(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperator(p *Parser) parseState {
-	if p.currToken.Type == token.TRParen {
+	if p.currToken.Type == token.ParenR {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}
@@ -348,7 +348,7 @@ func parseOperator(p *Parser) parseState {
 //  - parseValue
 //
 func parseOperatorAfterRightBracket(p *Parser) parseState {
-	if p.currToken.Type == token.TRParen {
+	if p.currToken.Type == token.ParenR {
 		if !p.nested {
 			p.pushError(ErrorUnexpectedClosingBracket)
 		}

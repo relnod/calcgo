@@ -2,93 +2,93 @@ package token
 
 import "strconv"
 
-// TokenType describes the type of a token
-type TokenType byte
+// Type describes the type of a token
+type Type byte
 
 // Token types
 const (
-	TEOF TokenType = iota
+	EOF Type = iota
 
 	literalBeg
 	// Numbers
-	TInt // [0-9]+
-	TDec // [0-9]+\.[0-9]+
-	TBin // 0b[01]+
-	THex // 0x[0-9A-F]+
-	TExp // [0-9]+\^[0-9]+
+	Int // [0-9]+
+	Dec // [0-9]+\.[0-9]+
+	Bin // 0b[01]+
+	Hex // 0x[0-9A-F]+
+	Exp // [0-9]+\^[0-9]+
 
 	// Variable
-	TVar // [a-zA-Z]+
+	Var // [a-zA-Z]+
 	literalEnd
 
 	operatorBeg
 	// Operators
-	TOpPlus  // "+"
-	TOpMinus // "-"
-	TOpMult  // "*"
-	TOpDiv   // "/"
-	TOpMod   // "%"
-	TOpOr    // "|"
-	TOpXor   // "^"
-	TOpAnd   // "&"
+	Plus  // "+"
+	Minus // "-"
+	Mult  // "*"
+	Div   // "/"
+	Mod   // "%"
+	Or    // "|"
+	Xor   // "^"
+	And   // "&"
 	operatorEnd
 
 	functionBeg
 	// Functions
-	TFnSqrt // "sqrt("
-	TFnSin  // "sin("
-	TFnCos  // "cos("
-	TFnTan  // "tan("
-	TFnUnkown
+	Sqrt // "sqrt("
+	Sin  // "sin("
+	Cos  // "cos("
+	Tan  // "tan("
+	UnkownFunktion
 	functionEnd
 
 	// Parens
-	TLParen // "("
-	TRParen // ")"
+	ParenL // "("
+	ParenR // ")"
 
 	// Errors
-	TInvalidCharacter
-	TInvalidCharacterInNumber
-	TInvalidCharacterInVariable
+	InvalidCharacter
+	InvalidCharacterInNumber
+	InvalidCharacterInVariable
 )
 
 var tokens = [...]string{
-	TEOF: "EOF",
+	EOF: "EOF",
 
-	TInt: "Integer",
-	TDec: "Decimal",
-	TBin: "Binary",
-	THex: "HexaDecimal",
-	TExp: "Exponential",
+	Int: "Integer",
+	Dec: "Decimal",
+	Bin: "Binary",
+	Hex: "HexaDecimal",
+	Exp: "Exponential",
 
-	TVar: "Variable",
+	Var: "Variable",
 
-	TOpPlus:  "+",
-	TOpMinus: "-",
-	TOpMult:  "*",
-	TOpDiv:   "/",
-	TOpMod:   "%",
-	TOpOr:    "|",
-	TOpXor:   "^",
-	TOpAnd:   "&",
+	Plus:  "+",
+	Minus: "-",
+	Mult:  "*",
+	Div:   "/",
+	Mod:   "%",
+	Or:    "|",
+	Xor:   "^",
+	And:   "&",
 
-	TFnSqrt: "sqrt",
-	TFnSin:  "sin",
-	TFnCos:  "cos",
-	TFnTan:  "tan",
+	Sqrt: "sqrt",
+	Sin:  "sin",
+	Cos:  "cos",
+	Tan:  "tan",
 
-	TLParen: "(",
-	TRParen: ")",
+	ParenL: "(",
+	ParenR: ")",
 
-	TInvalidCharacter:           "Invalid Character",
-	TInvalidCharacterInNumber:   "Invalid character in number",
-	TInvalidCharacterInVariable: "Invalid character in Variabl",
-	TFnUnkown:                   "Unkown function",
+	InvalidCharacter:           "Invalid Character",
+	InvalidCharacterInNumber:   "Invalid character in number",
+	InvalidCharacterInVariable: "Invalid character in Variabl",
+	UnkownFunktion:             "Unkown function",
 }
 
 // Token represents a token returned by the lexer
 type Token struct {
-	Type  TokenType
+	Type  Type
 	Value string
 	Start int
 	End   int
@@ -120,8 +120,8 @@ func (t Token) String() string {
 }
 
 // String converts a token type to a string.
-func (t TokenType) String() string {
-	if 0 <= t && t < TokenType(len(tokens)) {
+func (t Type) String() string {
+	if 0 <= t && t < Type(len(tokens)) {
 		return tokens[t]
 	}
 
