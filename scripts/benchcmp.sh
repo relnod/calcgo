@@ -56,7 +56,7 @@ bench() {
 }
 
 bench_command() {
-    go test -bench=$b -run=^$ -benchmem
+    go test ./... -bench=$b -run=^$ -benchmem
 }
 
 n=5
