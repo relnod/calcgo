@@ -550,7 +550,7 @@ func TestLexer(t *testing.T) {
 
 		var tokens []token.Token
 		for {
-			t := l.NextToken()
+			t := l.Read()
 			if t.Type == token.EOF {
 				break
 			}

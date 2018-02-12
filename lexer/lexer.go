@@ -38,7 +38,7 @@ func Lex(str string) []token.Token {
 	lexer.Start()
 
 	for {
-		t := lexer.NextToken()
+		t := lexer.Read()
 		if t.Type == token.EOF {
 			break
 		}
@@ -58,14 +58,9 @@ func (l *Lexer) Start() {
 	go l.run()
 }
 
-// NextToken returns the next token from the token chanel.
-func (l *Lexer) NextToken() token.Token {
+// Read returns the next token from the token chanel.
+func (l *Lexer) Read() token.Token {
 	return <-l.token
-}
-
-// GetChanel returns the token chanel.
-func (l *Lexer) GetChanel() chan token.Token {
-	return l.token
 }
 
 // current returns the character at the current postion.

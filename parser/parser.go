@@ -13,7 +13,7 @@ type parseState func(*Parser) parseState
 
 // Parser holds state of parser
 type Parser struct {
-	tokens    chan token.Token
+	reader    token.Reader
 	currToken token.Token
 	topNode   *Node
 	current   *Node
@@ -72,7 +72,7 @@ func Parse(str string) (AST, []error) {
 	l := lexer.NewLexer(str)
 	l.Start()
 
-	return ParseTokenStream(l.GetChanel())
+	return ParseFromReader(l)
 }
 
 // ParseTokens parses a list of tokens to an ast
@@ -81,18 +81,14 @@ func ParseTokens(tokens []token.Token) (AST, []error) {
 		return AST{}, nil
 	}
 
-	c := make(chan token.Token, len(tokens))
-	for _, token := range tokens {
-		c <- token
-	}
-	close(c)
+	r := token.NewStaticReader(tokens)
 
-	return ParseTokenStream(c)
+	return ParseFromReader(r)
 }
 
-// ParseTokenStream parses a stream of tokens
-func ParseTokenStream(c chan token.Token) (AST, []error) {
-	p := &Parser{tokens: c}
+// ParseFromReader parses a stream of token retrieved from a token reader.
+func ParseFromReader(reader token.Reader) (AST, []error) {
+	p := &Parser{reader: reader}
 	p.run()
 
 	return AST{p.topNode}, p.errors
@@ -113,7 +109,7 @@ func (p *Parser) run() {
 // next retrieves the next token from the token. If the lexer is finished next
 // returns false. Otherwise returns true.
 func (p *Parser) next() bool {
-	p.currToken = <-p.tokens
+	p.currToken = p.reader.Read()
 
 	if p.currToken.Type == token.EOF {
 		if p.nested {
@@ -170,7 +166,7 @@ func (p *Parser) newFunctionNode() *Node {
 // subParse creates another parser and runs it until a closing bracket appears.
 func (p *Parser) subParse() (*Node, []error) {
 	p2 := &Parser{
-		tokens:    p.tokens,
+		reader:    p.reader,
 		currToken: token.Token{},
 		topNode:   p.topNode,
 		current:   nil,
