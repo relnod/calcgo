@@ -81,7 +81,12 @@ func ConvertExponential(value string) (float64, error) {
 		return 0, ErrorInvalidExponential
 	}
 
-	return math.Pow(float64(base), float64(exponent)), nil
+	res := math.Pow(float64(base), float64(exponent))
+	if math.IsInf(res, 1) {
+		return 0, ErrorInvalidExponential
+	}
+
+	return res, nil
 }
 
 // ConvertLiteral converts a atring literal to a float.
