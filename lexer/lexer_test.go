@@ -3,562 +3,270 @@ package lexer_test
 import (
 	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
+
 	"github.com/relnod/calcgo/lexer"
 	"github.com/relnod/calcgo/token"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
-type Tokens []token.Token
-
-func (tokens Tokens) String() string {
-	str := ""
-
-	for i := 0; i < len(tokens); i++ {
-		str += tokens[i].String() + "\n"
-	}
-
-	return str
-}
-
-func tokenError(actual Tokens, expected Tokens) string {
-	return "Expected: \n" +
-		expected.String() +
-		"Actual: \n" +
-		actual.String()
-}
-
-func eq(actual Tokens, expected Tokens, checkPosition bool) bool {
-	if len(actual) != len(expected) {
-		return false
-	}
-
-	for i := 0; i < len(actual); i++ {
-		if actual[i].Value != expected[i].Value {
-			return false
-		}
-
-		if actual[i].Type != expected[i].Type {
-			return false
-		}
-
-		if checkPosition {
-			if actual[i].Start != expected[i].Start {
-				return false
-			}
-
-			if actual[i].End != expected[i].End {
-				return false
-			}
-		}
-	}
-
-	return true
-}
-
-func shouldEqualToken(actual interface{}, expected ...interface{}) string {
-	act := actual.([]token.Token)
-	exp := expected[0].([]token.Token)
-	checkPosition := false
-	if len(expected) == 2 {
-		checkPosition = expected[1].(bool)
-	}
-
-	if eq(act, exp, checkPosition) {
-		return ""
-	}
-
-	return tokenError(act, exp) + "(Should be Equal)"
-}
-
 func TestLexer(t *testing.T) {
-	Convey("Lexer works with empty string", t, func() {
-		So(lexer.Lex(""), ShouldBeNil)
-	})
-
-	Convey("Lexer works with numbers", t, func() {
-		Convey("positive", func() {
-			Convey("single digit", func() {
-				So(lexer.Lex("0"), shouldEqualToken, []token.Token{
-					{Value: "0", Type: token.Int, Start: 0, End: 1},
-				}, true)
-				So(lexer.Lex("1"), shouldEqualToken, []token.Token{
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("2"), shouldEqualToken, []token.Token{
-					{Value: "2", Type: token.Int},
-				})
-				So(lexer.Lex("3"), shouldEqualToken, []token.Token{
-					{Value: "3", Type: token.Int},
-				})
-				So(lexer.Lex("4"), shouldEqualToken, []token.Token{
-					{Value: "4", Type: token.Int},
-				})
-				So(lexer.Lex("5"), shouldEqualToken, []token.Token{
-					{Value: "5", Type: token.Int},
-				})
-				So(lexer.Lex("6"), shouldEqualToken, []token.Token{
-					{Value: "6", Type: token.Int},
-				})
-				So(lexer.Lex("7"), shouldEqualToken, []token.Token{
-					{Value: "7", Type: token.Int},
-				})
-				So(lexer.Lex("8"), shouldEqualToken, []token.Token{
-					{Value: "8", Type: token.Int},
-				})
-				So(lexer.Lex("9"), shouldEqualToken, []token.Token{
-					{Value: "9", Type: token.Int},
-				})
-			})
-
-			Convey("multiple digits", func() {
-				So(lexer.Lex("10"), shouldEqualToken, []token.Token{
-					{Value: "10", Type: token.Int},
-				})
-				So(lexer.Lex("10123"), shouldEqualToken, []token.Token{
-					{Value: "10123", Type: token.Int},
-				})
-				So(lexer.Lex("1A"), shouldEqualToken, []token.Token{
-					{Value: "A", Type: token.InvalidCharacterInNumber},
-				})
-			})
-
-			Convey("decimals", func() {
-				So(lexer.Lex("1.0"), shouldEqualToken, []token.Token{
-					{Value: "1.0", Type: token.Dec},
-				})
-				So(lexer.Lex("10.1"), shouldEqualToken, []token.Token{
-					{Value: "10.1", Type: token.Dec},
-				})
-				So(lexer.Lex("12.3456"), shouldEqualToken, []token.Token{
-					{Value: "12.3456", Type: token.Dec},
-				})
-				So(lexer.Lex("0.3456"), shouldEqualToken, []token.Token{
-					{Value: "0.3456", Type: token.Dec},
-				})
-				So(lexer.Lex("0.1 1"), shouldEqualToken, []token.Token{
-					{Value: "0.1", Type: token.Dec},
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("0.1A"), shouldEqualToken, []token.Token{
-					{Value: "A", Type: token.InvalidCharacterInNumber},
-				})
-			})
-
-			Convey("binary", func() {
-				So(lexer.Lex("0b1"), shouldEqualToken, []token.Token{
-					{Value: "0b1", Type: token.Bin},
-				})
-				So(lexer.Lex("0b0101"), shouldEqualToken, []token.Token{
-					{Value: "0b0101", Type: token.Bin},
-				})
-				So(lexer.Lex("0b1 1"), shouldEqualToken, []token.Token{
-					{Value: "0b1", Type: token.Bin},
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("0b012"), shouldEqualToken, []token.Token{
-					{Value: "2", Type: token.InvalidCharacterInNumber},
-				})
-			})
-
-			Convey("hex", func() {
-				So(lexer.Lex("0x1"), shouldEqualToken, []token.Token{
-					{Value: "0x1", Type: token.Hex},
-				})
-				So(lexer.Lex("0xA"), shouldEqualToken, []token.Token{
-					{Value: "0xA", Type: token.Hex},
-				})
-				So(lexer.Lex("0x1A"), shouldEqualToken, []token.Token{
-					{Value: "0x1A", Type: token.Hex},
-				})
-				So(lexer.Lex("0x1A 1"), shouldEqualToken, []token.Token{
-					{Value: "0x1A", Type: token.Hex},
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("0xN"), shouldEqualToken, []token.Token{
-					{Value: "N", Type: token.InvalidCharacterInNumber},
-				})
-			})
-
-			Convey("exponential", func() {
-				So(lexer.Lex("1^1"), shouldEqualToken, []token.Token{
-					{Value: "1^1", Type: token.Exp},
-				})
-				So(lexer.Lex("10^1"), shouldEqualToken, []token.Token{
-					{Value: "10^1", Type: token.Exp},
-				})
-				So(lexer.Lex("1^10"), shouldEqualToken, []token.Token{
-					{Value: "1^10", Type: token.Exp},
-				})
-				So(lexer.Lex("10^10"), shouldEqualToken, []token.Token{
-					{Value: "10^10", Type: token.Exp},
-				})
-				So(lexer.Lex("10^10 1"), shouldEqualToken, []token.Token{
-					{Value: "10^10", Type: token.Exp},
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("1^A"), shouldEqualToken, []token.Token{
-					{Value: "A", Type: token.InvalidCharacterInNumber},
-				})
-			})
-
-		})
-
-		Convey("negative", func() {
-			Convey("integers", func() {
-				So(lexer.Lex("-1"), shouldEqualToken, []token.Token{
-					{Value: "-1", Type: token.Int},
-				})
-				So(lexer.Lex("-10"), shouldEqualToken, []token.Token{
-					{Value: "-10", Type: token.Int},
-				})
-				So(lexer.Lex("(-1)"), shouldEqualToken, []token.Token{
-					{Value: "", Type: token.ParenL},
-					{Value: "-1", Type: token.Int},
-					{Value: "", Type: token.ParenR},
-				})
-			})
-			Convey("decimals", func() {
-				So(lexer.Lex("-10.12"), shouldEqualToken, []token.Token{
-					{Value: "-10.12", Type: token.Dec},
-				})
-				So(lexer.Lex("-1.12"), shouldEqualToken, []token.Token{
-					{Value: "-1.12", Type: token.Dec},
-				})
-			})
-			Convey("hex", func() {
-				So(lexer.Lex("-0x1B"), shouldEqualToken, []token.Token{
-					{Value: "-0x1B", Type: token.Hex},
-				})
-			})
-			Convey("binary", func() {
-				So(lexer.Lex("-0b1"), shouldEqualToken, []token.Token{
-					{Value: "-0b1", Type: token.Bin},
-				})
-			})
-			Convey("exponential", func() {
-				So(lexer.Lex("-12^14"), shouldEqualToken, []token.Token{
-					{Value: "-12^14", Type: token.Exp},
-				})
-			})
-		})
-
-	})
-
-	Convey("Lexer works with operators", t, func() {
-		Convey("plus", func() {
-			So(lexer.Lex("+"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Plus},
-			})
-		})
-		Convey("minus", func() {
-			So(lexer.Lex("-"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Minus},
-			})
-		})
-		Convey("mult", func() {
-			So(lexer.Lex("*"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Mult},
-			})
-		})
-		Convey("div", func() {
-			So(lexer.Lex("/"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Div},
-			})
-		})
-		Convey("modulo", func() {
-			So(lexer.Lex("%"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Mod},
-			})
-		})
-		Convey("or", func() {
-			So(lexer.Lex("|"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Or},
-			})
-		})
-		Convey("xor", func() {
-			So(lexer.Lex("^"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Xor},
-			})
-		})
-		Convey("and", func() {
-			So(lexer.Lex("&"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.And},
-			})
-		})
-	})
-
-	Convey("Lexer works with brackets", t, func() {
-		Convey("left bracket", func() {
-			So(lexer.Lex("("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.ParenL},
-			})
-		})
-		Convey("right bracket", func() {
-			So(lexer.Lex(")"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.ParenR},
-			})
-		})
-
-		Convey("brackets and numbers", func() {
-			So(lexer.Lex("(1)"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.ParenL},
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.ParenR},
-			})
-		})
-	})
-
-	Convey("Lexer works with mixed types", t, func() {
-		So(lexer.Lex("1 + 2"), shouldEqualToken, []token.Token{
-			{Value: "1", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "2", Type: token.Int},
-		})
-		So(lexer.Lex("1 + 2 + 3 + 4"), shouldEqualToken, []token.Token{
-			{Value: "1", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "2", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "3", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "4", Type: token.Int},
-		})
-		So(lexer.Lex("(1 + 2) * 2"), shouldEqualToken, []token.Token{
-			{Value: "", Type: token.ParenL},
-			{Value: "1", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "2", Type: token.Int},
-			{Value: "", Type: token.ParenR},
-			{Value: "", Type: token.Mult},
-			{Value: "2", Type: token.Int},
-		})
-		So(lexer.Lex("(2 * (1 + 2)) / 2"), shouldEqualToken, []token.Token{
-			{Value: "", Type: token.ParenL},
-			{Value: "2", Type: token.Int},
-			{Value: "", Type: token.Mult},
-			{Value: "", Type: token.ParenL},
-			{Value: "1", Type: token.Int},
-			{Value: "", Type: token.Plus},
-			{Value: "2", Type: token.Int},
-			{Value: "", Type: token.ParenR},
-			{Value: "", Type: token.ParenR},
-			{Value: "", Type: token.Div},
-			{Value: "2", Type: token.Int},
-		})
-	})
-
-	Convey("Lexer handles invalid input correctly", t, func() {
-		Convey("returns error with", func() {
-			Convey("invalid character in number", func() {
-				So(lexer.Lex("1%"), shouldEqualToken, []token.Token{
-					{Value: "%", Type: token.InvalidCharacterInNumber},
-				})
-				So(lexer.Lex("10123o"), shouldEqualToken, []token.Token{
-					{Value: "o", Type: token.InvalidCharacterInNumber},
-				})
-				So(lexer.Lex("10123? "), shouldEqualToken, []token.Token{
-					{Value: "?", Type: token.InvalidCharacterInNumber},
-				})
-				So(lexer.Lex("1.1.1"), shouldEqualToken, []token.Token{
-					{Value: ".", Type: token.InvalidCharacterInNumber},
-					{Value: "1", Type: token.Int},
-				})
-				So(lexer.Lex("1^1^1"), shouldEqualToken, []token.Token{
-					{Value: "^", Type: token.InvalidCharacterInNumber},
-					{Value: "1", Type: token.Int},
-				})
-			})
-
-			Convey("invalid characters", func() {
-				So(lexer.Lex("$"), shouldEqualToken, []token.Token{
-					{Value: "$", Type: token.InvalidCharacter},
-				})
-				So(lexer.Lex("a$"), shouldEqualToken, []token.Token{
-					{Value: "$", Type: token.InvalidCharacterInVariable},
-				})
-				So(lexer.Lex("a1"), shouldEqualToken, []token.Token{
-					{Value: "1", Type: token.InvalidCharacterInVariable},
-				})
-				So(lexer.Lex("1 + ~"), shouldEqualToken, []token.Token{
-					{Value: "1", Type: token.Int},
-					{Value: "", Type: token.Plus},
-					{Value: "~", Type: token.InvalidCharacter},
-				})
-			})
-
-			Convey("unkown function", func() {
-				So(lexer.Lex("abcdef("), shouldEqualToken, []token.Token{
-					{Value: "abcdef(", Type: token.UnkownFunktion},
-				})
-			})
-		})
-
-		Convey("doesn't abort after error", func() {
-			So(lexer.Lex("# + 1"), shouldEqualToken, []token.Token{
-				{Value: "#", Type: token.InvalidCharacter},
-				{Value: "", Type: token.Plus},
-				{Value: "1", Type: token.Int},
-			})
-		})
-
-		Convey("handles multiple errors", func() {
-			So(lexer.Lex("' $"), shouldEqualToken, []token.Token{
-				{Value: "'", Type: token.InvalidCharacter},
-				{Value: "$", Type: token.InvalidCharacter},
-			})
-			So(lexer.Lex("# + '"), shouldEqualToken, []token.Token{
-				{Value: "#", Type: token.InvalidCharacter},
-				{Value: "", Type: token.Plus},
-				{Value: "'", Type: token.InvalidCharacter},
-			})
-		})
-	})
-
-	Convey("Lexer handles whitespace", t, func() {
-		Convey("at the beginning", func() {
-			So(lexer.Lex(" 1 + 2"), shouldEqualToken, []token.Token{
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-			So(lexer.Lex("   1 + 2"), shouldEqualToken, []token.Token{
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-		})
-
-		Convey("at the end", func() {
-			So(lexer.Lex("1 + 2 "), shouldEqualToken, []token.Token{
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-			So(lexer.Lex("1 + 2     "), shouldEqualToken, []token.Token{
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-		})
-
-		Convey("multiple whitespace characters", func() {
-			So(lexer.Lex("1  +  2"), shouldEqualToken, []token.Token{
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-			So(lexer.Lex("  (  1 +   2 )  * 2 "), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.ParenL},
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-				{Value: "", Type: token.ParenR},
-				{Value: "", Type: token.Mult},
-				{Value: "2", Type: token.Int},
-			})
-		})
-	})
-
-	Convey("Lexer works with variables", t, func() {
-		Convey("single letter variables", func() {
-			So(lexer.Lex("a"), shouldEqualToken, []token.Token{
-				{Value: "a", Type: token.Var},
-			})
-		})
-
-		Convey("multi letter variables", func() {
-			So(lexer.Lex("ab"), shouldEqualToken, []token.Token{
-				{Value: "ab", Type: token.Var},
-			})
-
-			So(lexer.Lex("abcdefghiklmnopqrstvxyz"), shouldEqualToken, []token.Token{
-				{Value: "abcdefghiklmnopqrstvxyz", Type: token.Var},
-			})
-		})
-
-		Convey("variables in combination with operators and brackets", func() {
-			So(lexer.Lex("a  +  2"), shouldEqualToken, []token.Token{
-				{Value: "a", Type: token.Var},
-				{Value: "", Type: token.Plus},
-				{Value: "2", Type: token.Int},
-			})
-
-			So(lexer.Lex("ab  +  bc"), shouldEqualToken, []token.Token{
-				{Value: "ab", Type: token.Var},
-				{Value: "", Type: token.Plus},
-				{Value: "bc", Type: token.Var},
-			})
-
-			So(lexer.Lex("(a  +  b) - c"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.ParenL},
-				{Value: "a", Type: token.Var},
-				{Value: "", Type: token.Plus},
-				{Value: "b", Type: token.Var},
-				{Value: "", Type: token.ParenR},
-				{Value: "", Type: token.Minus},
-				{Value: "c", Type: token.Var},
-			})
-		})
-	})
-
-	Convey("Lexer works with functions", t, func() {
-		Convey("general", func() {
-			So(lexer.Lex("sqrt"), shouldEqualToken, []token.Token{
-				{Value: "sqrt", Type: token.Var},
-			})
-
-			So(lexer.Lex("sqrt("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Sqrt},
-			})
-
-			So(lexer.Lex("sqrt()"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Sqrt},
-				{Value: "", Type: token.ParenR},
-			})
-
-			So(lexer.Lex("sqrt( 1 )"), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Sqrt},
-				{Value: "1", Type: token.Int},
-				{Value: "", Type: token.ParenR},
-			})
-		})
-		Convey("sqrt()", func() {
-			So(lexer.Lex("sqrt("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Sqrt},
-			})
-		})
-		Convey("sin()", func() {
-			So(lexer.Lex("sin("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Sin},
-			})
-		})
-		Convey("cos()", func() {
-			So(lexer.Lex("cos("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Cos},
-			})
-		})
-		Convey("tan()", func() {
-			So(lexer.Lex("tan("), shouldEqualToken, []token.Token{
-				{Value: "", Type: token.Tan},
-			})
-		})
-	})
-
-	Convey("Lexer works", t, func() {
-		l := lexer.NewLexer("1")
-		l.Start()
-
-		var tokens []token.Token
-		for {
-			t := l.Read()
-			if t.Type == token.EOF {
-				break
-			}
-			tokens = append(tokens, t)
-		}
-
-		So(tokens, shouldEqualToken, []token.Token{
-			{Value: "1", Type: token.Int, Start: 0, End: 1},
-		}, true)
-	})
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Lexer Suite")
 }
+
+var _ = Describe("Lex()", func() {
+	test := func(in string, expected []token.Token) {
+		Expect(lexer.Lex(in)).To(Equal(expected))
+	}
+
+	Describe("numbers", func() {
+		DescribeTable("integers", test,
+			Entry("single digit 0", "0", []token.Token{{Value: "0", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 1", "1", []token.Token{{Value: "1", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 2", "2", []token.Token{{Value: "2", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 3", "3", []token.Token{{Value: "3", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 4", "4", []token.Token{{Value: "4", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 5", "5", []token.Token{{Value: "5", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 6", "6", []token.Token{{Value: "6", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 7", "7", []token.Token{{Value: "7", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 8", "8", []token.Token{{Value: "8", Type: token.Int, Start: 0, End: 1}}),
+			Entry("single digit 9", "9", []token.Token{{Value: "9", Type: token.Int, Start: 0, End: 1}}),
+
+			Entry("multiple digit 1", "10", []token.Token{
+				{Value: "10", Type: token.Int, Start: 0, End: 2},
+			}),
+			Entry("multiple digit 2", "10123", []token.Token{
+				{Value: "10123", Type: token.Int, Start: 0, End: 5},
+			}),
+
+			Entry("negative", "-9", []token.Token{{Value: "-9", Type: token.Int, Start: 0, End: 2}}),
+
+			Entry("multiple integers", "1 1", []token.Token{
+				{Value: "1", Type: token.Int, Start: 0, End: 1},
+				{Value: "1", Type: token.Int, Start: 2, End: 3},
+			}),
+
+			Entry("invalid character in number", "1a", []token.Token{
+				{Value: "a", Type: token.InvalidCharacterInNumber, Start: 0, End: 2},
+			}),
+		)
+
+		DescribeTable("decimals", test,
+			Entry("1", "1.0", []token.Token{{Value: "1.0", Type: token.Dec, Start: 0, End: 3}}),
+			Entry("2", "10.1", []token.Token{{Value: "10.1", Type: token.Dec, Start: 0, End: 4}}),
+			Entry("3", "12.3456", []token.Token{{Value: "12.3456", Type: token.Dec, Start: 0, End: 7}}),
+			Entry("4", "0.1", []token.Token{{Value: "0.1", Type: token.Dec, Start: 0, End: 3}}),
+
+			Entry("negative", "-9.1", []token.Token{{Value: "-9.1", Type: token.Dec, Start: 0, End: 4}}),
+
+			Entry("multiple decimals", "1.0 1.0", []token.Token{
+				{Value: "1.0", Type: token.Dec, Start: 0, End: 3},
+				{Value: "1.0", Type: token.Dec, Start: 4, End: 7},
+			}),
+
+			Entry("invalid character", "1.a", []token.Token{
+				{Value: "a", Type: token.InvalidCharacterInNumber, Start: 0, End: 3},
+			}),
+		)
+
+		DescribeTable("binary", test,
+			Entry("1", "0b1", []token.Token{{Value: "0b1", Type: token.Bin, Start: 0, End: 3}}),
+			Entry("2", "0b0101", []token.Token{{Value: "0b0101", Type: token.Bin, Start: 0, End: 6}}),
+
+			Entry("negative", "-0b1", []token.Token{{Value: "-0b1", Type: token.Bin, Start: 0, End: 4}}),
+
+			Entry("multiple numbers", "0b1 1", []token.Token{
+				{Value: "0b1", Type: token.Bin, Start: 0, End: 3},
+				{Value: "1", Type: token.Int, Start: 4, End: 5},
+			}),
+
+			Entry("invalid character", "0b012", []token.Token{
+				{Value: "2", Type: token.InvalidCharacterInNumber, Start: 0, End: 5},
+			}),
+		)
+
+		DescribeTable("hex", test,
+			Entry("1", "0x1", []token.Token{{Value: "0x1", Type: token.Hex, Start: 0, End: 3}}),
+			Entry("2", "0xA1F9", []token.Token{{Value: "0xA1F9", Type: token.Hex, Start: 0, End: 6}}),
+
+			Entry("negative", "-0x1", []token.Token{{Value: "-0x1", Type: token.Hex, Start: 0, End: 4}}),
+
+			Entry("multiple numbers", "0x1 1", []token.Token{
+				{Value: "0x1", Type: token.Hex, Start: 0, End: 3},
+				{Value: "1", Type: token.Int, Start: 4, End: 5},
+			}),
+
+			Entry("invalid character", "0xN", []token.Token{
+				{Value: "N", Type: token.InvalidCharacterInNumber, Start: 0, End: 3},
+			}),
+		)
+
+		DescribeTable("exponential", test,
+			Entry("1", "1^1", []token.Token{{Value: "1^1", Type: token.Exp, Start: 0, End: 3}}),
+			Entry("2", "10^1", []token.Token{{Value: "10^1", Type: token.Exp, Start: 0, End: 4}}),
+			Entry("3", "1^10", []token.Token{{Value: "1^10", Type: token.Exp, Start: 0, End: 4}}),
+
+			Entry("negative", "-0^1", []token.Token{{Value: "-0^1", Type: token.Exp, Start: 0, End: 4}}),
+
+			Entry("multiple numbers", "1^1 1", []token.Token{
+				{Value: "1^1", Type: token.Exp, Start: 0, End: 3},
+				{Value: "1", Type: token.Int, Start: 4, End: 5},
+			}),
+
+			Entry("invalid character", "0^a", []token.Token{
+				{Value: "a", Type: token.InvalidCharacterInNumber, Start: 0, End: 3},
+			}),
+		)
+	})
+
+	DescribeTable("operators", test,
+		Entry("plus", "+", []token.Token{{Value: "", Type: token.Plus, Start: 0, End: 1}}),
+		Entry("minus", "-", []token.Token{{Value: "", Type: token.Minus, Start: 0, End: 1}}),
+		Entry("mult", "*", []token.Token{{Value: "", Type: token.Mult, Start: 0, End: 1}}),
+		Entry("div", "/", []token.Token{{Value: "", Type: token.Div, Start: 0, End: 1}}),
+		Entry("modulo", "%", []token.Token{{Value: "", Type: token.Mod, Start: 0, End: 1}}),
+		Entry("or", "|", []token.Token{{Value: "", Type: token.Or, Start: 0, End: 1}}),
+		Entry("xor", "^", []token.Token{{Value: "", Type: token.Xor, Start: 0, End: 1}}),
+		Entry("and", "&", []token.Token{{Value: "", Type: token.And, Start: 0, End: 1}}),
+	)
+
+	DescribeTable("parens", test,
+		Entry("left", "(", []token.Token{{Value: "", Type: token.ParenL, Start: 0, End: 1}}),
+		Entry("right", ")", []token.Token{{Value: "", Type: token.ParenR, Start: 0, End: 1}}),
+		Entry("works with numbers", "(1)", []token.Token{
+			{Value: "", Type: token.ParenL, Start: 0, End: 1},
+			{Value: "1", Type: token.Int, Start: 1, End: 2},
+			{Value: "", Type: token.ParenR, Start: 2, End: 3},
+		}),
+	)
+
+	DescribeTable("mixed token types", test,
+
+		Entry("1 + 2", "1 + 2", []token.Token{
+			{Value: "1", Type: token.Int, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 2, End: 3},
+			{Value: "2", Type: token.Int, Start: 4, End: 5},
+		}),
+		Entry("1 + 2 + 3 + 4", "1 + 2 + 3 + 4", []token.Token{
+			{Value: "1", Type: token.Int, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 2, End: 3},
+			{Value: "2", Type: token.Int, Start: 4, End: 5},
+			{Value: "", Type: token.Plus, Start: 6, End: 7},
+			{Value: "3", Type: token.Int, Start: 8, End: 9},
+			{Value: "", Type: token.Plus, Start: 10, End: 11},
+			{Value: "4", Type: token.Int, Start: 12, End: 13},
+		}),
+		Entry("(1 + 2) * 2", "(1 + 2) * 2", []token.Token{
+			{Value: "", Type: token.ParenL, Start: 0, End: 1},
+			{Value: "1", Type: token.Int, Start: 1, End: 2},
+			{Value: "", Type: token.Plus, Start: 3, End: 4},
+			{Value: "2", Type: token.Int, Start: 5, End: 6},
+			{Value: "", Type: token.ParenR, Start: 6, End: 7},
+			{Value: "", Type: token.Mult, Start: 8, End: 9},
+			{Value: "2", Type: token.Int, Start: 10, End: 11},
+		}),
+		Entry("(2 * (1 + 2)) / 2", "(2 * (1 + 2)) / 2", []token.Token{
+			{Value: "", Type: token.ParenL, Start: 0, End: 1},
+			{Value: "2", Type: token.Int, Start: 1, End: 2},
+			{Value: "", Type: token.Mult, Start: 3, End: 4},
+			{Value: "", Type: token.ParenL, Start: 5, End: 6},
+			{Value: "1", Type: token.Int, Start: 6, End: 7},
+			{Value: "", Type: token.Plus, Start: 8, End: 9},
+			{Value: "2", Type: token.Int, Start: 10, End: 11},
+			{Value: "", Type: token.ParenR, Start: 11, End: 12},
+			{Value: "", Type: token.ParenR, Start: 12, End: 13},
+			{Value: "", Type: token.Div, Start: 14, End: 15},
+			{Value: "2", Type: token.Int, Start: 16, End: 17},
+		}),
+	)
+
+	DescribeTable("Lexer handles whitespace", test,
+		Entry("at the beginning (single)", " 1 + 2", []token.Token{
+			{Value: "1", Type: token.Int, Start: 1, End: 2},
+			{Value: "", Type: token.Plus, Start: 3, End: 4},
+			{Value: "2", Type: token.Int, Start: 5, End: 6},
+		}),
+		Entry("at the beginning (multiple)", "   1 + 2", []token.Token{
+			{Value: "1", Type: token.Int, Start: 3, End: 4},
+			{Value: "", Type: token.Plus, Start: 5, End: 6},
+			{Value: "2", Type: token.Int, Start: 7, End: 8},
+		}),
+
+		Entry("at the end (single)", "1 + 2 ", []token.Token{
+			{Value: "1", Type: token.Int, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 2, End: 3},
+			{Value: "2", Type: token.Int, Start: 4, End: 5},
+		}),
+		Entry("at the end (multiplle)", "1 + 2     ", []token.Token{
+			{Value: "1", Type: token.Int, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 2, End: 3},
+			{Value: "2", Type: token.Int, Start: 4, End: 5},
+		}),
+
+		Entry("multiple whitespace characters in between", "1  +  2", []token.Token{
+			{Value: "1", Type: token.Int, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 3, End: 4},
+			{Value: "2", Type: token.Int, Start: 6, End: 7},
+		}),
+		Entry("whitespace everywhere", "  (  1 +   2 )  * 2 ", []token.Token{
+			{Value: "", Type: token.ParenL, Start: 2, End: 3},
+			{Value: "1", Type: token.Int, Start: 5, End: 6},
+			{Value: "", Type: token.Plus, Start: 7, End: 8},
+			{Value: "2", Type: token.Int, Start: 11, End: 12},
+			{Value: "", Type: token.ParenR, Start: 13, End: 14},
+			{Value: "", Type: token.Mult, Start: 16, End: 17},
+			{Value: "2", Type: token.Int, Start: 18, End: 19},
+		}),
+	)
+
+	DescribeTable("variables", test,
+		Entry("single letter", "a", []token.Token{{Value: "a", Type: token.Var, Start: 0, End: 1}}),
+
+		Entry("multi letter 1", "ab", []token.Token{{Value: "ab", Type: token.Var, Start: 0, End: 2}}),
+		Entry("multi letter 2", "abcdefghiklmnopqrstvxyz", []token.Token{
+			{Value: "abcdefghiklmnopqrstvxyz", Type: token.Var, Start: 0, End: 23},
+		}),
+
+		Entry("works with other tokens 1", "a  +  2", []token.Token{
+			{Value: "a", Type: token.Var, Start: 0, End: 1},
+			{Value: "", Type: token.Plus, Start: 3, End: 4},
+			{Value: "2", Type: token.Int, Start: 6, End: 7},
+		}),
+		Entry("works with other tokens 1", "ab  +  bc", []token.Token{
+			{Value: "ab", Type: token.Var, Start: 0, End: 2},
+			{Value: "", Type: token.Plus, Start: 4, End: 5},
+			{Value: "bc", Type: token.Var, Start: 7, End: 9},
+		}),
+		Entry("works with other tokens 1", "(a  +  b) - c", []token.Token{
+			{Value: "", Type: token.ParenL, Start: 0, End: 1},
+			{Value: "a", Type: token.Var, Start: 1, End: 2},
+			{Value: "", Type: token.Plus, Start: 4, End: 5},
+			{Value: "b", Type: token.Var, Start: 7, End: 8},
+			{Value: "", Type: token.ParenR, Start: 8, End: 9},
+			{Value: "", Type: token.Minus, Start: 10, End: 12},
+			{Value: "c", Type: token.Var, Start: 12, End: 13},
+		}),
+	)
+
+	DescribeTable("Lexer works with functions", test,
+		Entry("sqrt", "sqrt(", []token.Token{{Value: "", Type: token.Sqrt, Start: 0, End: 5}}),
+		Entry("sin", "sin(", []token.Token{{Value: "", Type: token.Sin, Start: 0, End: 4}}),
+		Entry("cos", "cos(", []token.Token{{Value: "", Type: token.Cos, Start: 0, End: 4}}),
+		Entry("tan", "tan(", []token.Token{{Value: "", Type: token.Tan, Start: 0, End: 4}}),
+
+		Entry("is var without paren", "sqrt", []token.Token{{Value: "sqrt", Type: token.Var, Start: 0, End: 4}}),
+
+		Entry("function with empty body", "sqrt()", []token.Token{
+			{Value: "", Type: token.Sqrt, Start: 0, End: 5},
+			{Value: "", Type: token.ParenR, Start: 5, End: 6},
+		}),
+
+		Entry("function with not empty body", "sqrt( 1 )", []token.Token{
+			{Value: "", Type: token.Sqrt, Start: 0, End: 5},
+			{Value: "1", Type: token.Int, Start: 6, End: 7},
+			{Value: "", Type: token.ParenR, Start: 8, End: 9},
+		}),
+	)
+})
