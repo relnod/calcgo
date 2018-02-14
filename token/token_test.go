@@ -3,89 +3,67 @@ package token_test
 import (
 	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
 	"github.com/relnod/calcgo/token"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestToken(t *testing.T) {
-	Convey("Token Spec", t, func() {
-		Convey("IsLiteral()", func() {
-			var cases = []struct {
-				t token.Type
-				r bool
-			}{
-				{token.EOF, false},
-				{token.Int, true},
-				{token.Dec, true},
-				{token.Hex, true},
-				{token.Bin, true},
-				{token.Exp, true},
-				{token.Var, true},
-				{token.Plus, false},
-			}
-
-			for _, c := range cases {
-				n := token.Token{Type: c.t}
-				So(n.IsLiteral(), ShouldEqual, c.r)
-			}
-		})
-
-		Convey("IsOperator()", func() {
-			var cases = []struct {
-				t token.Type
-				r bool
-			}{
-				{token.Var, false},
-				{token.Plus, true},
-				{token.Minus, true},
-				{token.Mult, true},
-				{token.Div, true},
-				{token.Or, true},
-				{token.Xor, true},
-				{token.And, true},
-				{token.ParenL, false},
-			}
-
-			for _, c := range cases {
-				n := token.Token{Type: c.t}
-				So(n.IsOperator(), ShouldEqual, c.r)
-			}
-		})
-
-		Convey("IsFunction()", func() {
-			var cases = []struct {
-				t token.Type
-				r bool
-			}{
-				{token.Div, false},
-				{token.Sqrt, true},
-				{token.Sin, true},
-				{token.Cos, true},
-				{token.Tan, true},
-				{token.ParenL, false},
-			}
-
-			for _, c := range cases {
-				n := token.Token{Type: c.t}
-				So(n.IsFunction(), ShouldEqual, c.r)
-			}
-		})
-
-		Convey("String()", func() {
-			var cases = []struct {
-				t token.Type
-				v string
-
-				r string
-			}{
-				{token.Div, "/", `{Value: '/', Type: '/', Start: '0', End: '0', }`},
-				{255, "bla", `{Value: 'bla', Type: 'Unknown token', Start: '0', End: '0', }`},
-			}
-
-			for _, c := range cases {
-				n := token.Token{Type: c.t, Value: c.v}
-				So(n.String(), ShouldEqual, c.r)
-			}
-		})
-	})
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Token Suite")
 }
+
+var _ = DescribeTable("IsLiteral()",
+	func(tokenType token.Type, expected bool) {
+		t := token.Token{Type: tokenType}
+		Expect(t.IsLiteral()).To(Equal(expected))
+	},
+	Entry("1", token.EOF, false),
+	Entry("2", token.Int, true),
+	Entry("3", token.Dec, true),
+	Entry("4", token.Hex, true),
+	Entry("5", token.Bin, true),
+	Entry("6", token.Exp, true),
+	Entry("7", token.Var, true),
+	Entry("8", token.Plus, false),
+)
+
+var _ = DescribeTable("IsOperator()",
+	func(tokenType token.Type, expected bool) {
+		t := token.Token{Type: tokenType}
+		Expect(t.IsOperator()).To(Equal(expected))
+	},
+	Entry("1", token.Var, false),
+	Entry("2", token.Plus, true),
+	Entry("3", token.Minus, true),
+	Entry("4", token.Mult, true),
+	Entry("5", token.Div, true),
+	Entry("6", token.Or, true),
+	Entry("7", token.Xor, true),
+	Entry("7", token.And, true),
+	Entry("8", token.ParenL, false),
+)
+
+var _ = DescribeTable("IsFunction()",
+	func(tokenType token.Type, expected bool) {
+		t := token.Token{Type: tokenType}
+		Expect(t.IsFunction()).To(Equal(expected))
+	},
+	Entry("1", token.Div, false),
+	Entry("2", token.Sqrt, true),
+	Entry("3", token.Sin, true),
+	Entry("4", token.Cos, true),
+	Entry("5", token.Tan, true),
+	Entry("8", token.ParenL, false),
+)
+
+var _ = DescribeTable("String()",
+	func(t token.Token, expected string) {
+		Expect(t.String()).To(Equal(expected))
+	},
+	Entry("valid token", token.Token{Type: token.Div, Value: "/"},
+		`{Value: '/', Type: '/', Start: '0', End: '0', }`),
+	Entry("unkown token", token.Token{Type: 255, Value: "foo"},
+		`{Value: 'foo', Type: 'Unknown token', Start: '0', End: '0', }`),
+)
