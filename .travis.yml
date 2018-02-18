@@ -13,24 +13,27 @@ jobs:
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
+        - ginkgo -r -v --race
     - go: 1.9
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
+        - ginkgo -r -v --race
       after_success:
-        - ./scripts/coverage.sh
-        - mv profile.cov coverage.txt
+        - ginkgo -r -cover -coverprofile=profile.cov -outputdir=build
+        - mv build/profile.cov coverage.txt
         - bash <(curl -s https://codecov.io/bash)
     - go: tip
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
+        - ginkgo -r -v --race
 
     - stage: lint
       go: 1.x
