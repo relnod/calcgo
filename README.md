@@ -52,11 +52,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/relnod/calcgo/interpreter"
+	"github.com/relnod/calcgo"
 )
 
 func main() {
-	number, _ := interpreter.Interpret("1 + 1")
+	number, _ := calcgo.Calc("1 + 1")
 
 	fmt.Println(number)
 }

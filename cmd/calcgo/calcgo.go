@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/relnod/calcgo/interpreter"
+	"github.com/relnod/calcgo"
 )
 
 func main() {
 	flag.Parse()
 
-	result, errors := interpreter.Interpret(flag.Arg(0))
+	result, errors := calcgo.Calc(flag.Arg(0))
 	if errors != nil {
 		fmt.Println("Errors have occured:")
 		for _, err := range errors {
