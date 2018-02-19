@@ -22,8 +22,7 @@ var (
 // Interpreter holds state of interpreter
 type Interpreter struct {
 	str              string
-	ast              *parser.AST
-	oast             *optimizer.OptimizedAST
+	ast              parser.IAST
 	vars             map[string]float64
 	optimizerEnabled bool
 }
@@ -33,18 +32,16 @@ func NewInterpreter(str string) *Interpreter {
 	return &Interpreter{
 		str:              str,
 		ast:              nil,
-		oast:             nil,
 		vars:             make(map[string]float64),
 		optimizerEnabled: false,
 	}
 }
 
 // NewInterpreterFromAST returns a new interpreter from an ast
-func NewInterpreterFromAST(ast *parser.AST) *Interpreter {
+func NewInterpreterFromAST(ast parser.IAST) *Interpreter {
 	return &Interpreter{
 		str:              "",
 		ast:              ast,
-		oast:             nil,
 		vars:             make(map[string]float64),
 		optimizerEnabled: false,
 	}
@@ -82,20 +79,16 @@ func (i *Interpreter) GetResult() (float64, []error) {
 
 	var result float64
 	var err error
-	if i.optimizerEnabled {
-		if i.oast == nil {
-			oast, err := optimizer.Optimize(i.ast)
-			if err != nil {
-				return 0, []error{err}
-			}
-
-			i.oast = oast
+	if i.optimizerEnabled && !i.ast.Optimized() {
+		oast, err := optimizer.Optimize(i.ast)
+		if err != nil {
+			return 0, []error{err}
 		}
 
-		result, err = i.oast.Node.Calculate(i.calcVisitor)
-	} else {
-		result, err = i.ast.Node.Calculate(i.calcVisitor)
+		i.ast = oast
 	}
+
+	result, err = i.ast.Root().Calculate(i.calcVisitor)
 
 	if err != nil {
 		return 0, []error{err}
@@ -144,7 +137,7 @@ func Interpret(str string) (float64, []error) {
 //		},
 //  })
 //
-func InterpretAST(ast *parser.AST) (float64, error) {
+func InterpretAST(ast parser.IAST) (float64, error) {
 	i := NewInterpreterFromAST(ast)
 
 	result, errors := i.GetResult()

@@ -26,18 +26,32 @@ type OptimizedAST struct {
 	Node *OptimizedNode
 }
 
-// OptimizedNode holds an optimized node
-type OptimizedNode struct {
-	Type        parser.NodeType
-	Value       float64
-	OldValue    string
-	IsOptimized bool
-	LeftChild   *OptimizedNode
-	RightChild  *OptimizedNode
+// Root retruns root node.
+func (a *OptimizedAST) Root() parser.INode {
+	return a.Node
 }
 
+// Optimized returns true.
+func (a *OptimizedAST) Optimized() bool {
+	return true
+}
+
+// OptimizedNode holds an optimized node
+type OptimizedNode struct {
+	Type       parser.NodeType
+	Value      float64
+	OldValue   string
+	LeftChild  *OptimizedNode
+	RightChild *OptimizedNode
+}
+
+// GetType return the type of the node.
 func (n *OptimizedNode) GetType() parser.NodeType { return n.Type }
-func (n *OptimizedNode) GetValue() string         { return n.OldValue }
+
+// GetValue return the value of the node.
+func (n *OptimizedNode) GetValue() string { return n.OldValue }
+
+// Left returns the left child.
 func (n *OptimizedNode) Left() parser.INode {
 	if n.LeftChild == nil {
 		return nil
@@ -45,6 +59,8 @@ func (n *OptimizedNode) Left() parser.INode {
 
 	return n.LeftChild
 }
+
+// Right returns the right child.
 func (n *OptimizedNode) Right() parser.INode {
 	if n.RightChild == nil {
 		return nil
@@ -53,12 +69,19 @@ func (n *OptimizedNode) Right() parser.INode {
 	return n.RightChild
 }
 
+// Calculate returns the calculated value if it is pre calculated.
+// Otherwise returns the result of the calculation visitor.
 func (n *OptimizedNode) Calculate(fn parser.CalcVisitor) (float64, error) {
-	if n.IsOptimized {
+	if n.GetType() == parser.NDec {
 		return n.Value, nil
 	}
 
 	return fn(n)
+}
+
+// IsLiteral returns true if the type of n is a literal.
+func (n *OptimizedNode) IsLiteral() bool {
+	return n.Type.IsLiteral()
 }
 
 // IsFunction returns true if the type of n is a function.
@@ -74,24 +97,23 @@ func (n *OptimizedNode) IsOperator() bool {
 // newOptimizedNode returns a new optimized node.
 func newOptimizedNode(value float64) *OptimizedNode {
 	return &OptimizedNode{
-		Type:        parser.NDec,
-		Value:       value,
-		OldValue:    "",
-		IsOptimized: true,
-		LeftChild:   nil,
-		RightChild:  nil,
+		Type:       parser.NDec,
+		Value:      value,
+		OldValue:   "",
+		LeftChild:  nil,
+		RightChild: nil,
 	}
 }
 
 // Optimize optimizes an ast.
 // Interprets all integer and decimal nodes.
 // Interprets all operations, if their child nodes can already be interpreted
-func Optimize(ast *parser.AST) (*OptimizedAST, error) {
+func Optimize(ast parser.IAST) (*OptimizedAST, error) {
 	if ast == nil {
 		return nil, nil
 	}
 
-	optimizedNode, err := optimizeNode(ast.Node)
+	optimizedNode, err := optimizeNode(ast.Root())
 	if err != nil {
 		return nil, err
 	}
@@ -100,37 +122,36 @@ func Optimize(ast *parser.AST) (*OptimizedAST, error) {
 }
 
 // optimizeNode recursively optimizes all nodes, that can be optimized.
-func optimizeNode(node *parser.Node) (*OptimizedNode, error) {
-	if node.IsLiteral() {
-		return optimizeLiteral(node)
+func optimizeNode(n parser.INode) (*OptimizedNode, error) {
+	if n.IsLiteral() {
+		return optimizeLiteral(n)
 	}
-	if node.IsOperator() {
-		return optimizeOperator(node)
+	if n.IsOperator() {
+		return optimizeOperator(n)
 	}
 
-	if node.IsFunction() {
-		return optimizeFunction(node)
+	if n.IsFunction() {
+		return optimizeFunction(n)
 	}
 
 	return nil, ErrorInvalidNodeType
 }
 
-func optimizeLiteral(node *parser.Node) (*OptimizedNode, error) {
-	if node.Type == parser.NVar {
+func optimizeLiteral(n parser.INode) (*OptimizedNode, error) {
+	if n.GetType() == parser.NVar {
 		return &OptimizedNode{
-			Type:        parser.NVar,
-			Value:       0,
-			OldValue:    node.Value,
-			IsOptimized: false,
-			LeftChild:   nil,
-			RightChild:  nil,
+			Type:       parser.NVar,
+			Value:      0,
+			OldValue:   n.GetValue(),
+			LeftChild:  nil,
+			RightChild: nil,
 		}, nil
 	}
 
 	var result float64
 	var err error
 
-	result, err = calculator.ConvertLiteral(node)
+	result, err = calculator.ConvertLiteral(n.GetValue(), n.GetType())
 	if err != nil {
 		return nil, err
 	}
@@ -139,25 +160,24 @@ func optimizeLiteral(node *parser.Node) (*OptimizedNode, error) {
 }
 
 // optimizeOperator recursively optimizes an operator node and its child nodes.
-func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
-	left, right, err := getOptimizedNodeChilds(node)
+func optimizeOperator(n parser.INode) (*OptimizedNode, error) {
+	left, right, err := getOptimizedNodeChilds(n)
 	if err != nil {
 		return nil, err
 	}
 
-	if !left.IsOptimized || !right.IsOptimized {
+	if left.GetType() != parser.NDec || right.GetType() != parser.NDec {
 		return &OptimizedNode{
-			Type:        node.Type,
-			Value:       0,
-			OldValue:    "",
-			IsOptimized: false,
-			LeftChild:   left,
-			RightChild:  right,
+			Type:       n.GetType(),
+			Value:      0,
+			OldValue:   "",
+			LeftChild:  left,
+			RightChild: right,
 		}, nil
 	}
 
 	var result float64
-	result, err = calculator.CalculateOperator(left.Value, right.Value, node.Type)
+	result, err = calculator.CalculateOperator(left.Value, right.Value, n.GetType())
 	if err != nil {
 		return nil, err
 	}
@@ -166,19 +186,19 @@ func optimizeOperator(node *parser.Node) (*OptimizedNode, error) {
 }
 
 // getOptimizedNodeChilds returns all optimized child nodes of a node.
-func getOptimizedNodeChilds(node *parser.Node) (*OptimizedNode, *OptimizedNode, error) {
-	if node.LeftChild == nil {
+func getOptimizedNodeChilds(n parser.INode) (*OptimizedNode, *OptimizedNode, error) {
+	if n.Left() == nil {
 		return nil, nil, ErrorMissingLeftChild
 	}
-	if node.RightChild == nil {
+	if n.Right() == nil {
 		return nil, nil, ErrorMissingRightChild
 	}
 
-	left, err := optimizeNode(node.LeftChild)
+	left, err := optimizeNode(n.Left())
 	if err != nil {
 		return nil, nil, err
 	}
-	right, err := optimizeNode(node.RightChild)
+	right, err := optimizeNode(n.Right())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -187,25 +207,24 @@ func getOptimizedNodeChilds(node *parser.Node) (*OptimizedNode, *OptimizedNode, 
 }
 
 // optimizeFunction recursively optimizes a function node and its arguments.
-func optimizeFunction(node *parser.Node) (*OptimizedNode, error) {
-	left, err := optimizeNode(node.LeftChild)
+func optimizeFunction(n parser.INode) (*OptimizedNode, error) {
+	left, err := optimizeNode(n.Left())
 	if err != nil {
 		return nil, err
 	}
 
-	if !left.IsOptimized {
+	if left.GetType() != parser.NDec {
 		return &OptimizedNode{
-			Type:        node.Type,
-			Value:       0,
-			OldValue:    "",
-			IsOptimized: false,
-			LeftChild:   left,
-			RightChild:  nil,
+			Type:       n.GetType(),
+			Value:      0,
+			OldValue:   "",
+			LeftChild:  left,
+			RightChild: nil,
 		}, nil
 	}
 
 	var result float64
-	result, err = calculator.CalculateFunction(left.Value, node.Type)
+	result, err = calculator.CalculateFunction(left.Value, n.GetType())
 	if err != nil {
 		return nil, err
 	}

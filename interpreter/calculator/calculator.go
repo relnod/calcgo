@@ -90,19 +90,19 @@ func ConvertExponential(value string) (float64, error) {
 }
 
 // ConvertLiteral converts a atring literal to a float.
-func ConvertLiteral(node *parser.Node) (float64, error) {
-	switch node.Type {
+func ConvertLiteral(value string, nodeType parser.NodeType) (float64, error) {
+	switch nodeType {
 	case parser.NInt:
-		return ConvertInteger(node.Value)
+		return ConvertInteger(value)
 	case parser.NDec:
-		return ConvertDecimal(node.Value)
+		return ConvertDecimal(value)
 	case parser.NBin:
-		return ConvertBin(node.Value)
+		return ConvertBin(value)
 	case parser.NHex:
-		return ConvertHex(node.Value)
+		return ConvertHex(value)
 	}
 
-	return ConvertExponential(node.Value)
+	return ConvertExponential(value)
 }
 
 // CalculateOperator calculates the result of an operator.

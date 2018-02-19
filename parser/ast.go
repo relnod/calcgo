@@ -2,6 +2,24 @@ package parser
 
 import "github.com/relnod/calcgo/token"
 
+// NodeType defines the type of a node
+type NodeType uint
+
+// IsLiteral returns true if t is a literal.
+func (t NodeType) IsLiteral() bool {
+	return literalBeg < t && t < literalEnd
+}
+
+// IsOperator returns true if t is an operator.
+func (t NodeType) IsOperator() bool {
+	return operatorBeg < t && t < operatorEnd
+}
+
+// IsFunction returns true if t is a function.
+func (t NodeType) IsFunction() bool {
+	return functionBeg < t && t < functionEnd
+}
+
 // Node types
 const (
 	// Errors
@@ -44,49 +62,30 @@ const (
 	functionEnd
 )
 
-// AST stores the data of the abstract syntax tree.
-// The ast is in the form of a binary tree.
-type AST struct {
-	Node *Node
-}
-
-// NodeType defines the type of a node
-type NodeType uint
-
-// IsLiteral returns true if t is a literal.
-func (t NodeType) IsLiteral() bool {
-	return literalBeg < t && t < literalEnd
-}
-
-// IsOperator returns true if t is an operator.
-func (t NodeType) IsOperator() bool {
-	return operatorBeg < t && t < operatorEnd
-}
-
-// IsFunction returns true if t is a function.
-func (t NodeType) IsFunction() bool {
-	return functionBeg < t && t < functionEnd
-}
-
+// CalcVisitor defines the visitor function called when calculation a node.
 type CalcVisitor func(INode) (float64, error)
 
 // INode defines an interface for a node.
 type INode interface {
-	Calculate(CalcVisitor) (float64, error)
 	GetType() NodeType
 	GetValue() string
 	Left() INode
 	Right() INode
 
-	// IsLiteral() bool
+	IsLiteral() bool
 	IsOperator() bool
 	IsFunction() bool
+
+	Calculate(CalcVisitor) (float64, error)
 }
 
-// Calculatable defines an interface for a calculatable node.
-type Calculatable interface {
-	// Value returns the calculated result of a node
-	// Calculate(CalcVisitor) float64
+// IAST defines an interface for an ast.
+type IAST interface {
+	// Root returns the root node.
+	Root() INode
+
+	// Optimized returns true if the ast is optimized.
+	Optimized() bool
 }
 
 // Node represents a node
@@ -97,8 +96,13 @@ type Node struct {
 	RightChild *Node
 }
 
+// GetType returns the type of the node.
 func (n *Node) GetType() NodeType { return n.Type }
-func (n *Node) GetValue() string  { return n.Value }
+
+// GetValue returns the value of the node.
+func (n *Node) GetValue() string { return n.Value }
+
+// Left returns the left child.
 func (n *Node) Left() INode {
 	if n.LeftChild == nil {
 		return nil
@@ -106,6 +110,8 @@ func (n *Node) Left() INode {
 
 	return n.LeftChild
 }
+
+// Right returns the left child.
 func (n *Node) Right() INode {
 	if n.RightChild == nil {
 		return nil
@@ -114,6 +120,7 @@ func (n *Node) Right() INode {
 	return n.RightChild
 }
 
+// Calculate returns the result of the calculation visitor.
 func (n *Node) Calculate(fn CalcVisitor) (float64, error) { return fn(n) }
 
 // IsLiteral returns true if n is literal node.
@@ -145,6 +152,22 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 	}
 
 	return n.Type < n2.Type
+}
+
+// AST stores the data of the abstract syntax tree.
+// The ast is in the form of a binary tree.
+type AST struct {
+	Node *Node
+}
+
+// Root returns the root node.
+func (a *AST) Root() INode {
+	return a.Node
+}
+
+// Optimized returns false.
+func (a *AST) Optimized() bool {
+	return false
 }
 
 // getOperatorNodeType converts a token type to a node type.
