@@ -28,12 +28,12 @@ type OptimizedAST struct {
 
 // OptimizedNode holds an optimized node
 type OptimizedNode struct {
-	Type        parser.NodeType `json:"type"`
-	Value       float64         `json:"value"`
-	OldValue    string          `json:"old_value"`
-	IsOptimized bool            `json:"is_optimized"`
-	LeftChild   *OptimizedNode  `json:"left"`
-	RightChild  *OptimizedNode  `json:"right"`
+	Type        parser.NodeType
+	Value       float64
+	OldValue    string
+	IsOptimized bool
+	LeftChild   *OptimizedNode
+	RightChild  *OptimizedNode
 }
 
 func (n *OptimizedNode) GetType() parser.NodeType { return n.Type }

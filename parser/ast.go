@@ -91,10 +91,10 @@ type Calculatable interface {
 
 // Node represents a node
 type Node struct {
-	Type       NodeType `json:"type"`
-	Value      string   `json:"value"`
-	LeftChild  *Node    `json:"left"`
-	RightChild *Node    `json:"right"`
+	Type       NodeType
+	Value      string
+	LeftChild  *Node
+	RightChild *Node
 }
 
 func (n *Node) GetType() NodeType { return n.Type }
