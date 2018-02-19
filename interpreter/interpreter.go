@@ -92,9 +92,9 @@ func (i *Interpreter) GetResult() (float64, []error) {
 			i.oast = oast
 		}
 
-		result, err = i.interpretOptimizedNode(i.oast.Node)
+		result, err = i.oast.Node.Calculate(i.calcVisitor)
 	} else {
-		result, err = i.interpretNode(i.ast.Node)
+		result, err = i.ast.Node.Calculate(i.calcVisitor)
 	}
 
 	if err != nil {
@@ -155,58 +155,37 @@ func InterpretAST(ast *parser.AST) (float64, error) {
 	return result, nil
 }
 
-// interpretNode recursively interprets a given node.
-func (i *Interpreter) interpretNode(node *parser.Node) (float64, error) {
-	if node.Type == parser.NVar {
-		return i.interpretVariable(node)
-	}
-	if node.IsLiteral() {
-		return calculator.ConvertLiteral(node)
+func (i *Interpreter) calcVisitor(n parser.INode) (float64, error) {
+	switch n.GetType() {
+	case parser.NVar:
+		return i.interpretVariable(n)
+	case parser.NInt:
+		return calculator.ConvertInteger(n.GetValue())
+	case parser.NDec:
+		return calculator.ConvertDecimal(n.GetValue())
+	case parser.NBin:
+		return calculator.ConvertBin(n.GetValue())
+	case parser.NHex:
+		return calculator.ConvertHex(n.GetValue())
+	case parser.NExp:
+		return calculator.ConvertExponential(n.GetValue())
 	}
 
-	if node.IsOperator() {
-		return i.interpretOperator(node)
+	if n.IsOperator() {
+		return i.interpretOperator(n)
 	}
 
-	if node.IsFunction() {
-		return i.interpretFunction(node)
+	if n.IsFunction() {
+		return i.interpretFunction(n)
 	}
 
 	return 0, ErrorInvalidNodeType
 }
 
-// interpretOptimizedNode recursively interprets a given optimized node
-func (i *Interpreter) interpretOptimizedNode(node *optimizer.OptimizedNode) (float64, error) {
-	if node.IsOptimized {
-		return node.Value, nil
-	}
-
-	if node.Type == parser.NVar {
-		return i.interpretOptimizedVariable(node)
-	}
-
-	if node.IsFunction() {
-		return i.interpretOptimizedFunction(node)
-	}
-
-	return i.interpretOptimizedOperator(node)
-}
-
 // interpretVariable interprets a variable node.
 // Returns an error if the variable is not defined.
-func (i *Interpreter) interpretVariable(node *parser.Node) (float64, error) {
-	number, ok := i.vars[node.Value]
-	if ok {
-		return number, nil
-	}
-
-	return 0, ErrorVariableNotDefined
-}
-
-// interpretOptimizedVariable interprets an optimized variable node.
-// Returns an error if the variable is not defined.
-func (i *Interpreter) interpretOptimizedVariable(node *optimizer.OptimizedNode) (float64, error) {
-	number, ok := i.vars[node.OldValue]
+func (i *Interpreter) interpretVariable(n parser.INode) (float64, error) {
+	number, ok := i.vars[n.GetValue()]
 	if ok {
 		return number, nil
 	}
@@ -215,76 +194,40 @@ func (i *Interpreter) interpretOptimizedVariable(node *optimizer.OptimizedNode) 
 }
 
 // interpretOperator recursively interprets an operator node.
-func (i *Interpreter) interpretOperator(node *parser.Node) (float64, error) {
-	left, right, err := i.getInterpretedNodeChilds(node)
+func (i *Interpreter) interpretOperator(n parser.INode) (float64, error) {
+	left, right, err := i.getInterpretedNodeChilds(n)
 	if err != nil {
 		return 0, err
 	}
 
-	return calculator.CalculateOperator(left, right, node.Type)
-}
-
-// interpretOptimizedOperator recursively interprets an optimized operator node.
-func (i *Interpreter) interpretOptimizedOperator(node *optimizer.OptimizedNode) (float64, error) {
-	left, right, err := i.getInterpretedOptimizedNodeChilds(node)
-	if err != nil {
-		return 0, err
-	}
-
-	return calculator.CalculateOperator(left, right, node.Type)
+	return calculator.CalculateOperator(left, right, n.GetType())
 }
 
 // interpretFunction interprets a function node
-func (i *Interpreter) interpretFunction(node *parser.Node) (float64, error) {
-	left, err := i.interpretNode(node.LeftChild)
+func (i *Interpreter) interpretFunction(n parser.INode) (float64, error) {
+	left, err := n.Left().Calculate(i.calcVisitor)
 	if err != nil {
 		return 0, err
 	}
 
-	return calculator.CalculateFunction(left, node.Type)
-}
-
-// interpretOptimizedFunction interprets a function node
-func (i *Interpreter) interpretOptimizedFunction(node *optimizer.OptimizedNode) (float64, error) {
-	left, err := i.interpretOptimizedNode(node.LeftChild)
-	if err != nil {
-		return 0, err
-	}
-
-	return calculator.CalculateFunction(left, node.Type)
+	return calculator.CalculateFunction(left, n.GetType())
 }
 
 // getInterpretedNodeChilds returns the interpreted child nodes of a given node.
 // Both child nodes have to be defined. Retruns an error otherwise.
-func (i *Interpreter) getInterpretedNodeChilds(node *parser.Node) (float64, float64, error) {
-	if node.LeftChild == nil {
+func (i *Interpreter) getInterpretedNodeChilds(n parser.INode) (float64, float64, error) {
+	if n.Left() == nil {
 		return 0, 0, ErrorMissingLeftChild
 	}
-	if node.RightChild == nil {
+	if n.Right() == nil {
 		return 0, 0, ErrorMissingRightChild
 	}
 
-	left, err := i.interpretNode(node.LeftChild)
+	left, err := n.Left().Calculate(i.calcVisitor)
 	if err != nil {
 		return 0, 0, err
 	}
-	right, err := i.interpretNode(node.RightChild)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return left, right, nil
-}
-
-// getInterpretedOptimizedNodeChilds returns the optimized interpreted child
-// nodes of a given node.
-// Both child nodes have to be defined. Retruns an error otherwise.
-func (i *Interpreter) getInterpretedOptimizedNodeChilds(node *optimizer.OptimizedNode) (float64, float64, error) {
-	left, err := i.interpretOptimizedNode(node.LeftChild)
-	if err != nil {
-		return 0, 0, err
-	}
-	right, err := i.interpretOptimizedNode(node.RightChild)
+	right, err := n.Right().Calculate(i.calcVisitor)
 	if err != nil {
 		return 0, 0, err
 	}

@@ -36,6 +36,31 @@ type OptimizedNode struct {
 	RightChild  *OptimizedNode  `json:"right"`
 }
 
+func (n *OptimizedNode) GetType() parser.NodeType { return n.Type }
+func (n *OptimizedNode) GetValue() string         { return n.OldValue }
+func (n *OptimizedNode) Left() parser.INode {
+	if n.LeftChild == nil {
+		return nil
+	}
+
+	return n.LeftChild
+}
+func (n *OptimizedNode) Right() parser.INode {
+	if n.RightChild == nil {
+		return nil
+	}
+
+	return n.RightChild
+}
+
+func (n *OptimizedNode) Calculate(fn parser.CalcVisitor) (float64, error) {
+	if n.IsOptimized {
+		return n.Value, nil
+	}
+
+	return fn(n)
+}
+
 // IsFunction returns true if the type of n is a function.
 func (n *OptimizedNode) IsFunction() bool {
 	return n.Type.IsFunction()

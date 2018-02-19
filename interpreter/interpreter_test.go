@@ -241,7 +241,7 @@ var _ = DescribeTable("InterpretAST()",
 		},
 	}, 3.0, nil),
 
-	Entry("errors, with missing left child", &parser.AST{
+	FEntry("errors, with missing left child", &parser.AST{
 		Node: &parser.Node{
 			Type:      parser.NAdd,
 			Value:     "",

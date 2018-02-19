@@ -68,6 +68,27 @@ func (t NodeType) IsFunction() bool {
 	return functionBeg < t && t < functionEnd
 }
 
+type CalcVisitor func(INode) (float64, error)
+
+// INode defines an interface for a node.
+type INode interface {
+	Calculate(CalcVisitor) (float64, error)
+	GetType() NodeType
+	GetValue() string
+	Left() INode
+	Right() INode
+
+	// IsLiteral() bool
+	IsOperator() bool
+	IsFunction() bool
+}
+
+// Calculatable defines an interface for a calculatable node.
+type Calculatable interface {
+	// Value returns the calculated result of a node
+	// Calculate(CalcVisitor) float64
+}
+
 // Node represents a node
 type Node struct {
 	Type       NodeType `json:"type"`
@@ -75,6 +96,25 @@ type Node struct {
 	LeftChild  *Node    `json:"left"`
 	RightChild *Node    `json:"right"`
 }
+
+func (n *Node) GetType() NodeType { return n.Type }
+func (n *Node) GetValue() string  { return n.Value }
+func (n *Node) Left() INode {
+	if n.LeftChild == nil {
+		return nil
+	}
+
+	return n.LeftChild
+}
+func (n *Node) Right() INode {
+	if n.RightChild == nil {
+		return nil
+	}
+
+	return n.RightChild
+}
+
+func (n *Node) Calculate(fn CalcVisitor) (float64, error) { return fn(n) }
 
 // IsLiteral returns true if n is literal node.
 func (n *Node) IsLiteral() bool {
