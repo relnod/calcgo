@@ -164,11 +164,11 @@ func (i *Interpreter) calcVisitor(n parser.INode) (float64, error) {
 		return calculator.ConvertExponential(n.GetValue())
 	}
 
-	if n.IsOperator() {
+	if parser.IsOperator(n) {
 		return i.interpretOperator(n)
 	}
 
-	if n.IsFunction() {
+	if parser.IsFunction(n) {
 		return i.interpretFunction(n)
 	}
 

@@ -5,21 +5,6 @@ import "github.com/relnod/calcgo/token"
 // NodeType defines the type of a node
 type NodeType uint
 
-// IsLiteral returns true if t is a literal.
-func (t NodeType) IsLiteral() bool {
-	return literalBeg < t && t < literalEnd
-}
-
-// IsOperator returns true if t is an operator.
-func (t NodeType) IsOperator() bool {
-	return operatorBeg < t && t < operatorEnd
-}
-
-// IsFunction returns true if t is a function.
-func (t NodeType) IsFunction() bool {
-	return functionBeg < t && t < functionEnd
-}
-
 // Node types
 const (
 	// Errors
@@ -72,11 +57,22 @@ type INode interface {
 	Left() INode
 	Right() INode
 
-	IsLiteral() bool
-	IsOperator() bool
-	IsFunction() bool
-
 	Calculate(CalcVisitor) (float64, error)
+}
+
+// IsLiteral returns true if t is a literal.
+func IsLiteral(n INode) bool {
+	return literalBeg < n.GetType() && n.GetType() < literalEnd
+}
+
+// IsOperator returns true if t is an operator.
+func IsOperator(n INode) bool {
+	return operatorBeg < n.GetType() && n.GetType() < operatorEnd
+}
+
+// IsFunction returns true if t is a function.
+func IsFunction(n INode) bool {
+	return functionBeg < n.GetType() && n.GetType() < functionEnd
 }
 
 // IAST defines an interface for an ast.
@@ -122,21 +118,6 @@ func (n *Node) Right() INode {
 
 // Calculate returns the result of the calculation visitor.
 func (n *Node) Calculate(fn CalcVisitor) (float64, error) { return fn(n) }
-
-// IsLiteral returns true if n is literal node.
-func (n *Node) IsLiteral() bool {
-	return n.Type.IsLiteral()
-}
-
-// IsOperator returns true if n is an operator node.
-func (n *Node) IsOperator() bool {
-	return n.Type.IsOperator()
-}
-
-// IsFunction returns true if n is a function node.
-func (n *Node) IsFunction() bool {
-	return n.Type.IsFunction()
-}
 
 // isHigherOperator returns true if operator n is of higher than n2.
 // Order is defined as the following:

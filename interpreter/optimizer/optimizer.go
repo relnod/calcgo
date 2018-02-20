@@ -79,21 +79,6 @@ func (n *OptimizedNode) Calculate(fn parser.CalcVisitor) (float64, error) {
 	return fn(n)
 }
 
-// IsLiteral returns true if the type of n is a literal.
-func (n *OptimizedNode) IsLiteral() bool {
-	return n.Type.IsLiteral()
-}
-
-// IsFunction returns true if the type of n is a function.
-func (n *OptimizedNode) IsFunction() bool {
-	return n.Type.IsFunction()
-}
-
-// IsOperator returns true if the type of n is an operator.
-func (n *OptimizedNode) IsOperator() bool {
-	return n.Type.IsOperator()
-}
-
 // newOptimizedNode returns a new optimized node.
 func newOptimizedNode(value float64) *OptimizedNode {
 	return &OptimizedNode{
@@ -123,14 +108,14 @@ func Optimize(ast parser.IAST) (*OptimizedAST, error) {
 
 // optimizeNode recursively optimizes all nodes, that can be optimized.
 func optimizeNode(n parser.INode) (*OptimizedNode, error) {
-	if n.IsLiteral() {
+	if parser.IsLiteral(n) {
 		return optimizeLiteral(n)
 	}
-	if n.IsOperator() {
+	if parser.IsOperator(n) {
 		return optimizeOperator(n)
 	}
 
-	if n.IsFunction() {
+	if parser.IsFunction(n) {
 		return optimizeFunction(n)
 	}
 

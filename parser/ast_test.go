@@ -18,7 +18,7 @@ func TestAST(t *testing.T) {
 var _ = DescribeTable("IsLiteral()",
 	func(nodeType parser.NodeType, exp bool) {
 		n := parser.Node{Type: nodeType}
-		Expect(n.IsLiteral()).To(Equal(exp))
+		Expect(parser.IsLiteral(&n)).To(Equal(exp))
 	},
 	Entry("1", parser.NError, false),
 	Entry("2", parser.NInt, true),
@@ -29,7 +29,7 @@ var _ = DescribeTable("IsLiteral()",
 var _ = DescribeTable("IsOperator()",
 	func(nodeType parser.NodeType, exp bool) {
 		n := parser.Node{Type: nodeType}
-		Expect(n.IsOperator()).To(Equal(exp))
+		Expect(parser.IsOperator(&n)).To(Equal(exp))
 	},
 	Entry("1", parser.NVar, false),
 	Entry("2", parser.NAdd, true),
@@ -46,7 +46,7 @@ var _ = DescribeTable("IsOperator()",
 var _ = DescribeTable("IsFunction()",
 	func(nodeType parser.NodeType, exp bool) {
 		n := parser.Node{Type: nodeType}
-		Expect(n.IsFunction()).To(Equal(exp))
+		Expect(parser.IsFunction(&n)).To(Equal(exp))
 	},
 	Entry("1", parser.NDiv, false),
 	Entry("2", parser.NFnSin, true),

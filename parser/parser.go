@@ -324,7 +324,7 @@ func parseOperator(p *Parser) parseState {
 
 	node := p.newOperatorNode()
 	// Handle 'multiplication and division before addition and subtraction' rule
-	if p.topNode.IsOperator() && p.topNode.isHigherOperator(node) {
+	if IsOperator(p.topNode) && p.topNode.isHigherOperator(node) {
 		p.setNewRightChild(node)
 	} else {
 		p.setNewTopNode(node)
