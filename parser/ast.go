@@ -57,6 +57,9 @@ type INode interface {
 	Left() INode
 	Right() INode
 
+	SetLeft(INode)
+	SetRight(INode)
+
 	Calculate(CalcVisitor) (float64, error)
 }
 
@@ -88,8 +91,8 @@ type IAST interface {
 type Node struct {
 	Type       NodeType
 	Value      string
-	LeftChild  *Node
-	RightChild *Node
+	LeftChild  INode
+	RightChild INode
 }
 
 // GetType returns the type of the node.
@@ -114,6 +117,14 @@ func (n *Node) Right() INode {
 	}
 
 	return n.RightChild
+}
+
+func (n *Node) SetLeft(l INode) {
+	n.LeftChild = l
+}
+
+func (n *Node) SetRight(r INode) {
+	n.RightChild = r
 }
 
 // Calculate returns the result of the calculation visitor.
