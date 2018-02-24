@@ -19,6 +19,11 @@ func TestLexer(t *testing.T) {
 var _ = Describe("Lex()", func() {
 	test := func(in string, expected []token.Token) {
 		Expect(lexer.Lex(in)).To(Equal(expected))
+		// tokens := lexer.Lex(in)
+		// Expect(tokens).To(HaveLen(len(expected)))
+		// for i := range tokens {
+		// 	Expect(tokens[i]).To(Equal(expected[i]))
+		// }
 	}
 
 	Describe("numbers", func() {

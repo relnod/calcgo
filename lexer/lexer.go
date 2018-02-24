@@ -1,15 +1,17 @@
 package lexer
 
-import "github.com/relnod/calcgo/token"
+import (
+	"bytes"
+
+	"github.com/relnod/calcgo/token"
+)
 
 type stateFn func(*Lexer) stateFn
 
 // Lexer holds the state of the lexer.
 type Lexer struct {
-	token    chan token.Token
-	str      string
-	pos      int
-	startPos int
+	token chan token.Token
+	buf   Buffer
 }
 
 // Lex takes a string as input and returns a list of tokens.
@@ -50,7 +52,10 @@ func Lex(str string) []token.Token {
 
 // NewLexer returns a new lexer object.
 func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, token: make(chan token.Token, len(str)/3), pos: 0}
+	return &Lexer{
+		token: make(chan token.Token, len(str)/3),
+		buf:   newBuffer(bytes.NewReader([]byte(str))),
+	}
 }
 
 // Start runs the lexer in a go routine.
@@ -63,47 +68,20 @@ func (l *Lexer) Read() token.Token {
 	return <-l.token
 }
 
-// current returns the character at the current postion.
-func (l *Lexer) current() byte {
-	return l.str[l.pos-1]
-}
-
-// stored returnes the string, that is currently stored.
-func (l *Lexer) stored() string {
-	return l.str[l.startPos:l.pos]
-}
-
-// next procedes to the next character and returns it. Also returns indicator,
-// wether there is a next character.
-func (l *Lexer) next() (byte, bool) {
-	if l.pos >= len(l.str) {
-		return 0, false
-	}
-
-	l.pos++
-
-	return l.current(), true
-}
-
-// backup moves the position one character backwards.
-func (l *Lexer) backup() {
-	l.pos--
-}
-
 // emitInternal takes a tokentype and a value to create a token, which it then
 // emits.
 func (l *Lexer) emitInternal(tokenType token.Type, value string) {
 	l.token <- token.Token{
 		Type:  tokenType,
 		Value: value,
-		Start: l.startPos,
-		End:   l.pos,
+		Start: l.buf.StartPos(),
+		End:   l.buf.Pos(),
 	}
 }
 
 // emit emits a new token with type tokenType and the currently stored value.
 func (l *Lexer) emit(tokenType token.Type) {
-	l.emitInternal(tokenType, l.stored())
+	l.emitInternal(tokenType, string(l.buf.all()))
 }
 
 // emitEmpty emits a new token with type tokenType and an empty value.
@@ -113,7 +91,7 @@ func (l *Lexer) emitEmpty(tokenType token.Type) {
 
 // emitEmpty emits a new token with type tokenType and the current character.
 func (l *Lexer) emitSingle(tokenType token.Type) {
-	l.emitInternal(tokenType, string(l.current()))
+	l.emitInternal(tokenType, string(l.buf.current()))
 }
 
 // run runs the lexer state machine.
@@ -158,9 +136,9 @@ func isLetter(b byte) bool {
 func lexAll(l *Lexer) stateFn {
 	var tokenType token.Type
 
-	l.startPos = l.pos
+	l.buf.reset()
 
-	b, ok := l.next()
+	b, ok := l.buf.next()
 	if !ok {
 		return nil
 	}
@@ -178,7 +156,7 @@ func lexAll(l *Lexer) stateFn {
 	case '+':
 		tokenType = token.Plus
 	case '-':
-		if b, ok := l.next(); ok && isDigit(b) {
+		if b, ok := l.buf.next(); ok && isDigit(b) {
 			return lexNumber
 		}
 		tokenType = token.Minus
@@ -216,8 +194,8 @@ func lexAll(l *Lexer) stateFn {
 //  - [0-9]+\^ -> lexExponential
 //  - rest     -> lexAll
 func lexNumber(l *Lexer) stateFn {
-	if l.current() == '0' {
-		b, ok := l.next()
+	if l.buf.current() == '0' {
+		b, ok := l.buf.next()
 		if ok {
 			if b == 'x' {
 				return lexHex
@@ -226,11 +204,11 @@ func lexNumber(l *Lexer) stateFn {
 				return lexBin
 			}
 		}
-		l.backup()
+		l.buf.backup()
 	}
 
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -248,7 +226,7 @@ func lexNumber(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
@@ -266,7 +244,7 @@ func lexNumber(l *Lexer) stateFn {
 //  -> lexAll
 func lexDecimal(l *Lexer) stateFn {
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -276,7 +254,7 @@ func lexDecimal(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
@@ -294,7 +272,7 @@ func lexDecimal(l *Lexer) stateFn {
 //  -> lexAll
 func lexHex(l *Lexer) stateFn {
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -304,7 +282,7 @@ func lexHex(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
@@ -322,7 +300,7 @@ func lexHex(l *Lexer) stateFn {
 //  -> lexAll
 func lexBin(l *Lexer) stateFn {
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -332,7 +310,7 @@ func lexBin(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
@@ -350,7 +328,7 @@ func lexBin(l *Lexer) stateFn {
 //  -> lexAll
 func lexExponential(l *Lexer) stateFn {
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -360,7 +338,7 @@ func lexExponential(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
@@ -378,7 +356,7 @@ func lexExponential(l *Lexer) stateFn {
 //  -> lexAll
 func lexVariableOrFunction(l *Lexer) stateFn {
 	for {
-		b, ok := l.next()
+		b, ok := l.buf.next()
 		if !ok {
 			break
 		}
@@ -388,12 +366,12 @@ func lexVariableOrFunction(l *Lexer) stateFn {
 		}
 
 		if isWhiteSpace(b) || b == ')' {
-			l.backup()
+			l.buf.backup()
 			break
 		}
 
 		if b == '(' {
-			switch l.stored() {
+			switch string(l.buf.all()) {
 			case "sqrt(":
 				l.emitEmpty(token.Sqrt)
 			case "sin(":
