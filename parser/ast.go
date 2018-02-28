@@ -119,10 +119,12 @@ func (n *Node) Right() INode {
 	return n.RightChild
 }
 
+// SetLeft sets the left node.
 func (n *Node) SetLeft(l INode) {
 	n.LeftChild = l
 }
 
+// SetRight sets the right node.
 func (n *Node) SetRight(r INode) {
 	n.RightChild = r
 }

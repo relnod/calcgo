@@ -37,6 +37,7 @@ jobs:
     - stage: lint
       go: 1.x
       install: 
+        - go get -t -v ./...
         - GO_FILES=$(find . -iname '*.go' -type f)
         - go get github.com/golang/lint/golint
       script:

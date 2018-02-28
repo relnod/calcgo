@@ -54,10 +54,12 @@ func (n *OptimizedNode) Left() parser.INode { return nil }
 // Right returns the right child.
 func (n *OptimizedNode) Right() parser.INode { return nil }
 
+// SetLeft sets the left child.
 func (n *OptimizedNode) SetLeft(l parser.INode) {
 	panic("") // @todo
 }
 
+// SetRight sets the right child.
 func (n *OptimizedNode) SetRight(r parser.INode) {
 	panic("") // @todo
 }
