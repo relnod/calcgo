@@ -16,20 +16,7 @@ type Lexer struct {
 
 // Lex takes an io.Reader and returns a list of tokens.
 func Lex(r io.Reader) []token.Token {
-	tokens := make([]token.Token, 0)
-
-	lexer := NewLexer(r)
-	lexer.Start()
-
-	for {
-		t := lexer.Read()
-		if t.Type == token.EOF {
-			break
-		}
-		tokens = append(tokens, t)
-	}
-
-	return tokens
+	return lexInternal(NewLexer(r))
 }
 
 // LexString takes a string as input and returns a list of tokens.
@@ -48,17 +35,16 @@ func Lex(r io.Reader) []token.Token {
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
 func LexString(str string) []token.Token {
-	if len(str) == 0 {
-		return nil
-	}
+	return lexInternal(NewLexerFromString(str))
+}
 
-	tokens := make([]token.Token, 0, len(str)/2)
+func lexInternal(l *Lexer) []token.Token {
+	tokens := make([]token.Token, 0)
 
-	lexer := NewLexerFromString(str)
-	lexer.Start()
+	l.Start()
 
 	for {
-		t := lexer.Read()
+		t := l.Read()
 		if t.Type == token.EOF {
 			break
 		}
