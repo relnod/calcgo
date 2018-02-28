@@ -69,8 +69,7 @@ func Parse(str string) (AST, []error) {
 		return AST{}, nil
 	}
 
-	l := lexer.NewLexerFromString(str)
-	l.Start()
+	l := lexer.NewBufferedLexerFromString(str)
 
 	return ParseFromReader(l)
 }
