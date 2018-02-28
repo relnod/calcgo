@@ -14,7 +14,25 @@ type Lexer struct {
 	buf   BufferedReader
 }
 
-// Lex takes a string as input and returns a list of tokens.
+// Lex takes an io.Reader and returns a list of tokens.
+func Lex(r io.Reader) []token.Token {
+	tokens := make([]token.Token, 0)
+
+	lexer := NewLexer(r)
+	lexer.Start()
+
+	for {
+		t := lexer.Read()
+		if t.Type == token.EOF {
+			break
+		}
+		tokens = append(tokens, t)
+	}
+
+	return tokens
+}
+
+// LexString takes a string as input and returns a list of tokens.
 //
 // Example:
 //  calcgo.Lex("(1 + 2) * 3")
@@ -29,14 +47,14 @@ type Lexer struct {
 //    {Value: "",  Type: calcgo.TOperatorMult},
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
-func Lex(str string) []token.Token {
+func LexString(str string) []token.Token {
 	if len(str) == 0 {
 		return nil
 	}
 
 	tokens := make([]token.Token, 0, len(str)/2)
 
-	lexer := NewLexer(str)
+	lexer := NewLexerFromString(str)
 	lexer.Start()
 
 	for {
@@ -51,18 +69,26 @@ func Lex(str string) []token.Token {
 }
 
 // NewLexer returns a new lexer object.
-func NewLexer(str string) *Lexer {
+func NewLexer(r io.Reader) *Lexer {
+	return &Lexer{
+		token: make(chan token.Token, 0),
+		buf:   NewBufferedReader(r),
+	}
+}
+
+// NewLexerFromString returns a new lexer object.
+func NewLexerFromString(str string) *Lexer {
 	return &Lexer{
 		token: make(chan token.Token, len(str)/3),
 		buf:   NewBufferedReaderFromString(str),
 	}
 }
 
-// NewLexerFromReader returns a new lexer object.
-func NewLexerFromReader(r io.Reader) *Lexer {
+// NewLexerFromBufferedReader returns a new lexer object.
+func NewLexerFromBufferedReader(r BufferedReader) *Lexer {
 	return &Lexer{
 		token: make(chan token.Token, 0),
-		buf:   NewBufferedReader(r),
+		buf:   r,
 	}
 }
 

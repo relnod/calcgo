@@ -16,9 +16,9 @@ func TestLexer(t *testing.T) {
 	RunSpecs(t, "Lexer Suite")
 }
 
-var _ = Describe("Lex()", func() {
+var _ = Describe("LexString()", func() {
 	test := func(in string, expected []token.Token) {
-		Expect(lexer.Lex(in)).To(Equal(expected))
+		Expect(lexer.LexString(in)).To(Equal(expected))
 		// tokens := lexer.Lex(in)
 		// Expect(tokens).To(HaveLen(len(expected)))
 		// for i := range tokens {
