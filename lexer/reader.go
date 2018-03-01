@@ -31,8 +31,8 @@ type BufferedReader interface {
 	Reset()
 }
 
-// BufferedReader1 implements the BufferedReader with an io.Reader as input.
-type BufferedReader1 struct {
+// BufferedIOReader implements the BufferedReader with an io.Reader as input.
+type BufferedIOReader struct {
 	reader io.Reader
 	buf    []byte
 	pos    int
@@ -41,8 +41,8 @@ type BufferedReader1 struct {
 
 // NewBufferedReader returns a new buffered reader, that reads from the given
 // io.Reader.
-func NewBufferedReader(reader io.Reader) *BufferedReader1 {
-	return &BufferedReader1{
+func NewBufferedReader(reader io.Reader) *BufferedIOReader {
+	return &BufferedIOReader{
 		reader: reader,
 		buf:    make([]byte, 0),
 		pos:    0,
@@ -51,29 +51,29 @@ func NewBufferedReader(reader io.Reader) *BufferedReader1 {
 }
 
 // StartPos returns the position of the total input since the last reset.
-func (r *BufferedReader1) StartPos() int {
+func (r *BufferedIOReader) StartPos() int {
 	return r.start
 }
 
 // CurrPos returns the current position relative to the total input.
-func (r *BufferedReader1) CurrPos() int {
+func (r *BufferedIOReader) CurrPos() int {
 	return r.pos + r.start
 }
 
 // Current returns the byte at the current position.
-func (r *BufferedReader1) Current() byte {
+func (r *BufferedIOReader) Current() byte {
 	return r.buf[r.pos-1]
 }
 
 // All returns the whole content of the buffer.
-func (r *BufferedReader1) All() []byte {
+func (r *BufferedIOReader) All() []byte {
 	return r.buf[0:r.pos]
 }
 
 // Next returns the next byte read from the input. If an error occured
 // during the read process or if the reader is at the end of its input the
 // second return value is false.
-func (r *BufferedReader1) Next() (byte, bool) {
+func (r *BufferedIOReader) Next() (byte, bool) {
 	if r.pos < len(r.buf) {
 		r.pos++
 		return r.Current(), true
@@ -92,19 +92,19 @@ func (r *BufferedReader1) Next() (byte, bool) {
 }
 
 // Backup moves the position of the buffer one to the left.
-func (r *BufferedReader1) Backup() {
+func (r *BufferedIOReader) Backup() {
 	r.pos--
 }
 
 // Reset resets the buffer content.
-func (r *BufferedReader1) Reset() {
+func (r *BufferedIOReader) Reset() {
 	r.buf = r.buf[r.pos:len(r.buf)]
 	r.start = r.CurrPos()
 	r.pos = 0
 }
 
-// BufferedReader2 implements a buffered reader with a string as input.
-type BufferedReader2 struct {
+// StaticBufferedReader implements a buffered reader with a string as input.
+type StaticBufferedReader struct {
 	str   string
 	pos   int
 	start int
@@ -112,8 +112,8 @@ type BufferedReader2 struct {
 
 // NewBufferedReaderFromString returns a new buffered reader, with the given
 // string as input.
-func NewBufferedReaderFromString(str string) *BufferedReader2 {
-	return &BufferedReader2{
+func NewBufferedReaderFromString(str string) *StaticBufferedReader {
+	return &StaticBufferedReader{
 		str:   str,
 		pos:   0,
 		start: 0,
@@ -121,29 +121,32 @@ func NewBufferedReaderFromString(str string) *BufferedReader2 {
 }
 
 // StartPos returns the position of the total input since the last reset.
-func (r *BufferedReader2) StartPos() int {
+func (r *StaticBufferedReader) StartPos() int {
 	return r.start
 }
 
 // CurrPos returns the current position relative to the total input.
-func (r *BufferedReader2) CurrPos() int {
+func (r *StaticBufferedReader) CurrPos() int {
 	return r.pos
 }
 
 // Current returns the byte at the current position.
-func (r *BufferedReader2) Current() byte {
+func (r *StaticBufferedReader) Current() byte {
+	if r.pos == 0 {
+		return 0
+	}
 	return r.str[r.pos-1]
 }
 
 // All returns the whole content of the buffer.
-func (r *BufferedReader2) All() []byte {
+func (r *StaticBufferedReader) All() []byte {
 	return []byte(r.str[r.start:r.pos])
 }
 
 // Next returns the next byte read from the input. If an error occured
 // during the read process or if the reader is at the end of its input the
 // second return value is false.
-func (r *BufferedReader2) Next() (byte, bool) {
+func (r *StaticBufferedReader) Next() (byte, bool) {
 	if r.pos >= len(r.str) {
 		return 0, false
 	}
@@ -153,11 +156,11 @@ func (r *BufferedReader2) Next() (byte, bool) {
 }
 
 // Backup moves the position of the buffer one to the left.
-func (r *BufferedReader2) Backup() {
+func (r *StaticBufferedReader) Backup() {
 	r.pos--
 }
 
 // Reset resets the buffer content.
-func (r *BufferedReader2) Reset() {
+func (r *StaticBufferedReader) Reset() {
 	r.start = r.pos
 }
