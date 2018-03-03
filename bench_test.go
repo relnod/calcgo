@@ -1,4 +1,4 @@
-package interpreter_test
+package calcgo_test
 
 import (
 	"testing"
