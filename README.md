@@ -52,87 +52,25 @@ package main
 import (
 	"fmt"
 
-	"github.com/relnod/calcgo/interpreter"
+	"github.com/relnod/calcgo"
 )
 
 func main() {
-	number, _ := interpreter.Interpret("1 + 1")
+	number, _ := calcgo.Calc("1 + 1")
 
 	fmt.Println(number)
 }
 ```
 
-## Grammar
-
-### Lexer:
-The lexer accepts the language L(G), where G is the following grammar:
-
-G = (N,T,P,S)
-
-N = {S}
-
-T = {n, o, l, r}
-
-P contains the following rules:
-
-S → SS | e | nN | n | cC | c | o | l | r
-
-N → nN | s
-
-C → cC | s
-
-#### Terminals
-n ∈ { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }
-
-c ∈ { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }
-
-d ∈  { '.' }
-
-o ∈ { '+', '-', '*'*, '/' }
-
-l ∈ { '(' }
-
-r ∈ { ')' }
-
-s ∈  { ' ' }
-
-e ∈  { EOF }
-
-### Parser:
-The parser accepts the language L(G), where G is the following grammar:
-
-G = (N,T,P,S)
-
-N = {S}
-
-T = {n, o, l, r}
-
-P contains the following rules:
-
-S → SoS | lSr | fSr | n
-
-#### Terminals
-n ∈ { TInteger, TDecimal, TVariable }
-
-o ∈ { TOperatorPlus, TOperatorMinus, TOperatorMult, TOperatorDiv }
-
-f ∈ { TFuncSqrt }
-
-l ∈ { TLeftBracket }
-
-r ∈ { TRightBracket }
-
 ## Tests and Benchmarks
 
 #### Running Tests
 
-Run tests with ```go test -v -race``` or with ```goconvey``` to see live test
-results in a browser.
+Run tests with ```go test -v -race ./...``` or with ```ginkgo -r -v```.
 
 #### Running Benchmarks
 
-Benchmarks can be tun with ```go test -run=^$ -bench=.```
+Benchmarks can be tun with ```go test -run=^$ -bench=. ./...```
 
 To see the differences between current branch and master run ```./scripts/benchcmp.sh -n 5```
 

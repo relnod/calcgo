@@ -1,6 +1,9 @@
 package parser
 
-import "github.com/relnod/calcgo/lexer"
+import "github.com/relnod/calcgo/token"
+
+// NodeType defines the type of a node
+type NodeType uint
 
 // Node types
 const (
@@ -44,52 +47,90 @@ const (
 	functionEnd
 )
 
-// AST stores the data of the abstract syntax tree.
-// The ast is in the form of a binary tree.
-type AST struct {
-	Node *Node
+// CalcVisitor defines the visitor function called when calculation a node.
+type CalcVisitor func(INode) (float64, error)
+
+// INode defines an interface for a node.
+type INode interface {
+	GetType() NodeType
+	GetValue() string
+	Left() INode
+	Right() INode
+
+	SetLeft(INode)
+	SetRight(INode)
+
+	Calculate(CalcVisitor) (float64, error)
 }
 
-// NodeType defines the type of a node
-type NodeType uint
-
 // IsLiteral returns true if t is a literal.
-func (t NodeType) IsLiteral() bool {
-	return literalBeg < t && t < literalEnd
+func IsLiteral(n INode) bool {
+	return literalBeg < n.GetType() && n.GetType() < literalEnd
 }
 
 // IsOperator returns true if t is an operator.
-func (t NodeType) IsOperator() bool {
-	return operatorBeg < t && t < operatorEnd
+func IsOperator(n INode) bool {
+	return operatorBeg < n.GetType() && n.GetType() < operatorEnd
 }
 
 // IsFunction returns true if t is a function.
-func (t NodeType) IsFunction() bool {
-	return functionBeg < t && t < functionEnd
+func IsFunction(n INode) bool {
+	return functionBeg < n.GetType() && n.GetType() < functionEnd
+}
+
+// IAST defines an interface for an ast.
+type IAST interface {
+	// Root returns the root node.
+	Root() INode
+
+	// Optimized returns true if the ast is optimized.
+	Optimized() bool
 }
 
 // Node represents a node
 type Node struct {
-	Type       NodeType `json:"type"`
-	Value      string   `json:"value"`
-	LeftChild  *Node    `json:"left"`
-	RightChild *Node    `json:"right"`
+	Type       NodeType
+	Value      string
+	LeftChild  INode
+	RightChild INode
 }
 
-// IsLiteral returns true if n is literal node.
-func (n *Node) IsLiteral() bool {
-	return n.Type.IsLiteral()
+// GetType returns the type of the node.
+func (n *Node) GetType() NodeType { return n.Type }
+
+// GetValue returns the value of the node.
+func (n *Node) GetValue() string { return n.Value }
+
+// Left returns the left child.
+func (n *Node) Left() INode {
+	if n.LeftChild == nil {
+		return nil
+	}
+
+	return n.LeftChild
 }
 
-// IsOperator returns true if n is an operator node.
-func (n *Node) IsOperator() bool {
-	return n.Type.IsOperator()
+// Right returns the left child.
+func (n *Node) Right() INode {
+	if n.RightChild == nil {
+		return nil
+	}
+
+	return n.RightChild
 }
 
-// IsFunction returns true if n is a function node.
-func (n *Node) IsFunction() bool {
-	return n.Type.IsFunction()
+// SetLeft sets the left node.
+func (n *Node) SetLeft(l INode) {
+	n.LeftChild = l
 }
+
+// SetRight sets the right node.
+func (n *Node) SetRight(r INode) {
+	n.RightChild = r
+}
+
+// Calculate returns the result of the calculation visitor.
+func (n *Node) Calculate(fn CalcVisitor) (float64, error) { return fn(n) }
 
 // isHigherOperator returns true if operator n is of higher than n2.
 // Order is defined as the following:
@@ -107,26 +148,42 @@ func (n *Node) isHigherOperator(n2 *Node) bool {
 	return n.Type < n2.Type
 }
 
+// AST stores the data of the abstract syntax tree.
+// The ast is in the form of a binary tree.
+type AST struct {
+	Node *Node
+}
+
+// Root returns the root node.
+func (a *AST) Root() INode {
+	return a.Node
+}
+
+// Optimized returns false.
+func (a *AST) Optimized() bool {
+	return false
+}
+
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be an operator. Returns an invalid operator node
 // otherwise.
-func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
+func getOperatorNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TOpPlus:
+	case token.Plus:
 		return NAdd, true
-	case lexer.TOpMinus:
+	case token.Minus:
 		return NSub, true
-	case lexer.TOpMult:
+	case token.Mult:
 		return NMult, true
-	case lexer.TOpDiv:
+	case token.Div:
 		return NDiv, true
-	case lexer.TOpMod:
+	case token.Mod:
 		return NMod, true
-	case lexer.TOpOr:
+	case token.Or:
 		return NOr, true
-	case lexer.TOpXor:
+	case token.Xor:
 		return NXor, true
-	case lexer.TOpAnd:
+	case token.And:
 		return NAnd, true
 	}
 
@@ -136,26 +193,26 @@ func getOperatorNodeType(t lexer.Token) (NodeType, bool) {
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be a number or variable. Returns an invalid number or
 // variable node otherwise.
-func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
+func getNumberOrVariableNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TInt:
+	case token.Int:
 		return NInt, true
-	case lexer.TDec:
+	case token.Dec:
 		return NDec, true
-	case lexer.TBin:
+	case token.Bin:
 		return NBin, true
-	case lexer.THex:
+	case token.Hex:
 		return NHex, true
-	case lexer.TExp:
+	case token.Exp:
 		return NExp, true
-	case lexer.TVar:
+	case token.Var:
 		return NVar, true
 	}
 
 	switch t.Type {
-	case lexer.TInvalidCharacterInNumber:
+	case token.InvalidCharacterInNumber:
 		return NInvalidNumber, false
-	case lexer.TInvalidCharacterInVariable:
+	case token.InvalidCharacterInVariable:
 		return NInvalidVariable, false
 	}
 
@@ -164,15 +221,15 @@ func getNumberOrVariableNodeType(t lexer.Token) (NodeType, bool) {
 
 // getOperatorNodeType converts a token type to a node type.
 // The given token should be a function.
-func getFunctionNodeType(t lexer.Token) (NodeType, bool) {
+func getFunctionNodeType(t token.Token) (NodeType, bool) {
 	switch t.Type {
-	case lexer.TFnSqrt:
+	case token.Sqrt:
 		return NFnSqrt, true
-	case lexer.TFnSin:
+	case token.Sin:
 		return NFnSin, true
-	case lexer.TFnCos:
+	case token.Cos:
 		return NFnCos, true
-	case lexer.TFnTan:
+	case token.Tan:
 		return NFnTan, true
 	}
 

@@ -1,16 +1,24 @@
 package lexer
 
-type stateFn func(*Lexer) stateFn
+import (
+	"io"
+
+	"github.com/relnod/calcgo/token"
+)
+
+type stateFn func(*Lexer) token.Token
 
 // Lexer holds the state of the lexer.
 type Lexer struct {
-	token   chan Token
-	str     string
-	pos     int
-	lastPos int
+	buf BufferedReader
 }
 
-// Lex takes a string as input and returns a list of tokens.
+// Lex takes an io.Reader and returns a list of tokens.
+func Lex(r io.Reader) []token.Token {
+	return lexInternal(NewLexer(r))
+}
+
+// LexString takes a string as input and returns a list of tokens.
 //
 // Example:
 //  calcgo.Lex("(1 + 2) * 3")
@@ -25,105 +33,329 @@ type Lexer struct {
 //    {Value: "",  Type: calcgo.TOperatorMult},
 //    {Value: "2", Type: calcgo.TInteger},
 //  })
-func Lex(str string) []Token {
-	if len(str) == 0 {
-		return nil
-	}
+func LexString(str string) []token.Token {
+	return lexInternal(NewLexerFromString(str))
+}
 
-	tokens := make([]Token, 0, len(str)/2)
-
-	lexer := NewLexer(str)
-	lexer.Start()
+func lexInternal(l *Lexer) []token.Token {
+	tokens := make([]token.Token, 0)
 
 	for {
-		token := lexer.NextToken()
-		if token.Type == TEOF {
+		t := l.Read()
+		if t.Type == token.EOF {
 			break
 		}
-		tokens = append(tokens, token)
+		tokens = append(tokens, t)
 	}
 
 	return tokens
 }
 
 // NewLexer returns a new lexer object.
-func NewLexer(str string) *Lexer {
-	return &Lexer{str: str, token: make(chan Token, len(str)/3), pos: -1}
-}
-
-// Start runs the lexer in a go routine.
-func (l *Lexer) Start() {
-	go l.run()
-}
-
-// NextToken returns the next token from the token chanel.
-func (l *Lexer) NextToken() Token {
-	return <-l.token
-}
-
-// GetChanel returns the token chanel.
-func (l *Lexer) GetChanel() chan Token {
-	return l.token
-}
-
-// current returns the character at the current postion.
-func (l *Lexer) current() byte {
-	return l.str[l.pos]
-}
-
-// stored returnes the string, that is currently stored.
-func (l *Lexer) stored() string {
-	return l.str[l.lastPos+1 : l.pos+1]
-}
-
-// next procedes to the next character and returns it. Also returns indicator,
-// wether there is a next character.
-func (l *Lexer) next() (byte, bool) {
-	if l.pos+1 >= len(l.str) {
-		return 0, false
+func NewLexer(r io.Reader) *Lexer {
+	return &Lexer{
+		buf: NewBufferedReader(r),
 	}
-	l.pos++
-
-	return l.current(), true
 }
 
-// backup moves the position one character backwards.
-func (l *Lexer) backup() {
-	l.pos--
+// NewLexerFromString returns a new lexer object.
+func NewLexerFromString(str string) *Lexer {
+	return &Lexer{
+		buf: NewBufferedReaderFromString(str),
+	}
 }
 
-// emitInternal takes a tokentype and a value to create a token, which it then
+// NewLexerFromBufferedReader returns a new lexer object.
+func NewLexerFromBufferedReader(r BufferedReader) *Lexer {
+	return &Lexer{
+		buf: r,
+	}
+}
+
+// Read returns the next token.
+func (l *Lexer) Read() token.Token {
+	token := lexAll(l)
+
+	return token
+}
+
+// createToken takes a tokentype and a value to create a token, which it then
 // emits.
-func (l *Lexer) emitInternal(tokenType TokenType, value string) {
-	l.token <- Token{
+func (l *Lexer) createToken(tokenType token.Type, value string) token.Token {
+	return token.Token{
 		Type:  tokenType,
 		Value: value,
-		Start: l.lastPos + 1,
-		End:   l.pos + 1,
+		Start: l.buf.StartPos(),
+		End:   l.buf.CurrPos(),
 	}
 }
 
-// emit emits a new token with type tokenType and the currently stored value.
-func (l *Lexer) emit(tokenType TokenType) {
-	l.emitInternal(tokenType, l.stored())
+// create emits a new token with type tokenType and the currently stored value.
+func (l *Lexer) create(tokenType token.Type) token.Token {
+	return l.createToken(tokenType, string(l.buf.All()))
 }
 
-// emitEmpty emits a new token with type tokenType and an empty value.
-func (l *Lexer) emitEmpty(tokenType TokenType) {
-	l.emitInternal(tokenType, "")
+// createEmpty emits a new token with type tokenType and an empty value.
+func (l *Lexer) createEmpty(tokenType token.Type) token.Token {
+	return l.createToken(tokenType, "")
 }
 
 // emitEmpty emits a new token with type tokenType and the current character.
-func (l *Lexer) emitSingle(tokenType TokenType) {
-	l.emitInternal(tokenType, string(l.current()))
+func (l *Lexer) createSingle(tokenType token.Type) token.Token {
+	return l.createToken(tokenType, string(l.buf.Current()))
 }
 
-// run runs the lexer state machine.
-func (l *Lexer) run() {
-	for state := lexAll; state != nil; {
-		state = state(l)
+// lexAll is the entry state of the lexer state machine and also for all tokens.
+//
+// Transitions:
+//  - [0-9] -> lexNumber
+//  - [a-z] -> lexVariableOrFunction
+//  - rest  -> lexAll
+func lexAll(l *Lexer) token.Token {
+	var tokenType token.Type
+
+	l.buf.Reset()
+
+	b, ok := l.buf.Next()
+	if !ok {
+		// todo: return something else here. Maybe forward ok?
+		return token.Token{Type: token.EOF}
 	}
-	close(l.token)
+	if isDigit(b) {
+		return lexNumber(l)
+	}
+	if isLetter(b) {
+		return lexVariableOrFunction(l)
+	}
+	if isWhiteSpace(b) {
+		return lexAll(l)
+	}
+
+	switch b {
+	case '+':
+		tokenType = token.Plus
+	case '-':
+		if b, ok := l.buf.Next(); ok && isDigit(b) {
+			return lexNumber(l)
+		}
+		tokenType = token.Minus
+	case '*':
+		tokenType = token.Mult
+	case '/':
+		tokenType = token.Div
+	case '%':
+		tokenType = token.Mod
+	case '|':
+		tokenType = token.Or
+	case '^':
+		tokenType = token.Xor
+	case '&':
+		tokenType = token.And
+	case '(':
+		tokenType = token.ParenL
+	case ')':
+		tokenType = token.ParenR
+	default:
+		return l.create(token.InvalidCharacter)
+	}
+
+	return l.createEmpty(tokenType)
+}
+
+// lexNumber is the entry state for all number tokens.
+//
+// Transitions:
+//  - 0x       -> lexHex
+//  - 0b       -> lexBin
+//  - [0-9]+\. -> lexDecimal
+//  - [0-9]+\^ -> lexExponential
+//  - rest     -> lexAll
+func lexNumber(l *Lexer) token.Token {
+	if l.buf.Current() == '0' {
+		b, ok := l.buf.Next()
+		if ok {
+			if b == 'x' {
+				return lexHex(l)
+			}
+			if b == 'b' {
+				return lexBin(l)
+			}
+		}
+		l.buf.Backup()
+	}
+
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if b == '.' {
+			return lexDecimal(l)
+		}
+
+		if b == '^' {
+			return lexExponential(l)
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		return l.createSingle(token.InvalidCharacterInNumber)
+	}
+
+	return l.create(token.Int)
+}
+
+// lexDecimal creates a decimal number token.
+//
+// Transitions:
+//  -> lexAll
+func lexDecimal(l *Lexer) token.Token {
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		return l.createSingle(token.InvalidCharacterInNumber)
+	}
+
+	return l.create(token.Dec)
+}
+
+// lexHex creates a hex number token.
+//
+// Transitions:
+//  -> lexAll
+func lexHex(l *Lexer) token.Token {
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isHexDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		return l.createSingle(token.InvalidCharacterInNumber)
+	}
+
+	return l.create(token.Hex)
+}
+
+// lexBin creates a binary number token.
+//
+// Transitions:
+//  -> lexAll
+func lexBin(l *Lexer) token.Token {
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isBinDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		return l.createSingle(token.InvalidCharacterInNumber)
+	}
+
+	return l.create(token.Bin)
+}
+
+// lexExponential creates an exponential number token.
+//
+// Transitions:
+//  -> lexAll
+func lexExponential(l *Lexer) token.Token {
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isDigit(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		return l.createSingle(token.InvalidCharacterInNumber)
+	}
+
+	return l.create(token.Exp)
+}
+
+// lexVariableOrFunction creates a variable or function token.
+//
+// Transitions:
+//  -> lexAll
+func lexVariableOrFunction(l *Lexer) token.Token {
+	for {
+		b, ok := l.buf.Next()
+		if !ok {
+			break
+		}
+
+		if isLetter(b) {
+			continue
+		}
+
+		if isWhiteSpace(b) || b == ')' {
+			l.buf.Backup()
+			break
+		}
+
+		if b == '(' {
+			switch string(l.buf.All()) {
+			case "sqrt(":
+				return l.createEmpty(token.Sqrt)
+			case "sin(":
+				return l.createEmpty(token.Sin)
+			case "cos(":
+				return l.createEmpty(token.Cos)
+			case "tan(":
+				return l.createEmpty(token.Tan)
+			default:
+				return l.create(token.UnkownFunktion)
+			}
+		}
+
+		return l.createSingle(token.InvalidCharacterInVariable)
+	}
+
+	return l.create(token.Var)
 }
 
 // isWhiteSpace checks if b is a whitespace character.
@@ -149,271 +381,4 @@ func isBinDigit(b byte) bool {
 // isLetter checks if a is a letter.
 func isLetter(b byte) bool {
 	return b >= 'a' && b <= 'z'
-}
-
-// lexAll is the entry state of the lexer state machine and also for all tokens.
-//
-// Transitions:
-//  - [0-9] -> lexNumber
-//  - [a-z] -> lexVariableOrFunction
-//  - rest  -> lexAll
-func lexAll(l *Lexer) stateFn {
-	var tokenType TokenType
-
-	l.lastPos = l.pos
-
-	b, ok := l.next()
-	if !ok {
-		return nil
-	}
-	if isDigit(b) {
-		return lexNumber
-	}
-	if isLetter(b) {
-		return lexVariableOrFunction
-	}
-	if isWhiteSpace(b) {
-		return lexAll
-	}
-
-	switch b {
-	case '+':
-		tokenType = TOpPlus
-	case '-':
-		if b, ok := l.next(); ok && isDigit(b) {
-			return lexNumber
-		}
-		tokenType = TOpMinus
-	case '*':
-		tokenType = TOpMult
-	case '/':
-		tokenType = TOpDiv
-	case '%':
-		tokenType = TOpMod
-	case '|':
-		tokenType = TOpOr
-	case '^':
-		tokenType = TOpXor
-	case '&':
-		tokenType = TOpAnd
-	case '(':
-		tokenType = TLParen
-	case ')':
-		tokenType = TRParen
-	default:
-		l.emit(TInvalidCharacter)
-		return lexAll
-	}
-
-	l.emitEmpty(tokenType)
-	return lexAll
-}
-
-// lexNumber is the entry state for all number tokens.
-//
-// Transitions:
-//  - 0x       -> lexHex
-//  - 0b       -> lexBin
-//  - [0-9]+\. -> lexDecimal
-//  - [0-9]+\^ -> lexExponential
-//  - rest     -> lexAll
-func lexNumber(l *Lexer) stateFn {
-	if l.current() == '0' {
-		b, ok := l.next()
-		if ok {
-			if b == 'x' {
-				return lexHex
-			}
-			if b == 'b' {
-				return lexBin
-			}
-		}
-		l.backup()
-	}
-
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isDigit(b) {
-			continue
-		}
-
-		if b == '.' {
-			return lexDecimal
-		}
-
-		if b == '^' {
-			return lexExponential
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(TInt)
-	return lexAll
-}
-
-// lexDecimal creates a decimal number token.
-//
-// Transitions:
-//  -> lexAll
-func lexDecimal(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isDigit(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(TDec)
-	return lexAll
-}
-
-// lexHex creates a hex number token.
-//
-// Transitions:
-//  -> lexAll
-func lexHex(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isHexDigit(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(THex)
-	return lexAll
-}
-
-// lexBin creates a binary number token.
-//
-// Transitions:
-//  -> lexAll
-func lexBin(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isBinDigit(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(TBin)
-	return lexAll
-}
-
-// lexExponential creates an exponential number token.
-//
-// Transitions:
-//  -> lexAll
-func lexExponential(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isDigit(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		l.emitSingle(TInvalidCharacterInNumber)
-		return lexAll
-	}
-
-	l.emit(TExp)
-	return lexAll
-}
-
-// lexVariableOrFunction creates a variable or function token.
-//
-// Transitions:
-//  -> lexAll
-func lexVariableOrFunction(l *Lexer) stateFn {
-	for {
-		b, ok := l.next()
-		if !ok {
-			break
-		}
-
-		if isLetter(b) {
-			continue
-		}
-
-		if isWhiteSpace(b) || b == ')' {
-			l.backup()
-			break
-		}
-
-		if b == '(' {
-			switch l.stored() {
-			case "sqrt(":
-				l.emitEmpty(TFnSqrt)
-			case "sin(":
-				l.emitEmpty(TFnSin)
-			case "cos(":
-				l.emitEmpty(TFnCos)
-			case "tan(":
-				l.emitEmpty(TFnTan)
-			default:
-				l.emit(TFnUnkown)
-			}
-			return lexAll
-		}
-
-		l.emitSingle(TInvalidCharacterInVariable)
-		return lexAll
-	}
-
-	l.emit(TVar)
-	return lexAll
 }

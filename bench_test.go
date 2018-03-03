@@ -1,4 +1,4 @@
-package interpreter_test
+package calcgo_test
 
 import (
 	"testing"
@@ -16,19 +16,19 @@ var (
 
 func Benchmark1Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		lexer.Lex(str1)
+		lexer.LexString(str1)
 	}
 }
 
 func Benchmark2Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		lexer.Lex(str2)
+		lexer.LexString(str2)
 	}
 }
 
 func Benchmark3Lexer(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		lexer.Lex(str3)
+		lexer.LexString(str3)
 	}
 }
 

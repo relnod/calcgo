@@ -9,32 +9,35 @@ go_import_path: github.com/relnod/calcgo
 jobs:
   include:
     - stage: test
-      go: 1.8
+      go: "1.9"
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
-    - go: 1.9
+        - ginkgo -r -v --race
+    - go: "1.10"
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
+        - ginkgo -r -v --race
       after_success:
-        - ./scripts/coverage.sh
-        - mv profile.cov coverage.txt
+        - ginkgo -r -cover -coverprofile=coverage.txt -outputdir=.
         - bash <(curl -s https://codecov.io/bash)
     - go: tip
       install:
         - go get github.com/relnod/calcgo
         - go get -t -v ./...
+        - go get github.com/onsi/ginkgo/ginkgo
       script:
-        - go test -v -race ./...
+        - ginkgo -r -v --race
 
     - stage: lint
       go: 1.x
       install: 
+        - go get -t -v ./...
         - GO_FILES=$(find . -iname '*.go' -type f)
         - go get github.com/golang/lint/golint
       script:
