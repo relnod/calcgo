@@ -124,7 +124,7 @@ var _ = Describe("Parser", func() {
 		Entry("sin", "sin", parser.NFnSin, nil),
 		Entry("cos", "cos", parser.NFnCos, nil),
 		Entry("tan", "tan", parser.NFnTan, nil),
-		PEntry("unknown function", "foo", parser.NInvalidFunction, []error{parser.ErrorUnkownFunction}),
+		PEntry("unknown function", "foo", parser.NInvalidFunction, []error{parser.ErrorUnknownFunction}),
 		Entry("missing closing paren", "sqrt(", parser.NFnSqrt, []error{parser.ErrorMissingClosingBracket}),
 	)
 

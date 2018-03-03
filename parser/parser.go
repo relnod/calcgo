@@ -25,7 +25,7 @@ type Parser struct {
 var (
 	ErrorExpectedNumberOrVariable = errors.New("Error: Expected number or variable got something else")
 	ErrorExpectedOperator         = errors.New("Error: Expected operator got something else")
-	ErrorUnkownFunction           = errors.New("Error: Unkown Function")
+	ErrorUnknownFunction          = errors.New("Error: Unknown Function")
 	ErrorMissingClosingBracket    = errors.New("Error: Missing closing bracket")
 	ErrorUnexpectedClosingBracket = errors.New("Error: Unexpected closing bracket")
 )
@@ -156,7 +156,7 @@ func (p *Parser) newNumberOrVariableNode() *Node {
 func (p *Parser) newFunctionNode() *Node {
 	nt, ok := getFunctionNodeType(p.currToken)
 	if !ok {
-		p.pushError(ErrorUnkownFunction)
+		p.pushError(ErrorUnknownFunction)
 	}
 
 	return &Node{nt, p.currToken.Value, nil, nil}

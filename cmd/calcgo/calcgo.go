@@ -13,7 +13,7 @@ func main() {
 
 	result, errors := calcgo.Calc(flag.Arg(0))
 	if errors != nil {
-		fmt.Println("Errors have occured:")
+		fmt.Println("Errors have occurred:")
 		for _, err := range errors {
 			fmt.Println(err)
 		}

@@ -83,7 +83,7 @@ var tokens = [...]string{
 	InvalidCharacter:           "Invalid Character",
 	InvalidCharacterInNumber:   "Invalid character in number",
 	InvalidCharacterInVariable: "Invalid character in Variabl",
-	UnkownFunktion:             "Unkown function",
+	UnkownFunktion:             "Unknown function",
 }
 
 // Token represents a token returned by the lexer

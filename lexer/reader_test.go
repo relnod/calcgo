@@ -24,7 +24,7 @@ var _ = Describe("BufferedIOReader", func() {
 })
 
 func describeBufferedReader(newReader generator) {
-	It("has correct inital state", func() {
+	It("has correct initial state", func() {
 		r := lexer.NewBufferedReaderFromString("test")
 		Expect(r.StartPos()).To(BeZero())
 		Expect(r.CurrPos()).To(BeZero())

@@ -19,7 +19,7 @@ type BufferedReader interface {
 	// All returns the whole content of the buffer.
 	All() []byte
 
-	// Next returns the next byte read from the input. If an error occured
+	// Next returns the next byte read from the input. If an error occurred
 	// during the read process or if the reader is at the end of its input the
 	// second return value is false.
 	Next() (byte, bool)
@@ -70,7 +70,7 @@ func (r *BufferedIOReader) All() []byte {
 	return r.buf[0:r.pos]
 }
 
-// Next returns the next byte read from the input. If an error occured
+// Next returns the next byte read from the input. If an error occurred
 // during the read process or if the reader is at the end of its input the
 // second return value is false.
 func (r *BufferedIOReader) Next() (byte, bool) {
@@ -143,7 +143,7 @@ func (r *StaticBufferedReader) All() []byte {
 	return []byte(r.str[r.start:r.pos])
 }
 
-// Next returns the next byte read from the input. If an error occured
+// Next returns the next byte read from the input. If an error occurred
 // during the read process or if the reader is at the end of its input the
 // second return value is false.
 func (r *StaticBufferedReader) Next() (byte, bool) {

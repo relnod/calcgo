@@ -64,6 +64,6 @@ var _ = DescribeTable("String()",
 	},
 	Entry("valid token", token.Token{Type: token.Div, Value: "/"},
 		`{Value: '/', Type: '/', Start: '0', End: '0', }`),
-	Entry("unkown token", token.Token{Type: 255, Value: "foo"},
+	Entry("unknown token", token.Token{Type: 255, Value: "foo"},
 		`{Value: 'foo', Type: 'Unknown token', Start: '0', End: '0', }`),
 )

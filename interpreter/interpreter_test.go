@@ -178,7 +178,7 @@ func DescribeInterpreter(newInterpreter newInterpreterFnc) {
 			Entry("brackets in function arg", "sqrt((1))", math.Sqrt(1), nil),
 			Entry("combined with addition", "sqrt((1)) + 1.0", math.Sqrt(1)+1.0, nil),
 			Entry("error in function arg", "sqrt(1 / 0)", 0.0, []error{calculator.ErrorDivisionByZero}),
-			Entry("undefined function", "bla(1)", 0.0, []error{parser.ErrorUnkownFunction}),
+			Entry("undefined function", "bla(1)", 0.0, []error{parser.ErrorUnknownFunction}),
 		)
 
 		DescribeTable("functions", test,
