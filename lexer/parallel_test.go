@@ -1,6 +1,8 @@
 package lexer_test
 
 import (
+	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/relnod/calcgo/lexer"
@@ -8,18 +10,29 @@ import (
 )
 
 var _ = Describe("BufferedLexer", func() {
-	It("behaves the same as normal lexer", func() {
-		l1 := lexer.NewLexerFromString("1 + 2")
-		l2 := lexer.NewBufferedLexerFromString("1 + 2")
+	str := "1 + 2"
 
-		for {
-			t1 := l1.Read()
-			t2 := l2.Read()
-			Expect(t1).To(Equal(t2))
+	testBufferedLexer := func(l1 *lexer.BufferedLexer) {
+		It("behaves the same as normal lexer", func() {
+			l2 := lexer.NewBufferedLexerFromString(str)
 
-			if t1.Type == token.EOF {
-				break
+			for {
+				t1 := l1.Read()
+				t2 := l2.Read()
+				Expect(t1).To(Equal(t2))
+
+				if t1.Type == token.EOF {
+					break
+				}
 			}
-		}
+		})
+	}
+
+	Describe("from io.Reader", func() {
+		testBufferedLexer(lexer.NewBufferedlLexer(bytes.NewReader([]byte(str))))
+	})
+
+	Describe("from string", func() {
+		testBufferedLexer(lexer.NewBufferedLexerFromString(str))
 	})
 })
